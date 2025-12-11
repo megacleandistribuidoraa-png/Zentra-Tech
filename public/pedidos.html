@@ -584,6 +584,7 @@ header p{margin:4px 0 0;color:var(--muted);font-size:14px}
       <div id="modal-content"></div>
       <div class="modal-actions">
         <button class="btn btn-ghost" onclick="fecharModal()">Fechar</button>
+        <button class="btn btn-ghost" id="btn-whatsapp" onclick="enviarWhatsApp()" style="background:#25d366;color:#fff">📱 WhatsApp</button>
         <button class="btn btn-primary" id="btn-imprimir" onclick="imprimirPedido()">🖨️ Imprimir Pedido</button>
       </div>
     </div>
@@ -1175,6 +1176,39 @@ function verDetalhesPedido(pedidoId) {
 function fecharModal() {
   document.getElementById('modal-detail').classList.remove('show');
   pedidoAtual = null;
+}
+
+// ============================================
+// ENVIAR POR WHATSAPP
+// ============================================
+function enviarWhatsApp() {
+  if (!pedidoAtual) {
+    showToast('Nenhum pedido selecionado', 'error');
+    return;
+  }
+  
+  const cliente = clientes.find(c => c._id === pedidoAtual.clienteId);
+  if (!cliente || !cliente.telefone) {
+    showToast('Cliente não possui telefone cadastrado', 'error');
+    return;
+  }
+  
+  const tel = cliente.telefone.replace(/\D/g, '');
+  const itens = (pedidoAtual.items || []).map(i => {
+    const prod = produtos.find(p => p._id === i.produtoId);
+    return `• ${prod?.nome || 'Produto'} x${i.quantidade}`;
+  }).join('\n');
+  
+  const msg = `🧹 *MEGACLEAN - Comprovante de Pedido*\n\n` +
+    `📋 Pedido #${pedidoAtual._id?.slice(-6) || ''}\n` +
+    `👤 Cliente: ${cliente.nome}\n` +
+    `📅 Data: ${new Date(pedidoAtual.dateISO || pedidoAtual.data).toLocaleDateString('pt-BR')}\n\n` +
+    `*Itens:*\n${itens}\n\n` +
+    `💰 *Total: R$ ${Number(pedidoAtual.total || 0).toFixed(2).replace('.', ',')}*\n\n` +
+    `Obrigado pela preferência! 🙏`;
+  
+  const url = `https://wa.me/55${tel}?text=${encodeURIComponent(msg)}`;
+  window.open(url, '_blank');
 }
 
 // ============================================

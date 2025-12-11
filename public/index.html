@@ -3,6 +3,12 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="theme-color" content="#0aa04e" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<link rel="manifest" href="/manifest.json" />
+<link rel="apple-touch-icon" href="/icon.svg" />
+<link rel="icon" type="image/svg+xml" href="/icon.svg" />
 <title>MegaClean — Login</title>
 <style>
 :root{
@@ -378,6 +384,11 @@ document.getElementById('password').addEventListener('keypress', (e) => {
     form.dispatchEvent(new Event('submit'));
   }
 });
+
+// Registrar Service Worker para PWA
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js').catch(() => {});
+}
 </script>
 </body>
 </html>
