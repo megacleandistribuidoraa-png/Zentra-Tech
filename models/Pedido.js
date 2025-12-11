@@ -14,7 +14,23 @@ const pedidoSchema = new mongoose.Schema({
   total: { type: Number, default: 0 },
   retroativo: { type: Boolean, default: false },
   dateISO: { type: String, default: () => new Date().toISOString() },
-  dataCriacao: { type: Date, default: Date.now }
+  dataCriacao: { type: Date, default: Date.now },
+  // Informações de Pagamento
+  formaPagamento: { 
+    type: String, 
+    enum: ['dinheiro', 'pix', 'cartao_credito', 'cartao_debito', 'boleto', 'a_prazo'], 
+    default: 'dinheiro' 
+  },
+  statusPagamento: { 
+    type: String, 
+    enum: ['pendente', 'pago', 'parcial', 'cancelado'], 
+    default: 'pendente' 
+  },
+  valorPago: { type: Number, default: 0 },
+  dataVencimento: { type: String },
+  dataPagamento: { type: String },
+  parcelas: { type: Number, default: 1 },
+  observacaoPagamento: { type: String, default: '' }
 });
 
 pedidoSchema.virtual('id').get(function() {

@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Categorias - MegaClean</title>
+<style>
+:root{--bg:#f4f7fb;--card:#fff;--primary:#0aa04e;--primary-light:#e6f9ee;--muted:#6b7280;--danger:#dc2626;--radius:12px;--shadow:0 8px 24px rgba(12,20,30,0.06)}
+[data-theme="dark"]{--bg:#1a1a2e;--card:#16213e;--primary:#00d9a5;--primary-light:#0f3d3e;--muted:#94a3b8;color:#e2e8f0}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Segoe UI',Roboto,Arial,sans-serif;background:var(--bg);padding:20px;min-height:100vh}
+[data-theme="dark"] body{color:#e2e8f0}
+.container{max-width:1000px;margin:0 auto}
+header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+header h1{margin:0;color:var(--primary);font-size:28px}
+.back-link{color:var(--primary);text-decoration:none;font-weight:600}
+
+.card{background:var(--card);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow)}
+.card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.card-title{font-size:18px;font-weight:700;margin:0}
+
+.btn{padding:10px 18px;border-radius:8px;border:none;cursor:pointer;font-weight:600;font-size:14px;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-ghost{background:#f0f3f7;color:var(--muted)}
+.btn-danger{background:var(--danger);color:#fff}
+
+.categoria-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px}
+.categoria-card{background:#f8fafc;border-radius:12px;padding:20px;text-align:center;position:relative;border:2px solid transparent;transition:all .2s}
+[data-theme="dark"] .categoria-card{background:#1e293b}
+.categoria-card:hover{border-color:var(--primary)}
+.categoria-icon{font-size:40px;margin-bottom:10px}
+.categoria-nome{font-size:16px;font-weight:700;margin:0 0 4px}
+.categoria-desc{font-size:12px;color:var(--muted);margin:0}
+.categoria-actions{position:absolute;top:10px;right:10px;display:flex;gap:4px}
+.categoria-actions button{background:none;border:none;cursor:pointer;font-size:16px;opacity:0.6}
+.categoria-actions button:hover{opacity:1}
+
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;z-index:100}
+.modal-backdrop.show{display:flex}
+.modal{background:var(--card);padding:24px;border-radius:16px;max-width:400px;width:100%}
+.modal h3{margin:0 0 20px}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:13px;font-weight:600;margin-bottom:6px}
+.form-group input{width:100%;padding:12px;border:2px solid #e5e7eb;border-radius:8px;font-size:14px}
+[data-theme="dark"] .form-group input{background:#1e293b;border-color:#374151;color:#e2e8f0}
+.icon-picker{display:flex;gap:8px;flex-wrap:wrap}
+.icon-picker button{font-size:24px;padding:8px;border:2px solid #e5e7eb;border-radius:8px;background:none;cursor:pointer}
+.icon-picker button.selected{border-color:var(--primary);background:var(--primary-light)}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px}
+
+.toast{position:fixed;bottom:24px;right:24px;background:var(--primary);color:#fff;padding:14px 20px;border-radius:12px;transform:translateY(100px);opacity:0;transition:all .3s;z-index:200}
+.toast.show{transform:translateY(0);opacity:1}
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div>
+      <a href="/admin.html" class="back-link">← Voltar</a>
+      <h1>🏷️ Categorias</h1>
+    </div>
+    <button class="btn btn-primary" onclick="abrirModal()">➕ Nova Categoria</button>
+  </header>
+
+  <div class="card">
+    <div id="lista-categorias" class="categoria-grid"></div>
+  </div>
+</div>
+
+<div id="modal" class="modal-backdrop">
+  <div class="modal">
+    <h3 id="modal-titulo">Nova Categoria</h3>
+    <input type="hidden" id="cat-id" />
+    <div class="form-group">
+      <label>Nome *</label>
+      <input type="text" id="cat-nome" placeholder="Ex: Detergentes" />
+    </div>
+    <div class="form-group">
+      <label>Descrição</label>
+      <input type="text" id="cat-desc" placeholder="Descrição da categoria" />
+    </div>
+    <div class="form-group">
+      <label>Ícone</label>
+      <div class="icon-picker" id="icon-picker"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="fecharModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvar()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+if(localStorage.getItem('theme')==='dark')document.documentElement.setAttribute('data-theme','dark');
+
+const icones = ['📦','🧴','🧹','🧽','🧼','🪣','🧪','💧','✨','🌿','🍋','🪥','🚿','🛁','🧺','🏠'];
+let categorias = [];
+let iconeSelected = '📦';
+
+function getToken(){return localStorage.getItem('admin_token')||''}
+function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.className='toast show';setTimeout(()=>t.classList.remove('show'),3000)}
+
+// Renderizar picker de ícones
+document.getElementById('icon-picker').innerHTML = icones.map(i => 
+  `<button type="button" onclick="selectIcon('${i}')" class="${i===iconeSelected?'selected':''}">${i}</button>`
+).join('');
+
+function selectIcon(i) {
+  iconeSelected = i;
+  document.querySelectorAll('.icon-picker button').forEach(b => {
+    b.classList.toggle('selected', b.textContent === i);
+  });
+}
+
+async function carregarCategorias() {
+  const res = await fetch('/api/categorias');
+  categorias = await res.json();
+  renderizar();
+}
+
+function renderizar() {
+  const container = document.getElementById('lista-categorias');
+  if (categorias.length === 0) {
+    container.innerHTML = '<p style="text-align:center;color:var(--muted);grid-column:1/-1;padding:40px">Nenhuma categoria cadastrada</p>';
+    return;
+  }
+  container.innerHTML = categorias.map(c => `
+    <div class="categoria-card">
+      <div class="categoria-actions">
+        <button onclick="editar('${c._id}')">✏️</button>
+        <button onclick="excluir('${c._id}')">🗑️</button>
+      </div>
+      <div class="categoria-icon">${c.icone || '📦'}</div>
+      <h4 class="categoria-nome">${c.nome}</h4>
+      <p class="categoria-desc">${c.descricao || '—'}</p>
+    </div>
+  `).join('');
+}
+
+function abrirModal() {
+  document.getElementById('modal-titulo').textContent = 'Nova Categoria';
+  document.getElementById('cat-id').value = '';
+  document.getElementById('cat-nome').value = '';
+  document.getElementById('cat-desc').value = '';
+  selectIcon('📦');
+  document.getElementById('modal').classList.add('show');
+}
+
+function fecharModal() {
+  document.getElementById('modal').classList.remove('show');
+}
+
+function editar(id) {
+  const cat = categorias.find(c => c._id === id);
+  if (!cat) return;
+  document.getElementById('modal-titulo').textContent = 'Editar Categoria';
+  document.getElementById('cat-id').value = cat._id;
+  document.getElementById('cat-nome').value = cat.nome;
+  document.getElementById('cat-desc').value = cat.descricao || '';
+  selectIcon(cat.icone || '📦');
+  document.getElementById('modal').classList.add('show');
+}
+
+async function salvar() {
+  const id = document.getElementById('cat-id').value;
+  const data = {
+    nome: document.getElementById('cat-nome').value,
+    descricao: document.getElementById('cat-desc').value,
+    icone: iconeSelected
+  };
+  
+  if (!data.nome) { alert('Informe o nome'); return; }
+  
+  const url = id ? `/api/categorias/${id}` : '/api/categorias';
+  const method = id ? 'PUT' : 'POST';
+  
+  await fetch(url, {
+    method,
+    headers: { 'Content-Type': 'application/json', 'x-auth-token': getToken() },
+    body: JSON.stringify(data)
+  });
+  
+  showToast('✅ Categoria salva!');
+  fecharModal();
+  carregarCategorias();
+}
+
+async function excluir(id) {
+  if (!confirm('Excluir esta categoria?')) return;
+  await fetch(`/api/categorias/${id}`, {
+    method: 'DELETE',
+    headers: { 'x-auth-token': getToken() }
+  });
+  showToast('🗑️ Categoria excluída');
+  carregarCategorias();
+}
+
+carregarCategorias();
+</script>
+</body>
+</html>
+

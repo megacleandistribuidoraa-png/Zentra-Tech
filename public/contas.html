@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Contas a Receber - MegaClean</title>
+<style>
+:root{--bg:#f4f7fb;--card:#fff;--primary:#0aa04e;--primary-light:#e6f9ee;--muted:#6b7280;--danger:#dc2626;--danger-light:#fef2f2;--warning:#f59e0b;--warning-light:#fffbeb;--info:#3b82f6;--radius:12px;--shadow:0 8px 24px rgba(12,20,30,0.06)}
+[data-theme="dark"]{--bg:#1a1a2e;--card:#16213e;--primary:#00d9a5;--primary-light:#0f3d3e;--muted:#94a3b8;color:#e2e8f0}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Segoe UI',Roboto,Arial,sans-serif;background:var(--bg);padding:20px;min-height:100vh}
+[data-theme="dark"] body{color:#e2e8f0}
+.container{max-width:1200px;margin:0 auto}
+header{margin-bottom:20px}
+header h1{margin:0;color:var(--primary);font-size:28px}
+.back-link{color:var(--primary);text-decoration:none;font-weight:600}
+
+.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px}
+.stat-card{background:var(--card);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);text-align:center}
+.stat-card h3{margin:0;font-size:28px;color:var(--primary)}
+.stat-card.danger h3{color:var(--danger)}
+.stat-card.warning h3{color:var(--warning)}
+.stat-card p{margin:8px 0 0;color:var(--muted);font-size:14px}
+
+.card{background:var(--card);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);margin-bottom:20px}
+.card-title{font-size:18px;font-weight:700;margin:0 0 16px}
+
+.conta-item{display:flex;align-items:center;justify-content:space-between;padding:16px;background:#f8fafc;border-radius:10px;margin-bottom:10px;border-left:4px solid var(--warning)}
+[data-theme="dark"] .conta-item{background:#1e293b}
+.conta-item.atrasado{border-left-color:var(--danger);background:var(--danger-light)}
+.conta-info h4{margin:0;font-size:15px}
+.conta-info p{margin:4px 0 0;font-size:12px;color:var(--muted)}
+.conta-valor{text-align:right}
+.conta-valor h4{margin:0;font-size:18px;color:var(--danger)}
+.conta-valor p{margin:4px 0 0;font-size:12px;color:var(--muted)}
+.conta-actions{display:flex;gap:8px;margin-left:16px}
+
+.btn{padding:10px 16px;border-radius:8px;border:none;cursor:pointer;font-weight:600;font-size:13px}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-ghost{background:#f0f3f7;color:var(--muted)}
+[data-theme="dark"] .btn-ghost{background:#374151}
+.btn-whatsapp{background:#25d366;color:#fff}
+
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;z-index:100}
+.modal-backdrop.show{display:flex}
+.modal{background:var(--card);padding:24px;border-radius:16px;max-width:400px;width:100%}
+.modal h3{margin:0 0 20px}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:13px;font-weight:600;margin-bottom:6px}
+.form-group input,.form-group select{width:100%;padding:12px;border:2px solid #e5e7eb;border-radius:8px;font-size:14px}
+[data-theme="dark"] .form-group input,[data-theme="dark"] .form-group select{background:#1e293b;border-color:#374151;color:#e2e8f0}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px}
+
+.empty-state{text-align:center;padding:40px;color:var(--muted)}
+.empty-state .icon{font-size:48px;margin-bottom:10px}
+
+.toast{position:fixed;bottom:24px;right:24px;background:#0f172a;color:#fff;padding:14px 20px;border-radius:12px;transform:translateY(100px);opacity:0;transition:all .3s;z-index:200}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.success{background:var(--primary)}
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <a href="/admin.html" class="back-link">← Voltar ao painel</a>
+    <h1>💰 Contas a Receber</h1>
+  </header>
+
+  <div class="stats-grid">
+    <div class="stat-card danger">
+      <h3 id="total-receber">R$ 0</h3>
+      <p>Total a Receber</p>
+    </div>
+    <div class="stat-card warning">
+      <h3 id="qtd-pendentes">0</h3>
+      <p>Contas Pendentes</p>
+    </div>
+    <div class="stat-card">
+      <h3 id="recebido-mes">R$ 0</h3>
+      <p>Recebido este Mês</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3 class="card-title">📋 Contas Pendentes</h3>
+    <div id="lista-contas">
+      <div class="empty-state">
+        <div class="icon">✅</div>
+        <h4>Nenhuma conta pendente!</h4>
+        <p>Todas as contas estão em dia</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Pagamento -->
+<div id="modal-pagamento" class="modal-backdrop">
+  <div class="modal">
+    <h3>💳 Registrar Pagamento</h3>
+    <div class="form-group">
+      <label>Cliente</label>
+      <input type="text" id="pag-cliente" readonly />
+    </div>
+    <div class="form-group">
+      <label>Valor Devido</label>
+      <input type="text" id="pag-devido" readonly />
+    </div>
+    <div class="form-group">
+      <label>Valor do Pagamento *</label>
+      <input type="number" id="pag-valor" step="0.01" placeholder="0,00" />
+    </div>
+    <div class="form-group">
+      <label>Forma de Pagamento</label>
+      <select id="pag-forma">
+        <option value="dinheiro">💵 Dinheiro</option>
+        <option value="pix">📱 PIX</option>
+        <option value="cartao_credito">💳 Cartão Crédito</option>
+        <option value="cartao_debito">💳 Cartão Débito</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="fecharModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="confirmarPagamento()">✓ Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+// Tema
+if(localStorage.getItem('theme')==='dark')document.documentElement.setAttribute('data-theme','dark');
+
+let contas = [];
+let contaAtual = null;
+
+function formatMoney(v){return 'R$ '+Number(v||0).toFixed(2).replace('.',',')}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.className='toast show success';setTimeout(()=>t.classList.remove('show'),3000)}
+
+async function carregarContas() {
+  try {
+    const res = await fetch('/api/contas-receber');
+    contas = await res.json();
+    
+    const total = contas.reduce((s, c) => s + c.valorDevido, 0);
+    document.getElementById('total-receber').textContent = formatMoney(total);
+    document.getElementById('qtd-pendentes').textContent = contas.length;
+    
+    renderizarContas();
+  } catch(e) {
+    console.error(e);
+  }
+}
+
+function renderizarContas() {
+  const container = document.getElementById('lista-contas');
+  
+  if (contas.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="icon">✅</div>
+        <h4>Nenhuma conta pendente!</h4>
+        <p>Todas as contas estão em dia</p>
+      </div>
+    `;
+    return;
+  }
+  
+  container.innerHTML = contas.map(c => {
+    const data = c.dateISO ? new Date(c.dateISO).toLocaleDateString('pt-BR') : '—';
+    const whatsLink = c.clienteTelefone ? 
+      `https://wa.me/55${c.clienteTelefone.replace(/\D/g,'')}?text=${encodeURIComponent(`Olá ${c.clienteNome}! Passando para lembrar do valor pendente de ${formatMoney(c.valorDevido)} referente ao pedido #${c.id}. Como podemos ajudar?`)}` : '';
+    
+    return `
+      <div class="conta-item">
+        <div class="conta-info">
+          <h4>#${c.id} - ${c.clienteNome}</h4>
+          <p>📅 ${data} | Total: ${formatMoney(c.total)} | Pago: ${formatMoney(c.valorPago || 0)}</p>
+        </div>
+        <div class="conta-valor">
+          <h4>${formatMoney(c.valorDevido)}</h4>
+          <p>Valor Devido</p>
+        </div>
+        <div class="conta-actions">
+          ${whatsLink ? `<a href="${whatsLink}" target="_blank" class="btn btn-whatsapp">📱 WhatsApp</a>` : ''}
+          <button class="btn btn-primary" onclick="abrirPagamento('${c._id}')">💳 Pagar</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function abrirPagamento(id) {
+  contaAtual = contas.find(c => c._id === id);
+  if (!contaAtual) return;
+  
+  document.getElementById('pag-cliente').value = contaAtual.clienteNome;
+  document.getElementById('pag-devido').value = formatMoney(contaAtual.valorDevido);
+  document.getElementById('pag-valor').value = contaAtual.valorDevido.toFixed(2);
+  document.getElementById('modal-pagamento').classList.add('show');
+}
+
+function fecharModal() {
+  document.getElementById('modal-pagamento').classList.remove('show');
+  contaAtual = null;
+}
+
+async function confirmarPagamento() {
+  if (!contaAtual) return;
+  
+  const valor = parseFloat(document.getElementById('pag-valor').value);
+  const forma = document.getElementById('pag-forma').value;
+  
+  if (!valor || valor <= 0) {
+    alert('Informe um valor válido');
+    return;
+  }
+  
+  try {
+    const res = await fetch(`/api/pedidos/${contaAtual._id}/pagamento`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ valor, formaPagamento: forma })
+    });
+    
+    if (res.ok) {
+      showToast('✅ Pagamento registrado!');
+      fecharModal();
+      carregarContas();
+    }
+  } catch(e) {
+    alert('Erro ao registrar pagamento');
+  }
+}
+
+carregarContas();
+</script>
+</body>
+</html>
+

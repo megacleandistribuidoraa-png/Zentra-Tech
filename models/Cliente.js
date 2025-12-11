@@ -7,6 +7,11 @@ const clienteSchema = new mongoose.Schema({
   email: { type: String, default: '' },
   endereco: { type: String, default: '' },
   status: { type: String, enum: ['ativo', 'inativo'], default: 'ativo' },
+  // Fidelidade
+  pontosFidelidade: { type: Number, default: 0 },
+  totalCompras: { type: Number, default: 0 },
+  limiteCredito: { type: Number, default: 0 },
+  observacoes: { type: String, default: '' },
   dataCriacao: { type: Date, default: Date.now }
 });
 

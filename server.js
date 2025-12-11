@@ -10,6 +10,9 @@ const Produto = require('./models/Produto');
 const Pedido = require('./models/Pedido');
 const Usuario = require('./models/Usuario');
 const Solicitacao = require('./models/Solicitacao');
+const Categoria = require('./models/Categoria');
+const Fornecedor = require('./models/Fornecedor');
+const Orcamento = require('./models/Orcamento');
 
 const app = express();
 app.use(cors());
@@ -304,12 +307,17 @@ app.get('/api/admin/pages', verificarAuth, (req, res) => {
 
   if (isAdmin) {
     pages = [
+      { id: 'dashboard', title: 'Dashboard', url: '/dashboard.html', icon: '📊' },
       { id: 'clientes', title: 'Clientes', url: '/clientes.html', icon: '👥' },
       { id: 'produtos', title: 'Produtos', url: '/produtos.html', icon: '📦' },
+      { id: 'categorias', title: 'Categorias', url: '/categorias.html', icon: '🏷️' },
       { id: 'pedidos', title: 'Pedidos', url: '/pedidos.html', icon: '🛒' },
-      { id: 'estoque', title: 'Estoque', url: '/estoque.html', icon: '📊' },
+      { id: 'orcamentos', title: 'Orçamentos', url: '/orcamentos.html', icon: '📋' },
+      { id: 'contas', title: 'Contas a Receber', url: '/contas.html', icon: '💰' },
+      { id: 'estoque', title: 'Estoque', url: '/estoque.html', icon: '📦' },
+      { id: 'fornecedores', title: 'Fornecedores', url: '/fornecedores.html', icon: '🚚' },
       { id: 'relatorio', title: 'Relatório', url: '/relatorio.html', icon: '📈' },
-      { id: 'solicitacoes', title: 'Solicitações', url: '/solicitacoes.html', icon: '📋' },
+      { id: 'solicitacoes', title: 'Solicitações', url: '/solicitacoes.html', icon: '📝' },
       { id: 'usuarios', title: 'Usuários', url: '/usuarios.html', icon: '👤' },
       { id: 'config', title: 'Configurações', url: '/config.html', icon: '⚙️' }
     ];
@@ -821,6 +829,351 @@ app.post('/api/solicitacoes/:id/rejeitar', verificarAuth, verificarAdmin, async 
   } catch (error) {
     res.status(500).json({ error: 'Erro ao rejeitar solicitação' });
   }
+});
+
+// ---------------------------------------------
+// -------------- CATEGORIAS -------------------
+// ---------------------------------------------
+app.get('/api/categorias', async (req, res) => {
+  try {
+    const categorias = await Categoria.find();
+    res.json(categorias);
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao buscar categorias' });
+  }
+});
+
+app.post('/api/categorias', verificarAuth, verificarAdmin, async (req, res) => {
+  try {
+    const categoria = await Categoria.create(req.body);
+    res.json(categoria);
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao criar categoria' });
+  }
+});
+
+app.put('/api/categorias/:id', verificarAuth, verificarAdmin, async (req, res) => {
+  try {
+    const categoria = await Categoria.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    res.json(categoria);
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao atualizar categoria' });
+  }
+});
+
+app.delete('/api/categorias/:id', verificarAuth, verificarAdmin, async (req, res) => {
+  try {
+    await Categoria.findByIdAndDelete(req.params.id);
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao excluir categoria' });
+  }
+});
+
+// ---------------------------------------------
+// -------------- FORNECEDORES -----------------
+// ---------------------------------------------
+app.get('/api/fornecedores', async (req, res) => {
+  try {
+    const fornecedores = await Fornecedor.find();
+    res.json(fornecedores);
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao buscar fornecedores' });
+  }
+});
+
+app.post('/api/fornecedores', verificarAuth, verificarAdmin, async (req, res) => {
+  try {
+    const fornecedor = await Fornecedor.create(req.body);
+    res.json(fornecedor);
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao criar fornecedor' });
+  }
+});
+
+app.put('/api/fornecedores/:id', verificarAuth, verificarAdmin, async (req, res) => {
+  try {
+    const fornecedor = await Fornecedor.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    res.json(fornecedor);
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao atualizar fornecedor' });
+  }
+});
+
+app.delete('/api/fornecedores/:id', verificarAuth, verificarAdmin, async (req, res) => {
+  try {
+    await Fornecedor.findByIdAndDelete(req.params.id);
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao excluir fornecedor' });
+  }
+});
+
+// ---------------------------------------------
+// -------------- ORÇAMENTOS -------------------
+// ---------------------------------------------
+app.get('/api/orcamentos', async (req, res) => {
+  try {
+    const orcamentos = await Orcamento.find();
+    const clientes = await Cliente.find();
+    
+    const lista = orcamentos.map(o => {
+      const cliente = clientes.find(c => c._id.toString() === o.clienteId?.toString());
+      return { ...o.toObject(), clienteNome: cliente?.nome || 'Cliente' };
+    });
+    
+    res.json(lista);
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao buscar orçamentos' });
+  }
+});
+
+app.post('/api/orcamentos', async (req, res) => {
+  try {
+    const { clienteId, items, desconto, validade, observacoes } = req.body;
+    
+    let total = 0;
+    const itemsCompletos = [];
+    
+    for (const it of items) {
+      const prod = await Produto.findById(it.produtoId);
+      if (!prod) continue;
+      const q = Number(it.quantidade);
+      total += (Number(prod.preco) * q);
+      
+      itemsCompletos.push({
+        produtoId: prod._id,
+        nome: prod.nome,
+        quantidade: q,
+        preco: prod.preco,
+        unidade: prod.unidade
+      });
+    }
+    
+    const descontoVal = Number(desconto) || 0;
+    const totalComDesconto = total - (total * descontoVal / 100);
+    
+    const orcamento = await Orcamento.create({
+      clienteId,
+      items: itemsCompletos,
+      total: Number(total.toFixed(2)),
+      desconto: descontoVal,
+      totalComDesconto: Number(totalComDesconto.toFixed(2)),
+      validade,
+      observacoes
+    });
+    
+    res.json(orcamento);
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao criar orçamento' });
+  }
+});
+
+app.post('/api/orcamentos/:id/converter', async (req, res) => {
+  try {
+    const orcamento = await Orcamento.findById(req.params.id);
+    if (!orcamento) return res.status(404).json({ error: 'Orçamento não encontrado' });
+    
+    if (orcamento.status === 'convertido') {
+      return res.status(400).json({ error: 'Orçamento já foi convertido' });
+    }
+    
+    // Verificar estoque
+    for (const it of orcamento.items) {
+      const prod = await Produto.findById(it.produtoId);
+      if (!prod || prod.quantidade < it.quantidade) {
+        return res.status(400).json({ error: `Estoque insuficiente para ${it.nome}` });
+      }
+    }
+    
+    // Descontar estoque
+    for (const it of orcamento.items) {
+      await Produto.findByIdAndUpdate(it.produtoId, {
+        $inc: { quantidade: -it.quantidade }
+      });
+    }
+    
+    // Criar pedido
+    const pedido = await Pedido.create({
+      clienteId: orcamento.clienteId,
+      items: orcamento.items,
+      total: orcamento.totalComDesconto,
+      formaPagamento: req.body.formaPagamento || 'dinheiro',
+      statusPagamento: req.body.statusPagamento || 'pendente'
+    });
+    
+    // Atualizar orçamento
+    orcamento.status = 'convertido';
+    orcamento.pedidoId = pedido._id;
+    await orcamento.save();
+    
+    res.json({ orcamento, pedido });
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao converter orçamento' });
+  }
+});
+
+app.delete('/api/orcamentos/:id', async (req, res) => {
+  try {
+    await Orcamento.findByIdAndDelete(req.params.id);
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao excluir orçamento' });
+  }
+});
+
+// ---------------------------------------------
+// -------------- CONTAS A RECEBER -------------
+// ---------------------------------------------
+app.get('/api/contas-receber', async (req, res) => {
+  try {
+    const pedidos = await Pedido.find({ 
+      statusPagamento: { $in: ['pendente', 'parcial'] }
+    });
+    const clientes = await Cliente.find();
+    
+    const contas = pedidos.map(p => {
+      const cliente = clientes.find(c => c._id.toString() === p.clienteId?.toString());
+      return {
+        ...p.toObject(),
+        clienteNome: cliente?.nome || 'Cliente',
+        clienteTelefone: cliente?.telefone || '',
+        valorDevido: p.total - (p.valorPago || 0)
+      };
+    });
+    
+    res.json(contas);
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao buscar contas a receber' });
+  }
+});
+
+app.post('/api/pedidos/:id/pagamento', async (req, res) => {
+  try {
+    const { valor, formaPagamento } = req.body;
+    const pedido = await Pedido.findById(req.params.id);
+    
+    if (!pedido) return res.status(404).json({ error: 'Pedido não encontrado' });
+    
+    const novoValorPago = (pedido.valorPago || 0) + Number(valor);
+    
+    pedido.valorPago = novoValorPago;
+    if (formaPagamento) pedido.formaPagamento = formaPagamento;
+    
+    if (novoValorPago >= pedido.total) {
+      pedido.statusPagamento = 'pago';
+      pedido.dataPagamento = new Date().toISOString();
+    } else {
+      pedido.statusPagamento = 'parcial';
+    }
+    
+    await pedido.save();
+    
+    // Atualizar pontos de fidelidade do cliente (1 ponto a cada R$ 10)
+    const pontosGanhos = Math.floor(Number(valor) / 10);
+    if (pontosGanhos > 0) {
+      await Cliente.findByIdAndUpdate(pedido.clienteId, {
+        $inc: { pontosFidelidade: pontosGanhos, totalCompras: Number(valor) }
+      });
+    }
+    
+    res.json(pedido);
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao registrar pagamento' });
+  }
+});
+
+// ---------------------------------------------
+// -------------- DASHBOARD/ESTATÍSTICAS -------
+// ---------------------------------------------
+app.get('/api/dashboard', async (req, res) => {
+  try {
+    const hoje = new Date().toISOString().slice(0, 10);
+    const mesAtual = new Date().toISOString().slice(0, 7);
+    
+    const pedidos = await Pedido.find();
+    const clientes = await Cliente.find();
+    const produtos = await Produto.find();
+    
+    const pedidosHoje = pedidos.filter(p => p.dateISO?.slice(0, 10) === hoje);
+    const pedidosMes = pedidos.filter(p => p.dateISO?.slice(0, 7) === mesAtual);
+    
+    const vendasHoje = pedidosHoje.reduce((s, p) => s + (p.total || 0), 0);
+    const vendasMes = pedidosMes.reduce((s, p) => s + (p.total || 0), 0);
+    
+    const contasReceber = pedidos
+      .filter(p => p.statusPagamento === 'pendente' || p.statusPagamento === 'parcial')
+      .reduce((s, p) => s + (p.total - (p.valorPago || 0)), 0);
+    
+    const produtosBaixoEstoque = produtos.filter(p => p.quantidade <= p.minimo).length;
+    
+    // Vendas últimos 7 dias
+    const ultimos7Dias = [];
+    for (let i = 6; i >= 0; i--) {
+      const data = new Date();
+      data.setDate(data.getDate() - i);
+      const dataStr = data.toISOString().slice(0, 10);
+      const vendas = pedidos
+        .filter(p => p.dateISO?.slice(0, 10) === dataStr)
+        .reduce((s, p) => s + (p.total || 0), 0);
+      ultimos7Dias.push({
+        data: dataStr,
+        dia: data.toLocaleDateString('pt-BR', { weekday: 'short' }),
+        vendas
+      });
+    }
+    
+    // Top 5 clientes do mês
+    const clientesVendas = {};
+    pedidosMes.forEach(p => {
+      const id = p.clienteId?.toString();
+      if (!clientesVendas[id]) clientesVendas[id] = 0;
+      clientesVendas[id] += p.total || 0;
+    });
+    
+    const topClientes = Object.entries(clientesVendas)
+      .map(([id, total]) => {
+        const cliente = clientes.find(c => c._id.toString() === id);
+        return { nome: cliente?.nome || 'Cliente', total };
+      })
+      .sort((a, b) => b.total - a.total)
+      .slice(0, 5);
+    
+    res.json({
+      resumo: {
+        vendasHoje,
+        vendasMes,
+        pedidosHoje: pedidosHoje.length,
+        pedidosMes: pedidosMes.length,
+        contasReceber,
+        totalClientes: clientes.length,
+        totalProdutos: produtos.length,
+        produtosBaixoEstoque
+      },
+      graficoVendas: ultimos7Dias,
+      topClientes
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao carregar dashboard' });
+  }
+});
+
+// ---------------------------------------------
+// ----------- CONFIGURAÇÕES DO SISTEMA --------
+// ---------------------------------------------
+let configSistema = {
+  modoEscuro: false,
+  pontosPorReal: 0.1, // 1 ponto a cada R$ 10
+  diasValidadeOrcamento: 7
+};
+
+app.get('/api/config-sistema', (req, res) => {
+  res.json(configSistema);
+});
+
+app.put('/api/config-sistema', verificarAuth, verificarAdmin, (req, res) => {
+  configSistema = { ...configSistema, ...req.body };
+  res.json(configSistema);
 });
 
 // Iniciar servidor

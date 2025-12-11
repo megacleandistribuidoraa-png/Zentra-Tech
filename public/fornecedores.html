@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Fornecedores - MegaClean</title>
+<style>
+:root{--bg:#f4f7fb;--card:#fff;--primary:#0aa04e;--primary-light:#e6f9ee;--muted:#6b7280;--danger:#dc2626;--radius:12px;--shadow:0 8px 24px rgba(12,20,30,0.06)}
+[data-theme="dark"]{--bg:#1a1a2e;--card:#16213e;--primary:#00d9a5;--primary-light:#0f3d3e;--muted:#94a3b8;color:#e2e8f0}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Segoe UI',Roboto,Arial,sans-serif;background:var(--bg);padding:20px;min-height:100vh}
+[data-theme="dark"] body{color:#e2e8f0}
+.container{max-width:1200px;margin:0 auto}
+header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:16px}
+header h1{margin:0;color:var(--primary);font-size:28px}
+.back-link{color:var(--primary);text-decoration:none;font-weight:600}
+
+.card{background:var(--card);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow)}
+.btn{padding:10px 18px;border-radius:8px;border:none;cursor:pointer;font-weight:600;font-size:14px}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-ghost{background:#f0f3f7;color:var(--muted)}
+.btn-sm{padding:6px 12px;font-size:12px}
+
+table{width:100%;border-collapse:collapse}
+th,td{padding:14px;text-align:left;border-bottom:1px solid #e5e7eb}
+[data-theme="dark"] th,[data-theme="dark"] td{border-color:#374151}
+th{font-size:12px;text-transform:uppercase;color:var(--muted)}
+tr:hover{background:#f8fafc}
+[data-theme="dark"] tr:hover{background:#1e293b}
+.badge{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.badge.ativo{background:var(--primary-light);color:var(--primary)}
+.badge.inativo{background:#fee2e2;color:var(--danger)}
+
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;z-index:100}
+.modal-backdrop.show{display:flex}
+.modal{background:var(--card);padding:24px;border-radius:16px;max-width:500px;width:100%;max-height:90vh;overflow-y:auto}
+.modal h3{margin:0 0 20px}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:13px;font-weight:600;margin-bottom:6px}
+.form-group input,.form-group textarea,.form-group select{width:100%;padding:12px;border:2px solid #e5e7eb;border-radius:8px;font-size:14px}
+[data-theme="dark"] .form-group input,[data-theme="dark"] .form-group textarea,[data-theme="dark"] .form-group select{background:#1e293b;border-color:#374151;color:#e2e8f0}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px}
+
+.toast{position:fixed;bottom:24px;right:24px;background:var(--primary);color:#fff;padding:14px 20px;border-radius:12px;transform:translateY(100px);opacity:0;transition:all .3s;z-index:200}
+.toast.show{transform:translateY(0);opacity:1}
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div>
+      <a href="/admin.html" class="back-link">← Voltar</a>
+      <h1>🚚 Fornecedores</h1>
+    </div>
+    <button class="btn btn-primary" onclick="abrirModal()">➕ Novo Fornecedor</button>
+  </header>
+
+  <div class="card">
+    <table>
+      <thead>
+        <tr>
+          <th>Fornecedor</th>
+          <th>CNPJ</th>
+          <th>Telefone</th>
+          <th>Contato</th>
+          <th>Status</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody id="tabela-fornecedores"></tbody>
+    </table>
+  </div>
+</div>
+
+<div id="modal" class="modal-backdrop">
+  <div class="modal">
+    <h3 id="modal-titulo">Novo Fornecedor</h3>
+    <input type="hidden" id="forn-id" />
+    <div class="form-group">
+      <label>Nome / Razão Social *</label>
+      <input type="text" id="forn-nome" />
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>CNPJ</label>
+        <input type="text" id="forn-cnpj" placeholder="00.000.000/0000-00" />
+      </div>
+      <div class="form-group">
+        <label>Telefone</label>
+        <input type="text" id="forn-telefone" placeholder="(00) 00000-0000" />
+      </div>
+    </div>
+    <div class="form-group">
+      <label>E-mail</label>
+      <input type="email" id="forn-email" />
+    </div>
+    <div class="form-group">
+      <label>Nome do Contato</label>
+      <input type="text" id="forn-contato" placeholder="Pessoa responsável" />
+    </div>
+    <div class="form-group">
+      <label>Endereço</label>
+      <input type="text" id="forn-endereco" />
+    </div>
+    <div class="form-group">
+      <label>Observações</label>
+      <textarea id="forn-obs" rows="3"></textarea>
+    </div>
+    <div class="form-group">
+      <label>Status</label>
+      <select id="forn-status">
+        <option value="ativo">Ativo</option>
+        <option value="inativo">Inativo</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="fecharModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvar()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+if(localStorage.getItem('theme')==='dark')document.documentElement.setAttribute('data-theme','dark');
+
+let fornecedores = [];
+function getToken(){return localStorage.getItem('admin_token')||''}
+function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.className='toast show';setTimeout(()=>t.classList.remove('show'),3000)}
+
+async function carregarFornecedores() {
+  const res = await fetch('/api/fornecedores');
+  fornecedores = await res.json();
+  renderizar();
+}
+
+function renderizar() {
+  const tbody = document.getElementById('tabela-fornecedores');
+  if (fornecedores.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--muted)">Nenhum fornecedor cadastrado</td></tr>';
+    return;
+  }
+  tbody.innerHTML = fornecedores.map(f => `
+    <tr>
+      <td><strong>${f.nome}</strong></td>
+      <td>${f.cnpj || '—'}</td>
+      <td>${f.telefone || '—'}</td>
+      <td>${f.contato || '—'}</td>
+      <td><span class="badge ${f.status}">${f.status === 'ativo' ? 'Ativo' : 'Inativo'}</span></td>
+      <td>
+        <button class="btn btn-ghost btn-sm" onclick="editar('${f._id}')">✏️ Editar</button>
+        <button class="btn btn-ghost btn-sm" onclick="excluir('${f._id}')">🗑️</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function abrirModal() {
+  document.getElementById('modal-titulo').textContent = 'Novo Fornecedor';
+  document.getElementById('forn-id').value = '';
+  document.getElementById('forn-nome').value = '';
+  document.getElementById('forn-cnpj').value = '';
+  document.getElementById('forn-telefone').value = '';
+  document.getElementById('forn-email').value = '';
+  document.getElementById('forn-contato').value = '';
+  document.getElementById('forn-endereco').value = '';
+  document.getElementById('forn-obs').value = '';
+  document.getElementById('forn-status').value = 'ativo';
+  document.getElementById('modal').classList.add('show');
+}
+
+function fecharModal() {
+  document.getElementById('modal').classList.remove('show');
+}
+
+function editar(id) {
+  const f = fornecedores.find(x => x._id === id);
+  if (!f) return;
+  document.getElementById('modal-titulo').textContent = 'Editar Fornecedor';
+  document.getElementById('forn-id').value = f._id;
+  document.getElementById('forn-nome').value = f.nome;
+  document.getElementById('forn-cnpj').value = f.cnpj || '';
+  document.getElementById('forn-telefone').value = f.telefone || '';
+  document.getElementById('forn-email').value = f.email || '';
+  document.getElementById('forn-contato').value = f.contato || '';
+  document.getElementById('forn-endereco').value = f.endereco || '';
+  document.getElementById('forn-obs').value = f.observacoes || '';
+  document.getElementById('forn-status').value = f.status || 'ativo';
+  document.getElementById('modal').classList.add('show');
+}
+
+async function salvar() {
+  const id = document.getElementById('forn-id').value;
+  const data = {
+    nome: document.getElementById('forn-nome').value,
+    cnpj: document.getElementById('forn-cnpj').value,
+    telefone: document.getElementById('forn-telefone').value,
+    email: document.getElementById('forn-email').value,
+    contato: document.getElementById('forn-contato').value,
+    endereco: document.getElementById('forn-endereco').value,
+    observacoes: document.getElementById('forn-obs').value,
+    status: document.getElementById('forn-status').value
+  };
+  
+  if (!data.nome) { alert('Informe o nome'); return; }
+  
+  const url = id ? `/api/fornecedores/${id}` : '/api/fornecedores';
+  const method = id ? 'PUT' : 'POST';
+  
+  await fetch(url, {
+    method,
+    headers: { 'Content-Type': 'application/json', 'x-auth-token': getToken() },
+    body: JSON.stringify(data)
+  });
+  
+  showToast('✅ Fornecedor salvo!');
+  fecharModal();
+  carregarFornecedores();
+}
+
+async function excluir(id) {
+  if (!confirm('Excluir este fornecedor?')) return;
+  await fetch(`/api/fornecedores/${id}`, {
+    method: 'DELETE',
+    headers: { 'x-auth-token': getToken() }
+  });
+  showToast('🗑️ Fornecedor excluído');
+  carregarFornecedores();
+}
+
+carregarFornecedores();
+</script>
+</body>
+</html>
+
