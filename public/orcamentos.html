@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Orçamentos - MegaClean</title>
+<style>
+:root{--bg:#f4f7fb;--card:#fff;--primary:#0aa04e;--primary-light:#e6f9ee;--muted:#6b7280;--danger:#dc2626;--warning:#f59e0b;--warning-light:#fffbeb;--info:#3b82f6;--radius:12px;--shadow:0 8px 24px rgba(12,20,30,0.06)}
+[data-theme="dark"]{--bg:#1a1a2e;--card:#16213e;--primary:#00d9a5;--primary-light:#0f3d3e;--muted:#94a3b8;color:#e2e8f0}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Segoe UI',Roboto,Arial,sans-serif;background:var(--bg);padding:20px;min-height:100vh}
+[data-theme="dark"] body{color:#e2e8f0}
+.container{max-width:1400px;margin:0 auto}
+header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:16px}
+header h1{margin:0;color:var(--primary);font-size:28px}
+.back-link{color:var(--primary);text-decoration:none;font-weight:600}
+
+.card{background:var(--card);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);margin-bottom:20px}
+.card-title{font-size:18px;font-weight:700;margin:0 0 16px}
+.btn{padding:10px 18px;border-radius:8px;border:none;cursor:pointer;font-weight:600;font-size:14px;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-ghost{background:#f0f3f7;color:var(--muted)}
+.btn-warning{background:var(--warning);color:#fff}
+.btn-sm{padding:6px 12px;font-size:12px}
+
+.grid-2{display:grid;grid-template-columns:1fr 380px;gap:20px}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:13px;font-weight:600;margin-bottom:6px}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:12px;border:2px solid #e5e7eb;border-radius:8px;font-size:14px}
+[data-theme="dark"] .form-group input,[data-theme="dark"] .form-group select{background:#1e293b;border-color:#374151;color:#e2e8f0}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+.product-list{max-height:300px;overflow-y:auto;border:2px solid #e5e7eb;border-radius:8px}
+.product-item{display:flex;align-items:center;justify-content:space-between;padding:12px;border-bottom:1px solid #e5e7eb}
+.product-item:last-child{border-bottom:none}
+.product-item:hover{background:#f8fafc}
+.product-info h4{margin:0;font-size:14px}
+.product-info p{margin:2px 0 0;font-size:12px;color:var(--muted)}
+
+.cart-section{background:#f8fafc;border-radius:12px;padding:16px}
+[data-theme="dark"] .cart-section{background:#1e293b}
+.cart-item{display:flex;justify-content:space-between;padding:10px;background:var(--card);border-radius:8px;margin-bottom:8px}
+.cart-item-info h5{margin:0;font-size:13px}
+.cart-item-info p{margin:2px 0 0;font-size:11px;color:var(--muted)}
+.cart-total{border-top:2px solid #e5e7eb;padding-top:12px;margin-top:12px}
+.cart-total-row{display:flex;justify-content:space-between;margin-bottom:6px}
+.cart-total-row.final{font-size:18px;font-weight:700;color:var(--primary)}
+
+.orcamento-item{display:flex;align-items:center;justify-content:space-between;padding:16px;background:#f8fafc;border-radius:10px;margin-bottom:10px;border-left:4px solid var(--warning)}
+[data-theme="dark"] .orcamento-item{background:#1e293b}
+.orcamento-item.aprovado{border-left-color:var(--primary)}
+.orcamento-item.convertido{border-left-color:var(--info)}
+.orcamento-item.rejeitado{border-left-color:var(--danger)}
+.orcamento-info h4{margin:0;font-size:15px}
+.orcamento-info p{margin:4px 0 0;font-size:12px;color:var(--muted)}
+.orcamento-valor h4{margin:0;font-size:18px;color:var(--primary)}
+
+.badge{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.badge.pendente{background:var(--warning-light);color:#b45309}
+.badge.aprovado{background:var(--primary-light);color:var(--primary)}
+.badge.convertido{background:#dbeafe;color:var(--info)}
+.badge.rejeitado{background:#fee2e2;color:var(--danger)}
+
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;z-index:100}
+.modal-backdrop.show{display:flex}
+.modal{background:var(--card);padding:24px;border-radius:16px;max-width:500px;width:100%}
+.modal h3{margin:0 0 20px}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px}
+
+.toast{position:fixed;bottom:24px;right:24px;background:var(--primary);color:#fff;padding:14px 20px;border-radius:12px;transform:translateY(100px);opacity:0;transition:all .3s;z-index:200}
+.toast.show{transform:translateY(0);opacity:1}
+
+@media(max-width:900px){.grid-2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div>
+      <a href="/admin.html" class="back-link">← Voltar</a>
+      <h1>📋 Orçamentos</h1>
+    </div>
+    <button class="btn btn-primary" onclick="mostrarNovoOrcamento()">➕ Novo Orçamento</button>
+  </header>
+
+  <!-- Formulário Novo Orçamento -->
+  <div class="card" id="form-orcamento" style="display:none">
+    <h3 class="card-title">Criar Orçamento</h3>
+    <div class="grid-2">
+      <div>
+        <div class="form-group">
+          <label>Cliente *</label>
+          <select id="select-cliente"><option value="">Selecione...</option></select>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Desconto (%)</label>
+            <input type="number" id="input-desconto" value="0" min="0" max="100" onchange="atualizarCarrinho()" />
+          </div>
+          <div class="form-group">
+            <label>Validade</label>
+            <input type="date" id="input-validade" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Buscar Produto</label>
+          <input type="text" id="busca-produto" placeholder="Digite para buscar..." oninput="filtrarProdutos()" />
+        </div>
+        <div class="product-list" id="lista-produtos"></div>
+      </div>
+      <div>
+        <div class="cart-section">
+          <h4 style="margin:0 0 12px">🛒 Itens do Orçamento</h4>
+          <div id="carrinho-items"></div>
+          <div class="cart-total">
+            <div class="cart-total-row"><span>Subtotal:</span><span id="subtotal">R$ 0,00</span></div>
+            <div class="cart-total-row"><span>Desconto:</span><span id="desconto-valor">- R$ 0,00</span></div>
+            <div class="cart-total-row final"><span>Total:</span><span id="total">R$ 0,00</span></div>
+          </div>
+          <div style="margin-top:16px;display:flex;gap:10px">
+            <button class="btn btn-ghost" onclick="cancelarOrcamento()">Cancelar</button>
+            <button class="btn btn-primary" style="flex:1" onclick="salvarOrcamento()">💾 Salvar Orçamento</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lista de Orçamentos -->
+  <div class="card">
+    <h3 class="card-title">📋 Orçamentos</h3>
+    <div id="lista-orcamentos"></div>
+  </div>
+</div>
+
+<!-- Modal Converter -->
+<div id="modal-converter" class="modal-backdrop">
+  <div class="modal">
+    <h3>🛒 Converter em Pedido</h3>
+    <p>Deseja converter este orçamento em pedido?</p>
+    <p><strong>O estoque será descontado automaticamente.</strong></p>
+    <div class="form-group">
+      <label>Forma de Pagamento</label>
+      <select id="forma-pagamento">
+        <option value="dinheiro">💵 Dinheiro</option>
+        <option value="pix">📱 PIX</option>
+        <option value="cartao_credito">💳 Cartão Crédito</option>
+        <option value="cartao_debito">💳 Cartão Débito</option>
+        <option value="boleto">📄 Boleto</option>
+        <option value="a_prazo">📅 À Prazo</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="fecharModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="confirmarConversao()">✓ Converter</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+if(localStorage.getItem('theme')==='dark')document.documentElement.setAttribute('data-theme','dark');
+
+let clientes=[], produtos=[], orcamentos=[], carrinho=[];
+let orcamentoParaConverter = null;
+
+function getToken(){return localStorage.getItem('admin_token')||''}
+function formatMoney(v){return 'R$ '+Number(v||0).toFixed(2).replace('.',',')}
+function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.className='toast show';setTimeout(()=>t.classList.remove('show'),3000)}
+
+async function carregarDados() {
+  const [cRes, pRes, oRes] = await Promise.all([
+    fetch('/api/clientes'),
+    fetch('/api/produtos'),
+    fetch('/api/orcamentos')
+  ]);
+  clientes = await cRes.json();
+  produtos = await pRes.json();
+  orcamentos = await oRes.json();
+  
+  document.getElementById('select-cliente').innerHTML = 
+    '<option value="">Selecione...</option>' + 
+    clientes.map(c => `<option value="${c._id}">${c.nome}</option>`).join('');
+  
+  // Validade padrão: 7 dias
+  const validade = new Date();
+  validade.setDate(validade.getDate() + 7);
+  document.getElementById('input-validade').value = validade.toISOString().slice(0,10);
+  
+  renderizarProdutos();
+  renderizarOrcamentos();
+}
+
+function renderizarProdutos() {
+  const busca = document.getElementById('busca-produto').value.toLowerCase();
+  const filtrados = produtos.filter(p => 
+    p.nome.toLowerCase().includes(busca) || (p.sku||'').toLowerCase().includes(busca)
+  );
+  
+  document.getElementById('lista-produtos').innerHTML = filtrados.map(p => `
+    <div class="product-item">
+      <div class="product-info">
+        <h4>${p.nome}</h4>
+        <p>${formatMoney(p.preco)} | Estoque: ${p.quantidade}</p>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="adicionarItem('${p._id}')" ${p.quantidade<=0?'disabled':''}>+</button>
+    </div>
+  `).join('') || '<p style="padding:20px;text-align:center;color:var(--muted)">Nenhum produto</p>';
+}
+
+function filtrarProdutos() { renderizarProdutos(); }
+
+function adicionarItem(produtoId) {
+  const prod = produtos.find(p => p._id === produtoId);
+  if (!prod) return;
+  
+  const existe = carrinho.find(c => c.produtoId === produtoId);
+  if (existe) {
+    if (existe.quantidade < prod.quantidade) existe.quantidade++;
+  } else {
+    carrinho.push({ produtoId, nome: prod.nome, preco: prod.preco, quantidade: 1 });
+  }
+  atualizarCarrinho();
+}
+
+function removerItem(index) {
+  carrinho.splice(index, 1);
+  atualizarCarrinho();
+}
+
+function atualizarCarrinho() {
+  const container = document.getElementById('carrinho-items');
+  if (carrinho.length === 0) {
+    container.innerHTML = '<p style="text-align:center;color:var(--muted);padding:20px">Carrinho vazio</p>';
+  } else {
+    container.innerHTML = carrinho.map((c, i) => `
+      <div class="cart-item">
+        <div class="cart-item-info">
+          <h5>${c.nome}</h5>
+          <p>${c.quantidade}x ${formatMoney(c.preco)} = ${formatMoney(c.quantidade * c.preco)}</p>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="removerItem(${i})">✕</button>
+      </div>
+    `).join('');
+  }
+  
+  const subtotal = carrinho.reduce((s, c) => s + (c.quantidade * c.preco), 0);
+  const desconto = Number(document.getElementById('input-desconto').value) || 0;
+  const descontoValor = subtotal * desconto / 100;
+  const total = subtotal - descontoValor;
+  
+  document.getElementById('subtotal').textContent = formatMoney(subtotal);
+  document.getElementById('desconto-valor').textContent = '- ' + formatMoney(descontoValor);
+  document.getElementById('total').textContent = formatMoney(total);
+}
+
+function mostrarNovoOrcamento() {
+  document.getElementById('form-orcamento').style.display = 'block';
+  carrinho = [];
+  atualizarCarrinho();
+}
+
+function cancelarOrcamento() {
+  document.getElementById('form-orcamento').style.display = 'none';
+  carrinho = [];
+}
+
+async function salvarOrcamento() {
+  const clienteId = document.getElementById('select-cliente').value;
+  if (!clienteId) { alert('Selecione um cliente'); return; }
+  if (carrinho.length === 0) { alert('Adicione itens'); return; }
+  
+  const data = {
+    clienteId,
+    items: carrinho.map(c => ({ produtoId: c.produtoId, quantidade: c.quantidade })),
+    desconto: Number(document.getElementById('input-desconto').value) || 0,
+    validade: document.getElementById('input-validade').value
+  };
+  
+  const res = await fetch('/api/orcamentos', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  });
+  
+  if (res.ok) {
+    showToast('✅ Orçamento criado!');
+    cancelarOrcamento();
+    carregarDados();
+  }
+}
+
+function renderizarOrcamentos() {
+  const container = document.getElementById('lista-orcamentos');
+  if (orcamentos.length === 0) {
+    container.innerHTML = '<p style="text-align:center;color:var(--muted);padding:40px">Nenhum orçamento</p>';
+    return;
+  }
+  
+  container.innerHTML = orcamentos.map(o => {
+    const data = o.dateISO ? new Date(o.dateISO).toLocaleDateString('pt-BR') : '—';
+    const validade = o.validade ? new Date(o.validade+'T12:00:00').toLocaleDateString('pt-BR') : '—';
+    const statusLabel = {pendente:'Pendente',aprovado:'Aprovado',convertido:'Convertido',rejeitado:'Rejeitado',expirado:'Expirado'}[o.status];
+    
+    const whatsLink = clientes.find(c=>c._id===o.clienteId)?.telefone ? 
+      `https://wa.me/55${clientes.find(c=>c._id===o.clienteId).telefone.replace(/\D/g,'')}?text=${encodeURIComponent(`Olá! Segue o orçamento #${o._id?.slice(-6)} no valor de ${formatMoney(o.totalComDesconto)}. Válido até ${validade}.`)}` : '';
+    
+    return `
+      <div class="orcamento-item ${o.status}">
+        <div class="orcamento-info">
+          <h4>${o.clienteNome || 'Cliente'} <span class="badge ${o.status}">${statusLabel}</span></h4>
+          <p>📅 ${data} | Validade: ${validade} | ${o.items?.length||0} item(s)</p>
+        </div>
+        <div class="orcamento-valor">
+          <h4>${formatMoney(o.totalComDesconto)}</h4>
+          <div style="margin-top:8px;display:flex;gap:6px">
+            ${whatsLink ? `<a href="${whatsLink}" target="_blank" class="btn btn-ghost btn-sm">📱</a>` : ''}
+            ${o.status==='pendente' ? `<button class="btn btn-primary btn-sm" onclick="abrirConverter('${o._id}')">🛒 Converter</button>` : ''}
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function abrirConverter(id) {
+  orcamentoParaConverter = id;
+  document.getElementById('modal-converter').classList.add('show');
+}
+
+function fecharModal() {
+  document.getElementById('modal-converter').classList.remove('show');
+  orcamentoParaConverter = null;
+}
+
+async function confirmarConversao() {
+  if (!orcamentoParaConverter) return;
+  
+  const res = await fetch(`/api/orcamentos/${orcamentoParaConverter}/converter`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      formaPagamento: document.getElementById('forma-pagamento').value
+    })
+  });
+  
+  if (res.ok) {
+    showToast('✅ Orçamento convertido em pedido!');
+    fecharModal();
+    carregarDados();
+  } else {
+    const err = await res.json();
+    alert(err.error || 'Erro ao converter');
+  }
+}
+
+carregarDados();
+</script>
+</body>
+</html>
+
