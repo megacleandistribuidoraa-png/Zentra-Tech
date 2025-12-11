@@ -493,10 +493,10 @@ async function carregarMenu() {
     const adminSection = document.getElementById('admin-section');
     
     // Páginas principais (para todos)
-    const mainPages = pages.filter(p => ['clientes', 'pedidos'].includes(p.id));
+    const mainPages = pages.filter(p => ['dashboard', 'clientes', 'pedidos', 'orcamentos'].includes(p.id));
     
     // Páginas de admin
-    const adminPages = pages.filter(p => ['produtos', 'estoque', 'relatorio', 'solicitacoes', 'usuarios', 'config'].includes(p.id));
+    const adminPages = pages.filter(p => ['produtos', 'categorias', 'estoque', 'fornecedores', 'contas', 'relatorio', 'solicitacoes', 'usuarios', 'config'].includes(p.id));
     
     navMenu.innerHTML = mainPages.map(p => `
       <a href="${p.url}" class="nav-item">
@@ -542,10 +542,15 @@ async function carregarMenu() {
 
 function getPageDescription(id) {
   const descriptions = {
+    'dashboard': 'Visão geral do sistema',
     'clientes': 'Cadastre e gerencie seus clientes',
     'produtos': 'Gerencie seu catálogo de produtos',
+    'categorias': 'Organize produtos por categoria',
     'pedidos': 'Crie e acompanhe pedidos',
+    'orcamentos': 'Crie orçamentos para clientes',
+    'contas': 'Controle de contas a receber',
     'estoque': 'Controle de estoque em tempo real',
+    'fornecedores': 'Cadastre seus fornecedores',
     'relatorio': 'Relatórios e métricas do dia',
     'solicitacoes': 'Aprove pedidos retroativos',
     'usuarios': 'Gerencie usuários do sistema',
