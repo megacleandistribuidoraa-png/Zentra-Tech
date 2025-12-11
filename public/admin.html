@@ -1,0 +1,593 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Painel Admin - MegaClean</title>
+<style>
+:root{
+  --bg:#f4f7fb;
+  --card:#fff;
+  --primary:#0aa04e;
+  --primary-light:#e6f9ee;
+  --primary-600:#0a8a44;
+  --muted:#6b7280;
+  --danger:#dc2626;
+  --danger-light:#fef2f2;
+  --warning:#f59e0b;
+  --warning-light:#fffbeb;
+  --info:#3b82f6;
+  --info-light:#eff6ff;
+  --purple:#8b5cf6;
+  --purple-light:#f5f3ff;
+  --radius:12px;
+  --shadow: 0 8px 24px rgba(12,20,30,0.06);
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+  background:linear-gradient(180deg,#f7fafc 0%, var(--bg) 100%);
+  color:#0f172a;
+  min-height:100vh;
+}
+
+/* Header */
+.header{
+  background:linear-gradient(135deg, #0aa04e 0%, #059669 100%);
+  padding:20px 30px;
+  color:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  flex-wrap:wrap;
+  gap:16px;
+}
+.header-left{
+  display:flex;
+  align-items:center;
+  gap:16px;
+}
+.logo{
+  font-size:32px;
+}
+.brand h1{
+  margin:0;
+  font-size:22px;
+  font-weight:700;
+}
+.brand p{
+  margin:4px 0 0;
+  font-size:13px;
+  opacity:0.9;
+}
+.header-right{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+.user-info{
+  text-align:right;
+}
+.user-info .name{
+  font-weight:600;
+  font-size:14px;
+}
+.user-info .role{
+  font-size:12px;
+  opacity:0.85;
+  display:flex;
+  align-items:center;
+  gap:4px;
+  justify-content:flex-end;
+}
+.header-buttons{display:flex;gap:8px}
+.btn-header{
+  background:rgba(255,255,255,0.15);
+  color:#fff;
+  border:1px solid rgba(255,255,255,0.3);
+  padding:10px 16px;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:600;
+  font-size:13px;
+  transition:all .2s;
+  display:flex;
+  align-items:center;
+  gap:6px;
+  text-decoration:none;
+}
+.btn-header:hover{
+  background:rgba(255,255,255,0.25);
+}
+
+/* Container principal */
+.container{
+  max-width:1300px;
+  margin:0 auto;
+  padding:24px;
+}
+
+/* Cards de estatísticas */
+.stats-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:16px;
+  margin-bottom:24px;
+}
+.stat-card{
+  background:var(--card);
+  border-radius:var(--radius);
+  padding:22px;
+  box-shadow:var(--shadow);
+  display:flex;
+  align-items:center;
+  gap:16px;
+  transition:transform .2s, box-shadow .2s;
+  cursor:pointer;
+  text-decoration:none;
+  color:inherit;
+}
+.stat-card:hover{
+  transform:translateY(-4px);
+  box-shadow:0 12px 30px rgba(12,20,30,0.12);
+}
+.stat-icon{
+  width:56px;
+  height:56px;
+  border-radius:14px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:26px;
+}
+.stat-icon.green{background:var(--primary-light);color:var(--primary)}
+.stat-icon.blue{background:var(--info-light);color:var(--info)}
+.stat-icon.purple{background:var(--purple-light);color:var(--purple)}
+.stat-icon.yellow{background:var(--warning-light);color:var(--warning)}
+.stat-info h3{
+  margin:0;
+  font-size:28px;
+  font-weight:800;
+  color:#0f172a;
+}
+.stat-info p{
+  margin:4px 0 0;
+  color:var(--muted);
+  font-size:13px;
+}
+
+/* Grid de conteúdo */
+.content-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:20px;
+}
+
+/* Card base */
+.card{
+  background:var(--card);
+  border-radius:var(--radius);
+  padding:24px;
+  box-shadow:var(--shadow);
+}
+.card-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:20px;
+}
+.card-title{
+  font-size:18px;
+  font-weight:700;
+  margin:0;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+/* Menu de navegação */
+.nav-menu{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+.nav-item{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  padding:16px 18px;
+  border-radius:10px;
+  background:#f8fafc;
+  text-decoration:none;
+  color:#0f172a;
+  transition:all .2s;
+  border:2px solid transparent;
+}
+.nav-item:hover{
+  background:var(--primary-light);
+  border-color:var(--primary);
+  transform:translateX(4px);
+}
+.nav-item .icon{
+  width:44px;
+  height:44px;
+  border-radius:10px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:20px;
+  background:#fff;
+  box-shadow:0 2px 8px rgba(0,0,0,0.06);
+}
+.nav-item .text h4{
+  margin:0;
+  font-size:15px;
+  font-weight:600;
+}
+.nav-item .text p{
+  margin:3px 0 0;
+  font-size:12px;
+  color:var(--muted);
+}
+.nav-item .arrow{
+  margin-left:auto;
+  color:var(--muted);
+  font-size:18px;
+}
+
+/* Seção admin only */
+.admin-section{
+  margin-top:16px;
+  padding-top:16px;
+  border-top:2px solid #f0f3f7;
+}
+.admin-section-title{
+  font-size:12px;
+  color:var(--muted);
+  text-transform:uppercase;
+  letter-spacing:1px;
+  margin-bottom:10px;
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+
+/* Info cards */
+.info-list{
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+}
+.info-item{
+  display:flex;
+  align-items:flex-start;
+  gap:12px;
+  padding:14px;
+  background:#f8fafc;
+  border-radius:10px;
+}
+.info-item .icon{
+  width:36px;
+  height:36px;
+  border-radius:8px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:16px;
+  background:var(--primary-light);
+  color:var(--primary);
+  flex-shrink:0;
+}
+.info-item .text h5{
+  margin:0;
+  font-size:14px;
+  font-weight:600;
+}
+.info-item .text p{
+  margin:4px 0 0;
+  font-size:12px;
+  color:var(--muted);
+  line-height:1.5;
+}
+
+/* Badge */
+.badge{
+  display:inline-flex;
+  padding:4px 10px;
+  border-radius:20px;
+  font-size:11px;
+  font-weight:600;
+}
+.badge.admin{background:var(--purple-light);color:var(--purple)}
+.badge.operador{background:var(--info-light);color:var(--info)}
+
+/* Responsivo */
+@media (max-width:1100px){
+  .stats-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media (max-width:768px){
+  .header{padding:16px}
+  .container{padding:16px}
+  .stats-grid{grid-template-columns:1fr}
+  .content-grid{grid-template-columns:1fr}
+  .stat-card{padding:16px}
+  .stat-info h3{font-size:24px}
+}
+</style>
+</head>
+<body>
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <div class="logo">🧹</div>
+      <div class="brand">
+        <h1>MegaClean</h1>
+        <p>Painel Administrativo</p>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="user-info">
+        <div class="name" id="admin-name">Administrador</div>
+        <div class="role">
+          <span id="admin-role-badge">👑</span>
+          <span id="admin-role">Admin</span>
+        </div>
+      </div>
+      <div class="header-buttons">
+        <a href="/config.html" class="btn-header">⚙️ Configurações</a>
+        <button class="btn-header" id="btn-logout">Sair →</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- Cards de estatísticas -->
+    <div class="stats-grid">
+      <a href="/clientes.html" class="stat-card">
+        <div class="stat-icon green">👥</div>
+        <div class="stat-info">
+          <h3 id="count-clients">—</h3>
+          <p>Clientes cadastrados</p>
+        </div>
+      </a>
+      <a href="/produtos.html" class="stat-card" id="card-produtos">
+        <div class="stat-icon blue">📦</div>
+        <div class="stat-info">
+          <h3 id="count-products">—</h3>
+          <p>Produtos no catálogo</p>
+        </div>
+      </a>
+      <a href="/pedidos.html" class="stat-card">
+        <div class="stat-icon purple">🛒</div>
+        <div class="stat-info">
+          <h3 id="count-orders">—</h3>
+          <p>Pedidos realizados</p>
+        </div>
+      </a>
+      <a href="/estoque.html" class="stat-card" id="card-estoque">
+        <div class="stat-icon yellow">⚠️</div>
+        <div class="stat-info">
+          <h3 id="count-lowstock">—</h3>
+          <p>Produtos em baixa</p>
+        </div>
+      </a>
+    </div>
+
+    <!-- Grid de conteúdo -->
+    <div class="content-grid">
+      <!-- Menu de navegação -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">📋 Menu Principal</h2>
+        </div>
+        <nav class="nav-menu" id="nav-menu">
+          <!-- Itens inseridos via JS baseado no role -->
+        </nav>
+
+        <!-- Seção admin -->
+        <div class="admin-section" id="admin-section" style="display:none">
+          <div class="admin-section-title">👑 Área do Administrador</div>
+          <nav class="nav-menu" id="admin-menu">
+            <!-- Itens admin inseridos via JS -->
+          </nav>
+        </div>
+      </div>
+
+      <!-- Informações -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">ℹ️ Informações</h2>
+        </div>
+        <div class="info-list">
+          <div class="info-item">
+            <div class="icon">🚀</div>
+            <div class="text">
+              <h5>Sistema MegaClean</h5>
+              <p>Sistema completo para gestão de produtos de limpeza, clientes e pedidos.</p>
+            </div>
+          </div>
+          <div class="info-item">
+            <div class="icon">📊</div>
+            <div class="text">
+              <h5>Estoque Automático</h5>
+              <p>O estoque é atualizado automaticamente quando pedidos são realizados.</p>
+            </div>
+          </div>
+          <div class="info-item" id="info-admin" style="display:none">
+            <div class="icon">👑</div>
+            <div class="text">
+              <h5>Acesso Administrador</h5>
+              <p>Você tem acesso total ao sistema, incluindo relatórios e gerenciamento de usuários.</p>
+            </div>
+          </div>
+          <div class="info-item" id="info-operador" style="display:none">
+            <div class="icon">👤</div>
+            <div class="text">
+              <h5>Acesso Operador</h5>
+              <p>Você tem acesso a Clientes e Pedidos. Para mais permissões, contate o administrador.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+// Verificar autenticação
+const token = localStorage.getItem('admin_token');
+const adminName = localStorage.getItem('admin_name') || 'Usuário';
+const adminRole = localStorage.getItem('admin_role') || 'admin';
+
+if (!token) {
+  window.location.href = '/index.html';
+}
+
+// Atualizar header
+document.getElementById('admin-name').textContent = adminName;
+
+const isAdmin = adminRole === 'admin';
+document.getElementById('admin-role').textContent = isAdmin ? 'Administrador' : 'Operador';
+document.getElementById('admin-role-badge').textContent = isAdmin ? '👑' : '👤';
+
+// Mostrar info baseado no role
+document.getElementById('info-admin').style.display = isAdmin ? 'flex' : 'none';
+document.getElementById('info-operador').style.display = isAdmin ? 'none' : 'flex';
+
+// Esconder cards de admin para operador
+if (!isAdmin) {
+  document.getElementById('card-produtos').style.display = 'none';
+  document.getElementById('card-estoque').style.display = 'none';
+  document.querySelector('.stats-grid').style.gridTemplateColumns = 'repeat(2, 1fr)';
+}
+
+// Logout
+document.getElementById('btn-logout').addEventListener('click', async () => {
+  try {
+    await fetch('/api/logout', {
+      method: 'POST',
+      headers: { 'x-auth-token': token }
+    });
+  } catch (e) {}
+  
+  localStorage.removeItem('admin_token');
+  localStorage.removeItem('admin_name');
+  localStorage.removeItem('admin_role');
+  window.location.href = '/index.html';
+});
+
+// Carregar menu baseado no role
+async function carregarMenu() {
+  try {
+    const res = await fetch('/api/admin/pages', {
+      headers: { 'x-auth-token': token }
+    });
+    
+    if (!res.ok) throw new Error('Erro');
+    
+    const data = await res.json();
+    const pages = data.pages || [];
+    
+    const navMenu = document.getElementById('nav-menu');
+    const adminMenu = document.getElementById('admin-menu');
+    const adminSection = document.getElementById('admin-section');
+    
+    // Páginas principais (para todos)
+    const mainPages = pages.filter(p => ['clientes', 'pedidos'].includes(p.id));
+    
+    // Páginas de admin
+    const adminPages = pages.filter(p => ['produtos', 'estoque', 'relatorio', 'solicitacoes', 'usuarios', 'config'].includes(p.id));
+    
+    navMenu.innerHTML = mainPages.map(p => `
+      <a href="${p.url}" class="nav-item">
+        <div class="icon">${p.icon || '📄'}</div>
+        <div class="text">
+          <h4>${p.title}</h4>
+          <p>${getPageDescription(p.id)}</p>
+        </div>
+        <span class="arrow">→</span>
+      </a>
+    `).join('');
+    
+    if (isAdmin && adminPages.length > 0) {
+      adminSection.style.display = 'block';
+      adminMenu.innerHTML = adminPages.map(p => `
+        <a href="${p.url}" class="nav-item">
+          <div class="icon">${p.icon || '📄'}</div>
+          <div class="text">
+            <h4>${p.title}</h4>
+            <p>${getPageDescription(p.id)}</p>
+          </div>
+          <span class="arrow">→</span>
+        </a>
+      `).join('');
+    }
+  } catch (e) {
+    console.error(e);
+    // Fallback menu
+    document.getElementById('nav-menu').innerHTML = `
+      <a href="/clientes.html" class="nav-item">
+        <div class="icon">👥</div>
+        <div class="text"><h4>Clientes</h4><p>Cadastre e gerencie clientes</p></div>
+        <span class="arrow">→</span>
+      </a>
+      <a href="/pedidos.html" class="nav-item">
+        <div class="icon">🛒</div>
+        <div class="text"><h4>Pedidos</h4><p>Crie e acompanhe pedidos</p></div>
+        <span class="arrow">→</span>
+      </a>
+    `;
+  }
+}
+
+function getPageDescription(id) {
+  const descriptions = {
+    'clientes': 'Cadastre e gerencie seus clientes',
+    'produtos': 'Gerencie seu catálogo de produtos',
+    'pedidos': 'Crie e acompanhe pedidos',
+    'estoque': 'Controle de estoque em tempo real',
+    'relatorio': 'Relatórios e métricas do dia',
+    'solicitacoes': 'Aprove pedidos retroativos',
+    'usuarios': 'Gerencie usuários do sistema',
+    'config': 'Configurações da sua conta'
+  };
+  return descriptions[id] || '';
+}
+
+// Carregar estatísticas
+async function loadStats() {
+  try {
+    // Clientes
+    const clientesRes = await fetch('/api/clientes');
+    const clientes = clientesRes.ok ? await clientesRes.json() : [];
+    document.getElementById('count-clients').textContent = Array.isArray(clientes) ? clientes.length : 0;
+
+    // Produtos (apenas admin)
+    if (isAdmin) {
+      const produtosRes = await fetch('/api/produtos');
+      const produtos = produtosRes.ok ? await produtosRes.json() : [];
+      document.getElementById('count-products').textContent = Array.isArray(produtos) ? produtos.length : 0;
+
+      // Produtos em baixa
+      if (Array.isArray(produtos)) {
+        const lowStock = produtos.filter(p => p.quantidade <= (p.minimo || 0)).length;
+        document.getElementById('count-lowstock').textContent = lowStock;
+      }
+    }
+
+    // Pedidos
+    const pedidosRes = await fetch('/api/pedidos');
+    const pedidos = pedidosRes.ok ? await pedidosRes.json() : [];
+    document.getElementById('count-orders').textContent = Array.isArray(pedidos) ? pedidos.length : 0;
+
+  } catch (e) {
+    console.error('Erro ao carregar estatísticas:', e);
+  }
+}
+
+// Inicializar
+carregarMenu();
+loadStats();
+</script>
+</body>
+</html>

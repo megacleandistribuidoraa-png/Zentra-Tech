@@ -1,0 +1,882 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Relatório Diário - MegaClean</title>
+<style>
+:root{
+  --bg:#f4f7fb;
+  --card:#fff;
+  --primary:#0aa04e;
+  --primary-light:#e6f9ee;
+  --primary-600:#0a8a44;
+  --muted:#6b7280;
+  --danger:#dc2626;
+  --danger-light:#fef2f2;
+  --warning:#f59e0b;
+  --warning-light:#fffbeb;
+  --info:#3b82f6;
+  --info-light:#eff6ff;
+  --purple:#8b5cf6;
+  --purple-light:#f5f3ff;
+  --radius:12px;
+  --shadow: 0 8px 24px rgba(12,20,30,0.06);
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+  background:linear-gradient(180deg,#f7fafc 0%, var(--bg) 100%);
+  color:#0f172a;
+  padding:22px;
+  min-height:100vh;
+}
+.container{max-width:1400px;margin:0 auto}
+
+/* Header */
+header{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:22px;flex-wrap:wrap}
+header h1{margin:0;color:var(--primary);font-size:28px;display:flex;align-items:center;gap:10px}
+header h1 span{font-size:32px}
+header p{margin:4px 0 0;color:var(--muted);font-size:14px}
+.back-link{color:var(--primary);text-decoration:none;font-weight:600;display:inline-flex;align-items:center;gap:6px}
+.back-link:hover{text-decoration:underline}
+.header-controls{display:flex;gap:12px;align-items:center}
+.header-controls input[type="date"]{padding:10px 14px;border:2px solid #e6e9ef;border-radius:10px;font-size:14px}
+.header-controls input[type="date"]:focus{outline:none;border-color:var(--primary)}
+
+/* Auto update indicator */
+.auto-update{display:flex;align-items:center;gap:8px;padding:8px 14px;background:var(--primary-light);border-radius:20px;font-size:12px;color:var(--primary);font-weight:600}
+.auto-update .dot{width:8px;height:8px;border-radius:50%;background:var(--primary);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
+
+/* Cards de estatísticas */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}
+.stat-card{background:var(--card);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);display:flex;align-items:center;gap:16px}
+.stat-card .icon{width:56px;height:56px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px}
+.stat-card .icon.green{background:var(--primary-light);color:var(--primary)}
+.stat-card .icon.blue{background:var(--info-light);color:var(--info)}
+.stat-card .icon.purple{background:var(--purple-light);color:var(--purple)}
+.stat-card .icon.yellow{background:var(--warning-light);color:var(--warning)}
+.stat-card .info h3{margin:0;font-size:28px;font-weight:800}
+.stat-card .info p{margin:4px 0 0;color:var(--muted);font-size:13px}
+
+/* Card principal */
+.card{background:var(--card);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);margin-bottom:18px}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.card-title{font-size:18px;font-weight:700;margin:0;display:flex;align-items:center;gap:8px}
+
+/* Grid layout */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px}
+
+/* Lista de pedidos */
+.pedido-item{display:flex;align-items:center;justify-content:space-between;padding:14px;background:#f8fafc;border-radius:10px;margin-bottom:10px}
+.pedido-item:hover{background:#f0f3f7}
+.pedido-info h4{margin:0;font-size:14px;font-weight:600}
+.pedido-info p{margin:4px 0 0;font-size:12px;color:var(--muted)}
+.pedido-valor{font-size:16px;font-weight:700;color:var(--primary)}
+
+/* Lista de produtos */
+.produto-item{display:flex;align-items:center;justify-content:space-between;padding:12px;border-bottom:1px solid #f0f3f7}
+.produto-item:last-child{border-bottom:none}
+.produto-info{display:flex;align-items:center;gap:12px}
+.produto-rank{width:28px;height:28px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
+.produto-nome{font-weight:600}
+.produto-qtd{font-size:12px;color:var(--muted)}
+.produto-valor{font-weight:700;color:var(--primary)}
+
+/* Lista de clientes */
+.cliente-item{display:flex;align-items:center;justify-content:space-between;padding:12px;border-bottom:1px solid #f0f3f7}
+.cliente-item:last-child{border-bottom:none}
+.cliente-nome{font-weight:600}
+.cliente-pedidos{font-size:12px;color:var(--muted)}
+.cliente-valor{font-weight:700}
+
+/* Gráfico de barras simples */
+.chart-bars{display:flex;flex-direction:column;gap:8px}
+.chart-bar{display:flex;align-items:center;gap:12px}
+.chart-bar .label{width:50px;font-size:12px;color:var(--muted);text-align:right}
+.chart-bar .bar-container{flex:1;height:24px;background:#f0f3f7;border-radius:4px;overflow:hidden}
+.chart-bar .bar{height:100%;background:linear-gradient(90deg,var(--primary),#059669);border-radius:4px;transition:width .5s ease}
+.chart-bar .value{width:60px;font-size:12px;font-weight:600;text-align:right}
+
+/* Badge */
+.badge{display:inline-flex;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.badge.green{background:var(--primary-light);color:var(--primary)}
+.badge.purple{background:var(--purple-light);color:var(--purple)}
+
+/* Empty state */
+.empty-state{text-align:center;padding:40px 20px;color:var(--muted)}
+.empty-state .icon{font-size:40px;margin-bottom:10px}
+.empty-state h4{margin:0 0 8px;color:#0f172a;font-size:16px}
+
+/* Botões */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 18px;border-radius:10px;border:none;cursor:pointer;font-weight:600;font-size:14px;transition:all .2s}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-primary:hover{background:var(--primary-600)}
+.btn-ghost{background:#f8fafc;color:var(--muted);border:2px solid #e6e9ef}
+.btn-ghost:hover{border-color:var(--primary);color:var(--primary)}
+
+/* Filtros de período */
+.periodo-section{background:var(--card);border-radius:var(--radius);padding:16px 20px;box-shadow:var(--shadow);margin-bottom:18px}
+.periodo-grid{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.periodo-group{display:flex;align-items:center;gap:8px}
+.periodo-group label{font-size:13px;font-weight:600;color:#374151}
+.periodo-group input,.periodo-group select{padding:10px 14px;border:2px solid #e6e9ef;border-radius:8px;font-size:14px}
+.periodo-group input:focus,.periodo-group select:focus{outline:none;border-color:var(--primary)}
+.periodo-actions{margin-left:auto;display:flex;gap:10px}
+
+/* ==========================================
+   ESTILOS DE IMPRESSÃO DO RELATÓRIO
+   ========================================== */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #print-relatorio, #print-relatorio * {
+    visibility: visible;
+  }
+  #print-relatorio {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    background: #fff;
+  }
+  @page {
+    size: A4;
+    margin: 12mm;
+  }
+}
+
+#print-relatorio {
+  display: none;
+}
+
+.print-rel-content {
+  font-family: 'Arial', sans-serif;
+  max-width: 100%;
+  padding: 0;
+  color: #000;
+}
+
+.print-rel-header {
+  text-align: center;
+  border-bottom: 3px solid #0aa04e;
+  padding-bottom: 15px;
+  margin-bottom: 20px;
+}
+
+.print-rel-header h1 {
+  margin: 0;
+  font-size: 24px;
+  color: #0aa04e;
+}
+
+.print-rel-header p {
+  margin: 5px 0 0;
+  font-size: 12px;
+  color: #666;
+}
+
+.print-rel-periodo {
+  background: #f5f5f5;
+  padding: 10px 15px;
+  border-radius: 6px;
+  margin-top: 12px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.print-rel-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 15px;
+  margin-bottom: 25px;
+}
+
+.print-rel-stat {
+  background: #f8f8f8;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 15px;
+  text-align: center;
+}
+
+.print-rel-stat h3 {
+  margin: 0;
+  font-size: 22px;
+  color: #0aa04e;
+}
+
+.print-rel-stat p {
+  margin: 5px 0 0;
+  font-size: 11px;
+  color: #666;
+}
+
+.print-rel-section {
+  margin-bottom: 20px;
+}
+
+.print-rel-section-title {
+  font-size: 14px;
+  font-weight: bold;
+  color: #0aa04e;
+  border-bottom: 2px solid #e0e0e0;
+  padding-bottom: 6px;
+  margin-bottom: 12px;
+}
+
+.print-rel-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.print-rel-table th {
+  background: #f5f5f5;
+  padding: 10px 8px;
+  text-align: left;
+  font-weight: bold;
+  border-bottom: 2px solid #ddd;
+}
+
+.print-rel-table td {
+  padding: 8px;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.print-rel-table .text-right {
+  text-align: right;
+}
+
+.print-rel-table .text-center {
+  text-align: center;
+}
+
+.print-rel-table .total-row {
+  font-weight: bold;
+  background: #f0fff4;
+}
+
+.print-rel-footer {
+  margin-top: 25px;
+  padding-top: 12px;
+  border-top: 1px solid #e0e0e0;
+  text-align: center;
+  font-size: 10px;
+  color: #999;
+}
+
+/* Responsivo */
+@media (max-width:1100px){
+  .stats-grid{grid-template-columns:repeat(2,1fr)}
+  .grid-2,.grid-3{grid-template-columns:1fr}
+}
+@media (max-width:600px){
+  .stats-grid{grid-template-columns:1fr}
+  header{flex-direction:column;align-items:flex-start}
+  .header-controls{width:100%;flex-direction:column}
+}
+</style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div>
+        <a href="/admin.html" class="back-link">← Voltar ao painel</a>
+        <h1><span>📈</span> Relatórios</h1>
+        <p>Acompanhe vendas por dia, período ou mês</p>
+      </div>
+      <div class="auto-update">
+        <span class="dot"></span>
+        Auto-atualização (hoje)
+      </div>
+    </header>
+
+    <!-- Filtros de período -->
+    <div class="periodo-section">
+      <div class="periodo-grid">
+        <div class="periodo-group">
+          <label>📅 Tipo:</label>
+          <select id="tipo-periodo" onchange="mudarTipoPeriodo()">
+            <option value="dia">Dia específico</option>
+            <option value="periodo">Período personalizado</option>
+            <option value="mes">Mês inteiro</option>
+          </select>
+        </div>
+        
+        <div class="periodo-group" id="grupo-dia">
+          <label>Data:</label>
+          <input type="date" id="data-relatorio" />
+        </div>
+        
+        <div class="periodo-group" id="grupo-periodo-inicio" style="display:none">
+          <label>De:</label>
+          <input type="date" id="data-inicio" />
+        </div>
+        
+        <div class="periodo-group" id="grupo-periodo-fim" style="display:none">
+          <label>Até:</label>
+          <input type="date" id="data-fim" />
+        </div>
+        
+        <div class="periodo-group" id="grupo-mes" style="display:none">
+          <label>Mês:</label>
+          <input type="month" id="mes-relatorio" />
+        </div>
+        
+        <div class="periodo-actions">
+          <button class="btn btn-ghost" onclick="carregarRelatorio()">🔄 Atualizar</button>
+          <button class="btn btn-primary" onclick="imprimirRelatorio()">🖨️ Imprimir</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cards de estatísticas -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="icon purple">🛒</div>
+        <div class="info">
+          <h3 id="stat-pedidos">0</h3>
+          <p>Pedidos do dia</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="icon green">💰</div>
+        <div class="info">
+          <h3 id="stat-vendas">R$ 0</h3>
+          <p>Total em vendas</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="icon blue">📊</div>
+        <div class="info">
+          <h3 id="stat-ticket">R$ 0</h3>
+          <p>Ticket médio</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="icon yellow">👥</div>
+        <div class="info">
+          <h3 id="stat-clientes">0</h3>
+          <p>Clientes atendidos</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Grid de conteúdo -->
+    <div class="grid-2">
+      <!-- Pedidos do dia -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">🛒 Pedidos do Dia</h2>
+          <span class="badge purple" id="pedidos-count">0 pedidos</span>
+        </div>
+        <div id="pedidos-list" style="max-height:400px;overflow-y:auto">
+          <div class="empty-state">
+            <div class="icon">📋</div>
+            <h4>Carregando...</h4>
+          </div>
+        </div>
+      </div>
+
+      <!-- Vendas por hora -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">⏰ Vendas por Hora</h2>
+        </div>
+        <div id="vendas-hora" class="chart-bars" style="max-height:400px;overflow-y:auto">
+          <div class="empty-state">
+            <div class="icon">📊</div>
+            <h4>Carregando...</h4>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <!-- Produtos mais vendidos -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">🏆 Produtos Mais Vendidos</h2>
+        </div>
+        <div id="top-produtos">
+          <div class="empty-state">
+            <div class="icon">📦</div>
+            <h4>Carregando...</h4>
+          </div>
+        </div>
+      </div>
+
+      <!-- Clientes que compraram -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">👥 Clientes do Dia</h2>
+        </div>
+        <div id="clientes-dia" style="max-height:300px;overflow-y:auto">
+          <div class="empty-state">
+            <div class="icon">👥</div>
+            <h4>Carregando...</h4>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Área de impressão do relatório -->
+  <div id="print-relatorio">
+    <div class="print-rel-content" id="print-rel-content"></div>
+  </div>
+
+<script>
+// ============================================
+// VARIÁVEIS GLOBAIS
+// ============================================
+let tipoPeriodo = 'dia';
+let dataAtual = new Date().toISOString().slice(0, 10);
+let dataInicio = new Date().toISOString().slice(0, 10);
+let dataFim = new Date().toISOString().slice(0, 10);
+let mesAtual = new Date().toISOString().slice(0, 7);
+let intervaloAtualizacao = null;
+let dadosRelatorio = null; // Armazena dados para impressão
+
+// ============================================
+// FUNÇÕES UTILITÁRIAS
+// ============================================
+function formatMoney(valor) {
+  return 'R$ ' + Number(valor || 0).toFixed(2).replace('.', ',');
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[c]));
+}
+
+function formatTime(dateStr) {
+  if (!dateStr) return '—';
+  const d = new Date(dateStr);
+  return d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return '—';
+  const d = new Date(dateStr + 'T12:00:00');
+  return d.toLocaleDateString('pt-BR');
+}
+
+function getPeriodoTexto() {
+  if (tipoPeriodo === 'dia') {
+    return formatDate(dataAtual);
+  } else if (tipoPeriodo === 'periodo') {
+    return `${formatDate(dataInicio)} a ${formatDate(dataFim)}`;
+  } else {
+    const [ano, mes] = mesAtual.split('-');
+    const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 
+                   'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+    return `${meses[parseInt(mes) - 1]} de ${ano}`;
+  }
+}
+
+// ============================================
+// CONTROLE DE PERÍODO
+// ============================================
+function mudarTipoPeriodo() {
+  tipoPeriodo = document.getElementById('tipo-periodo').value;
+  
+  document.getElementById('grupo-dia').style.display = tipoPeriodo === 'dia' ? 'flex' : 'none';
+  document.getElementById('grupo-periodo-inicio').style.display = tipoPeriodo === 'periodo' ? 'flex' : 'none';
+  document.getElementById('grupo-periodo-fim').style.display = tipoPeriodo === 'periodo' ? 'flex' : 'none';
+  document.getElementById('grupo-mes').style.display = tipoPeriodo === 'mes' ? 'flex' : 'none';
+  
+  carregarRelatorio();
+}
+
+function getQueryParams() {
+  if (tipoPeriodo === 'dia') {
+    return `data=${dataAtual}`;
+  } else if (tipoPeriodo === 'periodo') {
+    return `dataInicio=${dataInicio}&dataFim=${dataFim}`;
+  } else {
+    // Mês: calcular primeiro e último dia
+    const [ano, mes] = mesAtual.split('-');
+    const primeiroDia = `${mesAtual}-01`;
+    const ultimoDia = new Date(ano, mes, 0).toISOString().slice(0, 10);
+    return `dataInicio=${primeiroDia}&dataFim=${ultimoDia}`;
+  }
+}
+
+// ============================================
+// CARREGAR RELATÓRIO
+// ============================================
+async function carregarRelatorio() {
+  try {
+    const res = await fetch(`/api/relatorio/diario?${getQueryParams()}`);
+    if (!res.ok) throw new Error('Erro ao carregar');
+    const data = await res.json();
+    
+    dadosRelatorio = data; // Salvar para impressão
+    
+    renderizarEstatisticas(data.resumo);
+    renderizarPedidos(data.pedidos);
+    renderizarVendasPorHora(data.pedidosPorHora);
+    renderizarTopProdutos(data.topProdutos);
+    renderizarClientes(data.clientesCompraram);
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+// ============================================
+// RENDERIZAR ESTATÍSTICAS
+// ============================================
+function renderizarEstatisticas(resumo) {
+  document.getElementById('stat-pedidos').textContent = resumo.totalPedidos;
+  document.getElementById('stat-vendas').textContent = formatMoney(resumo.totalVendas);
+  document.getElementById('stat-ticket').textContent = formatMoney(resumo.ticketMedio);
+  document.getElementById('stat-clientes').textContent = resumo.clientesAtendidos;
+  document.getElementById('pedidos-count').textContent = resumo.totalPedidos + ' pedidos';
+}
+
+// ============================================
+// RENDERIZAR PEDIDOS
+// ============================================
+function renderizarPedidos(pedidos) {
+  const container = document.getElementById('pedidos-list');
+
+  if (!pedidos || pedidos.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="icon">🛒</div>
+        <h4>Nenhum pedido hoje</h4>
+        <p>Os pedidos aparecerão aqui</p>
+      </div>
+    `;
+    return;
+  }
+
+  // Mais recentes primeiro
+  const ordenados = [...pedidos].reverse();
+
+  container.innerHTML = ordenados.map(p => `
+    <div class="pedido-item">
+      <div class="pedido-info">
+        <h4><span class="badge green">#${p.id}</span> ${escapeHtml(p.clienteNome)}</h4>
+        <p>🕐 ${formatTime(p.dateISO)} • ${p.items?.length || 0} item(s)</p>
+      </div>
+      <div class="pedido-valor">${formatMoney(p.total)}</div>
+    </div>
+  `).join('');
+}
+
+// ============================================
+// RENDERIZAR VENDAS POR HORA
+// ============================================
+function renderizarVendasPorHora(dados) {
+  const container = document.getElementById('vendas-hora');
+
+  if (!dados || dados.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="icon">📊</div>
+        <h4>Sem dados</h4>
+      </div>
+    `;
+    return;
+  }
+
+  // Filtrar apenas horas com vendas e horário comercial (6h-22h)
+  const horasComVendas = dados.filter(h => {
+    const hora = parseInt(h.hora);
+    return hora >= 6 && hora <= 22;
+  });
+
+  const maxValor = Math.max(...horasComVendas.map(h => h.valor), 1);
+
+  container.innerHTML = horasComVendas.map(h => {
+    const percent = (h.valor / maxValor) * 100;
+    return `
+      <div class="chart-bar">
+        <span class="label">${h.hora}</span>
+        <div class="bar-container">
+          <div class="bar" style="width:${percent}%"></div>
+        </div>
+        <span class="value">${h.pedidos > 0 ? formatMoney(h.valor) : '—'}</span>
+      </div>
+    `;
+  }).join('');
+}
+
+// ============================================
+// RENDERIZAR TOP PRODUTOS
+// ============================================
+function renderizarTopProdutos(produtos) {
+  const container = document.getElementById('top-produtos');
+
+  if (!produtos || produtos.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="icon">📦</div>
+        <h4>Nenhum produto vendido</h4>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = produtos.map((p, i) => `
+    <div class="produto-item">
+      <div class="produto-info">
+        <div class="produto-rank">${i + 1}</div>
+        <div>
+          <div class="produto-nome">${escapeHtml(p.nome)}</div>
+          <div class="produto-qtd">${p.quantidade} unidade(s) vendida(s)</div>
+        </div>
+      </div>
+      <div class="produto-valor">${formatMoney(p.valor)}</div>
+    </div>
+  `).join('');
+}
+
+// ============================================
+// RENDERIZAR CLIENTES
+// ============================================
+function renderizarClientes(clientes) {
+  const container = document.getElementById('clientes-dia');
+
+  if (!clientes || clientes.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="icon">👥</div>
+        <h4>Nenhum cliente atendido</h4>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = clientes.map(c => `
+    <div class="cliente-item">
+      <div>
+        <div class="cliente-nome">${escapeHtml(c.nome)}</div>
+        <div class="cliente-pedidos">${c.pedidos} pedido(s)</div>
+      </div>
+      <div class="cliente-valor">${formatMoney(c.total)}</div>
+    </div>
+  `).join('');
+}
+
+// ============================================
+// IMPRESSÃO DO RELATÓRIO
+// ============================================
+function imprimirRelatorio() {
+  if (!dadosRelatorio) {
+    alert('Carregue o relatório primeiro');
+    return;
+  }
+
+  const data = dadosRelatorio;
+  const periodoTexto = getPeriodoTexto();
+  const dataEmissao = new Date().toLocaleString('pt-BR');
+
+  // Gerar tabela de pedidos
+  let pedidosHtml = '';
+  if (data.pedidos && data.pedidos.length > 0) {
+    pedidosHtml = data.pedidos.map(p => `
+      <tr>
+        <td class="text-center">#${p.id}</td>
+        <td>${escapeHtml(p.clienteNome)}</td>
+        <td class="text-center">${formatTime(p.dateISO)}</td>
+        <td class="text-center">${p.items?.length || 0}</td>
+        <td class="text-right">${formatMoney(p.total)}</td>
+      </tr>
+    `).join('');
+  } else {
+    pedidosHtml = '<tr><td colspan="5" style="text-align:center;padding:20px;color:#666">Nenhum pedido no período</td></tr>';
+  }
+
+  // Gerar tabela de produtos
+  let produtosHtml = '';
+  if (data.topProdutos && data.topProdutos.length > 0) {
+    produtosHtml = data.topProdutos.map((p, i) => `
+      <tr>
+        <td class="text-center">${i + 1}º</td>
+        <td>${escapeHtml(p.nome)}</td>
+        <td class="text-center">${p.quantidade}</td>
+        <td class="text-right">${formatMoney(p.valor)}</td>
+      </tr>
+    `).join('');
+  } else {
+    produtosHtml = '<tr><td colspan="4" style="text-align:center;padding:20px;color:#666">Nenhum produto vendido</td></tr>';
+  }
+
+  // Gerar tabela de clientes
+  let clientesHtml = '';
+  if (data.clientesCompraram && data.clientesCompraram.length > 0) {
+    clientesHtml = data.clientesCompraram.map(c => `
+      <tr>
+        <td>${escapeHtml(c.nome)}</td>
+        <td class="text-center">${c.pedidos}</td>
+        <td class="text-right">${formatMoney(c.total)}</td>
+      </tr>
+    `).join('');
+  } else {
+    clientesHtml = '<tr><td colspan="3" style="text-align:center;padding:20px;color:#666">Nenhum cliente atendido</td></tr>';
+  }
+
+  const printContent = `
+    <div class="print-rel-header">
+      <h1>🧹 MegaClean - Relatório de Vendas</h1>
+      <p>Sistema de Gestão de Pedidos</p>
+      <div class="print-rel-periodo">📅 Período: ${periodoTexto}</div>
+    </div>
+
+    <div class="print-rel-stats">
+      <div class="print-rel-stat">
+        <h3>${data.resumo?.totalPedidos || 0}</h3>
+        <p>Pedidos</p>
+      </div>
+      <div class="print-rel-stat">
+        <h3>${formatMoney(data.resumo?.totalVendas)}</h3>
+        <p>Total em Vendas</p>
+      </div>
+      <div class="print-rel-stat">
+        <h3>${formatMoney(data.resumo?.ticketMedio)}</h3>
+        <p>Ticket Médio</p>
+      </div>
+      <div class="print-rel-stat">
+        <h3>${data.resumo?.clientesAtendidos || 0}</h3>
+        <p>Clientes</p>
+      </div>
+    </div>
+
+    <div class="print-rel-section">
+      <div class="print-rel-section-title">🛒 Lista de Pedidos</div>
+      <table class="print-rel-table">
+        <thead>
+          <tr>
+            <th style="width:60px">Nº</th>
+            <th>Cliente</th>
+            <th style="width:80px">Hora</th>
+            <th style="width:60px">Itens</th>
+            <th style="width:100px" class="text-right">Valor</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${pedidosHtml}
+          <tr class="total-row">
+            <td colspan="4" class="text-right"><strong>TOTAL:</strong></td>
+            <td class="text-right"><strong>${formatMoney(data.resumo?.totalVendas)}</strong></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+      <div class="print-rel-section">
+        <div class="print-rel-section-title">🏆 Produtos Mais Vendidos</div>
+        <table class="print-rel-table">
+          <thead>
+            <tr>
+              <th style="width:40px">#</th>
+              <th>Produto</th>
+              <th style="width:50px">Qtd</th>
+              <th style="width:80px" class="text-right">Valor</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${produtosHtml}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="print-rel-section">
+        <div class="print-rel-section-title">👥 Clientes Atendidos</div>
+        <table class="print-rel-table">
+          <thead>
+            <tr>
+              <th>Cliente</th>
+              <th style="width:60px">Pedidos</th>
+              <th style="width:90px" class="text-right">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${clientesHtml}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="print-rel-footer">
+      <p><strong>MegaClean</strong> - Relatório gerado em ${dataEmissao}</p>
+    </div>
+  `;
+
+  document.getElementById('print-rel-content').innerHTML = printContent;
+  document.getElementById('print-relatorio').style.display = 'block';
+
+  setTimeout(() => {
+    window.print();
+    setTimeout(() => {
+      document.getElementById('print-relatorio').style.display = 'none';
+    }, 500);
+  }, 300);
+}
+
+// ============================================
+// EVENTOS
+// ============================================
+document.getElementById('data-relatorio').addEventListener('change', (e) => {
+  dataAtual = e.target.value;
+  carregarRelatorio();
+});
+
+document.getElementById('data-inicio').addEventListener('change', (e) => {
+  dataInicio = e.target.value;
+  carregarRelatorio();
+});
+
+document.getElementById('data-fim').addEventListener('change', (e) => {
+  dataFim = e.target.value;
+  carregarRelatorio();
+});
+
+document.getElementById('mes-relatorio').addEventListener('change', (e) => {
+  mesAtual = e.target.value;
+  carregarRelatorio();
+});
+
+// ============================================
+// INICIALIZAÇÃO
+// ============================================
+// Setar datas nos inputs
+document.getElementById('data-relatorio').value = dataAtual;
+document.getElementById('data-inicio').value = dataInicio;
+document.getElementById('data-fim').value = dataFim;
+document.getElementById('mes-relatorio').value = mesAtual;
+
+// Carregar relatório inicial
+carregarRelatorio();
+
+// Atualização automática a cada 30 segundos
+intervaloAtualizacao = setInterval(() => {
+  // Só atualiza se for relatório do dia e data for hoje
+  const hoje = new Date().toISOString().slice(0, 10);
+  if (tipoPeriodo === 'dia' && dataAtual === hoje) {
+    carregarRelatorio();
+  }
+}, 30000);
+
+// Limpar intervalo ao sair da página
+window.addEventListener('beforeunload', () => {
+  if (intervaloAtualizacao) {
+    clearInterval(intervaloAtualizacao);
+  }
+});
+</script>
+</body>
+</html>
+
+

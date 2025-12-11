@@ -1,0 +1,550 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Estoque - MegaClean</title>
+<style>
+:root{
+  --bg:#f4f7fb;
+  --card:#fff;
+  --primary:#0aa04e;
+  --primary-light:#e6f9ee;
+  --primary-600:#0a8a44;
+  --muted:#6b7280;
+  --danger:#dc2626;
+  --danger-light:#fef2f2;
+  --warning:#f59e0b;
+  --warning-light:#fffbeb;
+  --info:#3b82f6;
+  --info-light:#eff6ff;
+  --radius:12px;
+  --shadow: 0 8px 24px rgba(12,20,30,0.06);
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+  background:linear-gradient(180deg,#f7fafc 0%, var(--bg) 100%);
+  color:#0f172a;
+  padding:22px;
+  min-height:100vh;
+}
+.container{max-width:1300px;margin:0 auto}
+
+/* Header */
+header{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:22px;flex-wrap:wrap}
+header h1{margin:0;color:var(--primary);font-size:28px;display:flex;align-items:center;gap:10px}
+header h1 span{font-size:32px}
+header p{margin:4px 0 0;color:var(--muted);font-size:14px}
+.back-link{color:var(--primary);text-decoration:none;font-weight:600;display:inline-flex;align-items:center;gap:6px}
+.back-link:hover{text-decoration:underline}
+
+/* Cards de estatísticas */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:22px}
+.stat-card{background:var(--card);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);display:flex;align-items:center;gap:14px}
+.stat-card .icon{width:50px;height:50px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px}
+.stat-card .icon.green{background:var(--primary-light);color:var(--primary)}
+.stat-card .icon.red{background:var(--danger-light);color:var(--danger)}
+.stat-card .icon.yellow{background:var(--warning-light);color:var(--warning)}
+.stat-card .icon.blue{background:var(--info-light);color:var(--info)}
+.stat-card .info h3{margin:0;font-size:24px;font-weight:800}
+.stat-card .info p{margin:4px 0 0;color:var(--muted);font-size:13px}
+
+/* Card principal */
+.card{background:var(--card);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);margin-bottom:18px}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:12px}
+.card-title{font-size:18px;font-weight:700;margin:0;display:flex;align-items:center;gap:8px}
+
+/* Filtros e busca */
+.filters{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.search-box{position:relative}
+.search-box input{padding:10px 14px 10px 38px;border-radius:10px;border:1px solid #e6e9ef;min-width:280px;font-size:14px;transition:border .2s}
+.search-box input:focus{outline:none;border-color:var(--primary)}
+.search-box::before{content:'🔍';position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:14px}
+.filter-btn{padding:10px 16px;border-radius:10px;border:1px solid #e6e9ef;background:#fff;cursor:pointer;font-size:13px;font-weight:600;transition:all .2s}
+.filter-btn:hover{border-color:var(--primary);color:var(--primary)}
+.filter-btn.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+
+/* Tabela de estoque */
+.table-container{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}
+thead th{background:#f8fafc;padding:14px 12px;text-align:left;font-weight:600;color:var(--muted);border-bottom:2px solid #e6e9ef;white-space:nowrap}
+tbody tr{transition:background .15s}
+tbody tr:hover{background:#f8fafc}
+tbody td{padding:14px 12px;border-bottom:1px solid #f0f3f7;vertical-align:middle}
+.produto-info{display:flex;flex-direction:column;gap:2px}
+.produto-nome{font-weight:600;color:#0f172a}
+.produto-sku{font-size:12px;color:var(--muted)}
+
+/* Status de estoque */
+.stock-status{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:20px;font-size:13px;font-weight:600}
+.stock-status.ok{background:var(--primary-light);color:var(--primary)}
+.stock-status.low{background:var(--warning-light);color:#b45309}
+.stock-status.critical{background:var(--danger-light);color:var(--danger)}
+.stock-status .dot{width:8px;height:8px;border-radius:50%;background:currentColor}
+
+/* Barra de progresso do estoque */
+.stock-bar{width:120px;height:8px;background:#e6e9ef;border-radius:4px;overflow:hidden}
+.stock-bar .fill{height:100%;border-radius:4px;transition:width .3s}
+.stock-bar .fill.ok{background:var(--primary)}
+.stock-bar .fill.low{background:var(--warning)}
+.stock-bar .fill.critical{background:var(--danger)}
+
+/* Quantidade */
+.qty-display{font-size:18px;font-weight:700}
+.qty-unit{font-size:12px;color:var(--muted);margin-left:4px}
+.qty-min{font-size:12px;color:var(--muted);margin-top:2px}
+
+/* Botões de ação */
+.actions{display:flex;gap:6px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:8px 14px;border-radius:8px;border:none;cursor:pointer;font-weight:600;font-size:13px;transition:all .2s}
+.btn-entrada{background:var(--primary-light);color:var(--primary)}
+.btn-entrada:hover{background:var(--primary);color:#fff}
+.btn-saida{background:var(--danger-light);color:var(--danger)}
+.btn-saida:hover{background:var(--danger);color:#fff}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-primary:hover{background:var(--primary-600)}
+.btn-ghost{background:transparent;color:var(--muted);border:1px solid #e6e9ef}
+.btn-ghost:hover{border-color:var(--primary);color:var(--primary)}
+
+/* Modal */
+.modal-backdrop{position:fixed;inset:0;background:rgba(2,6,23,0.5);display:none;align-items:center;justify-content:center;z-index:100;padding:20px}
+.modal-backdrop.show{display:flex}
+.modal{background:#fff;padding:24px;border-radius:16px;max-width:420px;width:100%;box-shadow:0 20px 60px rgba(2,6,23,0.3);animation:modalIn .25s ease}
+@keyframes modalIn{from{opacity:0;transform:scale(0.95)}to{opacity:1;transform:scale(1)}}
+.modal h3{margin:0 0 6px;font-size:20px;display:flex;align-items:center;gap:10px}
+.modal p{margin:0 0 20px;color:var(--muted);font-size:14px}
+.modal label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px;font-weight:600}
+.modal input,.modal select{width:100%;padding:12px;border-radius:10px;border:1px solid #e6e9ef;font-size:15px;margin-bottom:16px}
+.modal input:focus,.modal select:focus{outline:none;border-color:var(--primary)}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:8px}
+
+/* Toast */
+.toast{position:fixed;bottom:24px;right:24px;background:#0f172a;color:#fff;padding:14px 20px;border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,0.2);transform:translateY(100px);opacity:0;transition:all .3s ease;z-index:200;display:flex;align-items:center;gap:10px;font-weight:500}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.success{background:var(--primary)}
+.toast.error{background:var(--danger)}
+
+/* Empty state */
+.empty-state{text-align:center;padding:60px 20px;color:var(--muted)}
+.empty-state .icon{font-size:48px;margin-bottom:12px}
+.empty-state h4{margin:0 0 8px;color:#0f172a;font-size:18px}
+
+/* Responsivo */
+@media (max-width:768px){
+  header{flex-direction:column;align-items:flex-start}
+  .filters{width:100%}
+  .search-box input{width:100%;min-width:auto}
+  .stats-grid{grid-template-columns:1fr 1fr}
+  table{font-size:13px}
+  thead th,tbody td{padding:10px 8px}
+  .stock-bar{width:80px}
+}
+</style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div>
+        <a href="/admin.html" class="back-link">← Voltar ao painel</a>
+        <h1><span>📦</span> Controle de Estoque</h1>
+        <p>Gerencie o estoque dos seus produtos de limpeza</p>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:13px;color:var(--muted)">Última atualização</div>
+        <div id="last-update" style="font-weight:600">--:--</div>
+      </div>
+    </header>
+
+    <!-- Cards de estatísticas -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="icon green">📦</div>
+        <div class="info">
+          <h3 id="stat-total">0</h3>
+          <p>Total de produtos</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="icon blue">✓</div>
+        <div class="info">
+          <h3 id="stat-ok">0</h3>
+          <p>Estoque OK</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="icon yellow">⚠</div>
+        <div class="info">
+          <h3 id="stat-low">0</h3>
+          <p>Estoque baixo</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="icon red">⛔</div>
+        <div class="info">
+          <h3 id="stat-critical">0</h3>
+          <p>Estoque crítico</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabela de estoque -->
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">📋 Lista de Produtos</h2>
+        <div class="filters">
+          <div class="search-box">
+            <input type="text" id="search" placeholder="Buscar produto ou SKU..." />
+          </div>
+          <button class="filter-btn active" data-filter="all">Todos</button>
+          <button class="filter-btn" data-filter="ok">✓ OK</button>
+          <button class="filter-btn" data-filter="low">⚠ Baixo</button>
+          <button class="filter-btn" data-filter="critical">⛔ Crítico</button>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Produto</th>
+              <th>Quantidade</th>
+              <th>Nível</th>
+              <th>Status</th>
+              <th>Preço Unit.</th>
+              <th>Valor Total</th>
+              <th style="text-align:center">Ações</th>
+            </tr>
+          </thead>
+          <tbody id="table-body">
+            <tr>
+              <td colspan="7" class="empty-state">
+                <div class="icon">📦</div>
+                <h4>Carregando produtos...</h4>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Resumo financeiro -->
+    <div class="card" style="background:linear-gradient(135deg,#0aa04e 0%,#059669 100%);color:#fff">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:20px">
+        <div>
+          <div style="font-size:14px;opacity:0.9">💰 Valor total em estoque</div>
+          <div id="valor-total" style="font-size:32px;font-weight:800">R$ 0,00</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:14px;opacity:0.9">📊 Total de itens</div>
+          <div id="total-itens" style="font-size:24px;font-weight:700">0 unidades</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de ajuste -->
+  <div id="modal-ajuste" class="modal-backdrop">
+    <div class="modal">
+      <h3 id="modal-title">📦 Ajustar Estoque</h3>
+      <p id="modal-subtitle">Produto selecionado</p>
+      
+      <label>Tipo de movimentação</label>
+      <select id="ajuste-tipo">
+        <option value="entrada">➕ Entrada (adicionar ao estoque)</option>
+        <option value="saida">➖ Saída (remover do estoque)</option>
+      </select>
+
+      <label>Quantidade</label>
+      <input type="number" id="ajuste-quantidade" min="1" value="1" placeholder="Digite a quantidade" />
+
+      <label>Motivo (opcional)</label>
+      <input type="text" id="ajuste-motivo" placeholder="Ex: Compra de fornecedor, Ajuste de inventário..." />
+
+      <div class="modal-actions">
+        <button class="btn btn-ghost" onclick="fecharModal()">Cancelar</button>
+        <button class="btn btn-primary" onclick="confirmarAjuste()">Confirmar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast"></div>
+
+<script>
+// ============================================
+// VARIÁVEIS GLOBAIS
+// ============================================
+let produtos = [];
+let produtoSelecionado = null;
+let filtroAtual = 'all';
+
+// ============================================
+// FUNÇÕES UTILITÁRIAS
+// ============================================
+function formatMoney(valor) {
+  return 'R$ ' + Number(valor || 0).toFixed(2).replace('.', ',');
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[c]));
+}
+
+function showToast(msg, type = 'success') {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.className = 'toast show ' + type;
+  setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+function getStockStatus(produto) {
+  const { quantidade, minimo } = produto;
+  if (quantidade <= 0) return 'critical';
+  if (quantidade <= minimo) return 'low';
+  return 'ok';
+}
+
+function getStatusLabel(status) {
+  const labels = {
+    'ok': { text: 'OK', class: 'ok' },
+    'low': { text: 'Baixo', class: 'low' },
+    'critical': { text: 'Crítico', class: 'critical' }
+  };
+  return labels[status] || labels['ok'];
+}
+
+// ============================================
+// CARREGAR DADOS
+// ============================================
+async function carregarProdutos() {
+  try {
+    const res = await fetch('/api/produtos');
+    if (!res.ok) throw new Error('Erro ao carregar');
+    produtos = await res.json();
+    
+    atualizarEstatisticas();
+    renderizarTabela();
+    atualizarHorario();
+  } catch (e) {
+    console.error(e);
+    document.getElementById('table-body').innerHTML = `
+      <tr>
+        <td colspan="7" class="empty-state">
+          <div class="icon">❌</div>
+          <h4>Erro ao carregar produtos</h4>
+          <p>Verifique se o servidor está rodando</p>
+        </td>
+      </tr>
+    `;
+  }
+}
+
+// ============================================
+// ATUALIZAR ESTATÍSTICAS
+// ============================================
+function atualizarEstatisticas() {
+  const stats = { total: 0, ok: 0, low: 0, critical: 0 };
+  let valorTotal = 0;
+  let totalItens = 0;
+
+  produtos.forEach(p => {
+    stats.total++;
+    const status = getStockStatus(p);
+    stats[status]++;
+    valorTotal += (p.quantidade || 0) * (p.preco || 0);
+    totalItens += p.quantidade || 0;
+  });
+
+  document.getElementById('stat-total').textContent = stats.total;
+  document.getElementById('stat-ok').textContent = stats.ok;
+  document.getElementById('stat-low').textContent = stats.low;
+  document.getElementById('stat-critical').textContent = stats.critical;
+  document.getElementById('valor-total').textContent = formatMoney(valorTotal);
+  document.getElementById('total-itens').textContent = totalItens + ' unidades';
+}
+
+// ============================================
+// RENDERIZAR TABELA
+// ============================================
+function renderizarTabela() {
+  const tbody = document.getElementById('table-body');
+  const searchTerm = document.getElementById('search').value.toLowerCase();
+  
+  let lista = produtos.filter(p => {
+    // Filtro de busca
+    const matchSearch = !searchTerm || 
+      (p.nome || '').toLowerCase().includes(searchTerm) ||
+      (p.sku || '').toLowerCase().includes(searchTerm);
+    
+    // Filtro de status
+    if (filtroAtual === 'all') return matchSearch;
+    return matchSearch && getStockStatus(p) === filtroAtual;
+  });
+
+  if (lista.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="7" class="empty-state">
+          <div class="icon">📭</div>
+          <h4>Nenhum produto encontrado</h4>
+          <p>Tente ajustar os filtros ou a busca</p>
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  tbody.innerHTML = lista.map(p => {
+    const status = getStockStatus(p);
+    const statusInfo = getStatusLabel(status);
+    const porcentagem = p.minimo > 0 ? Math.min((p.quantidade / (p.minimo * 3)) * 100, 100) : 100;
+    const valorTotal = (p.quantidade || 0) * (p.preco || 0);
+
+    return `
+      <tr>
+        <td>
+          <div class="produto-info">
+            <span class="produto-nome">${escapeHtml(p.nome)}</span>
+            <span class="produto-sku">SKU: ${escapeHtml(p.sku || '--')}</span>
+          </div>
+        </td>
+        <td>
+          <div class="qty-display">${p.quantidade}<span class="qty-unit">${escapeHtml(p.unidade || 'UN')}</span></div>
+          <div class="qty-min">Mín: ${p.minimo || 0}</div>
+        </td>
+        <td>
+          <div class="stock-bar">
+            <div class="fill ${status}" style="width:${porcentagem}%"></div>
+          </div>
+        </td>
+        <td>
+          <span class="stock-status ${statusInfo.class}">
+            <span class="dot"></span>
+            ${statusInfo.text}
+          </span>
+        </td>
+        <td>${formatMoney(p.preco)}</td>
+        <td><strong>${formatMoney(valorTotal)}</strong></td>
+        <td>
+          <div class="actions">
+            <button class="btn btn-entrada" onclick="abrirModal(${p.id}, 'entrada')" title="Adicionar estoque">
+              ➕
+            </button>
+            <button class="btn btn-saida" onclick="abrirModal(${p.id}, 'saida')" title="Remover estoque">
+              ➖
+            </button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+// ============================================
+// MODAL DE AJUSTE
+// ============================================
+function abrirModal(produtoId, tipo) {
+  produtoSelecionado = produtos.find(p => p.id === produtoId);
+  if (!produtoSelecionado) return;
+
+  document.getElementById('modal-title').innerHTML = tipo === 'entrada' 
+    ? '➕ Entrada de Estoque' 
+    : '➖ Saída de Estoque';
+  document.getElementById('modal-subtitle').textContent = produtoSelecionado.nome;
+  document.getElementById('ajuste-tipo').value = tipo;
+  document.getElementById('ajuste-quantidade').value = 1;
+  document.getElementById('ajuste-motivo').value = '';
+  document.getElementById('modal-ajuste').classList.add('show');
+}
+
+function fecharModal() {
+  document.getElementById('modal-ajuste').classList.remove('show');
+  produtoSelecionado = null;
+}
+
+async function confirmarAjuste() {
+  if (!produtoSelecionado) return;
+
+  const tipo = document.getElementById('ajuste-tipo').value;
+  const quantidade = parseInt(document.getElementById('ajuste-quantidade').value) || 0;
+
+  if (quantidade <= 0) {
+    showToast('Digite uma quantidade válida', 'error');
+    return;
+  }
+
+  if (tipo === 'saida' && quantidade > produtoSelecionado.quantidade) {
+    showToast('Quantidade maior que o estoque disponível', 'error');
+    return;
+  }
+
+  try {
+    const res = await fetch(`/api/produtos/${produtoSelecionado.id}/ajustar`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tipo, quantidade })
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || 'Erro ao ajustar');
+    }
+
+    const msg = tipo === 'entrada' 
+      ? `✅ +${quantidade} ${produtoSelecionado.unidade || 'UN'} adicionado(s)` 
+      : `✅ -${quantidade} ${produtoSelecionado.unidade || 'UN'} removido(s)`;
+    
+    showToast(msg, 'success');
+    fecharModal();
+    await carregarProdutos();
+  } catch (e) {
+    console.error(e);
+    showToast(e.message || 'Erro ao ajustar estoque', 'error');
+  }
+}
+
+// ============================================
+// FILTROS E BUSCA
+// ============================================
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    filtroAtual = btn.dataset.filter;
+    renderizarTabela();
+  });
+});
+
+document.getElementById('search').addEventListener('input', () => {
+  renderizarTabela();
+});
+
+// Fechar modal clicando fora
+document.getElementById('modal-ajuste').addEventListener('click', (e) => {
+  if (e.target.id === 'modal-ajuste') fecharModal();
+});
+
+// ============================================
+// ATUALIZAR HORÁRIO
+// ============================================
+function atualizarHorario() {
+  const now = new Date();
+  document.getElementById('last-update').textContent = now.toLocaleTimeString('pt-BR');
+}
+
+// ============================================
+// INICIALIZAÇÃO
+// ============================================
+carregarProdutos();
+
+// Auto-refresh a cada 30 segundos
+setInterval(carregarProdutos, 30000);
+</script>
+</body>
+</html>
+
+

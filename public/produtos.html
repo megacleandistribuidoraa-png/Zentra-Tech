@@ -1,0 +1,619 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Produtos - MegaClean</title>
+<style>
+:root{
+  --bg:#f4f7fb;
+  --card:#fff;
+  --primary:#0aa04e;
+  --primary-light:#e6f9ee;
+  --primary-600:#0a8a44;
+  --muted:#6b7280;
+  --danger:#dc2626;
+  --danger-light:#fef2f2;
+  --warning:#f59e0b;
+  --warning-light:#fffbeb;
+  --info:#3b82f6;
+  --info-light:#eff6ff;
+  --radius:12px;
+  --shadow: 0 8px 24px rgba(12,20,30,0.06);
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+  background:linear-gradient(180deg,#f7fafc 0%, var(--bg) 100%);
+  color:#0f172a;
+  padding:22px;
+  min-height:100vh;
+}
+.container{max-width:1300px;margin:0 auto}
+
+/* Header */
+header{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:22px;flex-wrap:wrap}
+header h1{margin:0;color:var(--primary);font-size:28px;display:flex;align-items:center;gap:10px}
+header h1 span{font-size:32px}
+header p{margin:4px 0 0;color:var(--muted);font-size:14px}
+.back-link{color:var(--primary);text-decoration:none;font-weight:600;display:inline-flex;align-items:center;gap:6px}
+.back-link:hover{text-decoration:underline}
+.header-actions{display:flex;gap:12px;align-items:center}
+
+/* Cards de estatísticas */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:22px}
+.stat-card{background:var(--card);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);display:flex;align-items:center;gap:14px}
+.stat-card .icon{width:50px;height:50px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px}
+.stat-card .icon.green{background:var(--primary-light);color:var(--primary)}
+.stat-card .icon.blue{background:var(--info-light);color:var(--info)}
+.stat-card .icon.yellow{background:var(--warning-light);color:var(--warning)}
+.stat-card .icon.red{background:var(--danger-light);color:var(--danger)}
+.stat-card .info h3{margin:0;font-size:24px;font-weight:800}
+.stat-card .info p{margin:4px 0 0;color:var(--muted);font-size:13px}
+
+/* Card principal */
+.card{background:var(--card);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);margin-bottom:18px}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:12px}
+.card-title{font-size:18px;font-weight:700;margin:0;display:flex;align-items:center;gap:8px}
+
+/* Filtros e busca */
+.filters{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.search-box{position:relative}
+.search-box input{padding:10px 14px 10px 38px;border-radius:10px;border:2px solid #e6e9ef;min-width:280px;font-size:14px;transition:border .2s}
+.search-box input:focus{outline:none;border-color:var(--primary)}
+.search-box::before{content:'🔍';position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:14px}
+
+/* Botões */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 20px;border-radius:10px;border:none;cursor:pointer;font-weight:600;font-size:14px;transition:all .2s}
+.btn-primary{background:linear-gradient(135deg, #0aa04e 0%, #059669 100%);color:#fff;box-shadow:0 4px 14px rgba(10,160,78,0.2)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(10,160,78,0.3)}
+.btn-ghost{background:#f8fafc;color:var(--muted);border:2px solid #e6e9ef}
+.btn-ghost:hover{border-color:var(--primary);color:var(--primary)}
+.btn-danger{background:var(--danger-light);color:var(--danger)}
+.btn-danger:hover{background:var(--danger);color:#fff}
+.btn-info{background:var(--info-light);color:var(--info)}
+.btn-info:hover{background:var(--info);color:#fff}
+.btn-sm{padding:8px 12px;font-size:12px}
+
+/* Tabela */
+.table-container{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}
+thead th{background:#f8fafc;padding:14px 12px;text-align:left;font-weight:600;color:var(--muted);border-bottom:2px solid #e6e9ef;white-space:nowrap}
+tbody tr{transition:background .15s}
+tbody tr:hover{background:#f8fafc}
+tbody tr.lowstock{background:linear-gradient(90deg,#fef2f2 0%,#fff 50%)}
+tbody td{padding:14px 12px;border-bottom:1px solid #f0f3f7;vertical-align:middle}
+.produto-info{display:flex;flex-direction:column;gap:2px}
+.produto-nome{font-weight:600;color:#0f172a}
+.produto-sku{font-size:12px;color:var(--muted)}
+
+/* Badge */
+.badge{display:inline-flex;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.badge.green{background:var(--primary-light);color:var(--primary)}
+.badge.red{background:var(--danger-light);color:var(--danger)}
+.badge.yellow{background:var(--warning-light);color:#b45309}
+
+/* Ações na tabela */
+.table-actions{display:flex;gap:6px}
+
+/* Empty state */
+.empty-state{text-align:center;padding:60px 20px;color:var(--muted)}
+.empty-state .icon{font-size:48px;margin-bottom:12px}
+.empty-state h4{margin:0 0 8px;color:#0f172a;font-size:18px}
+
+/* Toast */
+.toast{position:fixed;bottom:24px;right:24px;background:#0f172a;color:#fff;padding:14px 20px;border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,0.2);transform:translateY(100px);opacity:0;transition:all .3s ease;z-index:200;display:flex;align-items:center;gap:10px;font-weight:500}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.success{background:var(--primary)}
+.toast.error{background:var(--danger)}
+
+/* Modal */
+.modal-backdrop{position:fixed;inset:0;background:rgba(2,6,23,0.5);display:none;align-items:center;justify-content:center;z-index:100;padding:20px}
+.modal-backdrop.show{display:flex}
+.modal{background:#fff;padding:24px;border-radius:16px;max-width:550px;width:100%;box-shadow:0 20px 60px rgba(2,6,23,0.3);animation:modalIn .25s ease}
+@keyframes modalIn{from{opacity:0;transform:scale(0.95)}to{opacity:1;transform:scale(1)}}
+.modal h3{margin:0 0 20px;font-size:20px;display:flex;align-items:center;gap:10px}
+.modal-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.modal .form-group{margin-bottom:0}
+.modal .form-group.full{grid-column:1/-1}
+.form-group label{display:block;font-size:13px;font-weight:600;color:#374151;margin-bottom:8px}
+.form-group input,.form-group select{width:100%;padding:12px 14px;border:2px solid #e6e9ef;border-radius:10px;font-size:14px;transition:all .2s;background:#f8fafc}
+.form-group input:focus,.form-group select:focus{outline:none;border-color:var(--primary);background:#fff}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:24px}
+
+/* Responsivo */
+@media (max-width:768px){
+  header{flex-direction:column;align-items:flex-start}
+  .header-actions{width:100%}
+  .filters{width:100%}
+  .search-box{width:100%}
+  .search-box input{width:100%;min-width:auto}
+  .modal-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div>
+        <a href="/admin.html" class="back-link">← Voltar ao painel</a>
+        <h1><span>📦</span> Produtos</h1>
+        <p>Gerencie seu catálogo de produtos de limpeza</p>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-primary" onclick="abrirModalNovo()">
+          ➕ Novo Produto
+        </button>
+      </div>
+    </header>
+
+    <!-- Cards de estatísticas -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="icon green">📦</div>
+        <div class="info">
+          <h3 id="stat-total">0</h3>
+          <p>Total de produtos</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="icon blue">💰</div>
+        <div class="info">
+          <h3 id="stat-valor">R$ 0</h3>
+          <p>Valor em estoque</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="icon yellow">⚠️</div>
+        <div class="info">
+          <h3 id="stat-baixo">0</h3>
+          <p>Estoque baixo</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="icon red">⛔</div>
+        <div class="info">
+          <h3 id="stat-zerado">0</h3>
+          <p>Sem estoque</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabela de produtos -->
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">📋 Lista de Produtos</h2>
+        <div class="filters">
+          <div class="search-box">
+            <input type="text" id="search" placeholder="Buscar por nome ou SKU..." />
+          </div>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Produto</th>
+              <th>SKU</th>
+              <th>Preço</th>
+              <th>Estoque</th>
+              <th>Mínimo</th>
+              <th>Status</th>
+              <th style="text-align:center">Ações</th>
+            </tr>
+          </thead>
+          <tbody id="table-body">
+            <tr>
+              <td colspan="7" class="empty-state">
+                <div class="icon">📦</div>
+                <h4>Carregando produtos...</h4>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Novo/Editar Produto -->
+  <div id="modal-produto" class="modal-backdrop">
+    <div class="modal">
+      <h3 id="modal-title">➕ Novo Produto</h3>
+      
+      <div class="modal-grid">
+        <div class="form-group full">
+          <label>Nome do produto *</label>
+          <input type="text" id="m-nome" placeholder="Ex: Detergente Neutro 500ml" />
+        </div>
+        <div class="form-group">
+          <label>SKU (código)</label>
+          <input type="text" id="m-sku" placeholder="Auto-gerado" readonly />
+        </div>
+        <div class="form-group">
+          <label>Preço (R$) *</label>
+          <input type="number" id="m-preco" step="0.01" min="0" placeholder="0.00" />
+        </div>
+        <div class="form-group">
+          <label>Quantidade *</label>
+          <input type="number" id="m-quantidade" min="0" placeholder="0" />
+        </div>
+        <div class="form-group">
+          <label>Unidade</label>
+          <select id="m-unidade">
+            <option value="UN">UN - Unidade</option>
+            <option value="L">L - Litro</option>
+            <option value="KG">KG - Quilograma</option>
+            <option value="CX">CX - Caixa</option>
+            <option value="PCT">PCT - Pacote</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Estoque mínimo</label>
+          <input type="number" id="m-minimo" min="0" placeholder="0" />
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn btn-ghost" onclick="fecharModal('modal-produto')">Cancelar</button>
+        <button class="btn btn-primary" onclick="salvarProduto()">💾 Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Ajuste de Estoque -->
+  <div id="modal-ajuste" class="modal-backdrop">
+    <div class="modal">
+      <h3>📊 Ajustar Estoque</h3>
+      <p id="ajuste-produto" style="color:var(--muted);margin:-10px 0 20px">Produto selecionado</p>
+      
+      <div class="modal-grid">
+        <div class="form-group">
+          <label>Tipo de movimentação</label>
+          <select id="aj-tipo">
+            <option value="entrada">➕ Entrada</option>
+            <option value="saida">➖ Saída</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Quantidade</label>
+          <input type="number" id="aj-quantidade" min="1" value="1" />
+        </div>
+        <div class="form-group full">
+          <label>Motivo (opcional)</label>
+          <input type="text" id="aj-motivo" placeholder="Ex: Compra de fornecedor, Ajuste de inventário..." />
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn btn-ghost" onclick="fecharModal('modal-ajuste')">Cancelar</button>
+        <button class="btn btn-primary" onclick="confirmarAjuste()">✓ Confirmar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Confirmar Exclusão -->
+  <div id="modal-delete" class="modal-backdrop">
+    <div class="modal">
+      <h3>⚠️ Confirmar Exclusão</h3>
+      <p>Tem certeza que deseja excluir este produto? Esta ação não pode ser desfeita.</p>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" onclick="fecharModal('modal-delete')">Cancelar</button>
+        <button class="btn btn-danger" onclick="confirmarExclusao()">🗑️ Excluir</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast"></div>
+
+<script>
+// ============================================
+// VARIÁVEIS GLOBAIS
+// ============================================
+let produtos = [];
+let editandoId = null;
+let ajustandoId = null;
+let deletandoId = null;
+
+// ============================================
+// FUNÇÕES UTILITÁRIAS
+// ============================================
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[c]));
+}
+
+function formatMoney(valor) {
+  return 'R$ ' + Number(valor || 0).toFixed(2).replace('.', ',');
+}
+
+function showToast(msg, type = 'success') {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.className = 'toast show ' + type;
+  setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+function gerarSku() {
+  let max = 0;
+  produtos.forEach(p => {
+    const m = String(p.sku || '').match(/(\d+)/);
+    if (m) {
+      const num = parseInt(m[1], 10);
+      if (num > max) max = num;
+    }
+  });
+  return String(max + 1).padStart(3, '0');
+}
+
+function getStockStatus(produto) {
+  if (produto.quantidade <= 0) return { text: 'Sem estoque', class: 'red' };
+  if (produto.quantidade <= (produto.minimo || 0)) return { text: 'Baixo', class: 'yellow' };
+  return { text: 'OK', class: 'green' };
+}
+
+// ============================================
+// MODAIS
+// ============================================
+function abrirModal(id) {
+  document.getElementById(id).classList.add('show');
+}
+
+function fecharModal(id) {
+  document.getElementById(id).classList.remove('show');
+}
+
+function abrirModalNovo() {
+  editandoId = null;
+  document.getElementById('modal-title').innerHTML = '➕ Novo Produto';
+  document.getElementById('m-nome').value = '';
+  document.getElementById('m-sku').value = gerarSku();
+  document.getElementById('m-preco').value = '';
+  document.getElementById('m-quantidade').value = '';
+  document.getElementById('m-unidade').value = 'UN';
+  document.getElementById('m-minimo').value = '5';
+  abrirModal('modal-produto');
+}
+
+function abrirModalEditar(id) {
+  const produto = produtos.find(p => p.id === id);
+  if (!produto) return;
+
+  editandoId = id;
+  document.getElementById('modal-title').innerHTML = '✏️ Editar Produto';
+  document.getElementById('m-nome').value = produto.nome || '';
+  document.getElementById('m-sku').value = produto.sku || '';
+  document.getElementById('m-preco').value = produto.preco || 0;
+  document.getElementById('m-quantidade').value = produto.quantidade || 0;
+  document.getElementById('m-unidade').value = produto.unidade || 'UN';
+  document.getElementById('m-minimo').value = produto.minimo || 0;
+  abrirModal('modal-produto');
+}
+
+function abrirModalAjuste(id) {
+  const produto = produtos.find(p => p.id === id);
+  if (!produto) return;
+
+  ajustandoId = id;
+  document.getElementById('ajuste-produto').textContent = produto.nome;
+  document.getElementById('aj-tipo').value = 'entrada';
+  document.getElementById('aj-quantidade').value = 1;
+  document.getElementById('aj-motivo').value = '';
+  abrirModal('modal-ajuste');
+}
+
+function abrirModalDelete(id) {
+  deletandoId = id;
+  abrirModal('modal-delete');
+}
+
+// ============================================
+// CARREGAR DADOS
+// ============================================
+async function carregarProdutos() {
+  try {
+    const res = await fetch('/api/produtos');
+    if (!res.ok) throw new Error('Erro ao carregar');
+    produtos = await res.json();
+    
+    atualizarEstatisticas();
+    renderizarTabela();
+  } catch (e) {
+    console.error(e);
+    document.getElementById('table-body').innerHTML = `
+      <tr>
+        <td colspan="7" class="empty-state">
+          <div class="icon">❌</div>
+          <h4>Erro ao carregar produtos</h4>
+        </td>
+      </tr>
+    `;
+  }
+}
+
+// ============================================
+// ATUALIZAR ESTATÍSTICAS
+// ============================================
+function atualizarEstatisticas() {
+  let valorTotal = 0;
+  let baixo = 0;
+  let zerado = 0;
+
+  produtos.forEach(p => {
+    valorTotal += (p.quantidade || 0) * (p.preco || 0);
+    if (p.quantidade <= 0) zerado++;
+    else if (p.quantidade <= (p.minimo || 0)) baixo++;
+  });
+
+  document.getElementById('stat-total').textContent = produtos.length;
+  document.getElementById('stat-valor').textContent = formatMoney(valorTotal);
+  document.getElementById('stat-baixo').textContent = baixo;
+  document.getElementById('stat-zerado').textContent = zerado;
+}
+
+// ============================================
+// RENDERIZAR TABELA
+// ============================================
+function renderizarTabela() {
+  const tbody = document.getElementById('table-body');
+  const searchTerm = document.getElementById('search').value.toLowerCase();
+  
+  let lista = produtos.filter(p => {
+    return !searchTerm || 
+      (p.nome || '').toLowerCase().includes(searchTerm) ||
+      (p.sku || '').toLowerCase().includes(searchTerm);
+  });
+
+  if (lista.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="7" class="empty-state">
+          <div class="icon">📭</div>
+          <h4>Nenhum produto encontrado</h4>
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  tbody.innerHTML = lista.map(p => {
+    const status = getStockStatus(p);
+    const isLow = p.quantidade <= (p.minimo || 0);
+
+    return `
+      <tr class="${isLow ? 'lowstock' : ''}">
+        <td>
+          <div class="produto-info">
+            <span class="produto-nome">${escapeHtml(p.nome)}</span>
+          </div>
+        </td>
+        <td><span class="produto-sku">${escapeHtml(p.sku || '—')}</span></td>
+        <td><strong>${formatMoney(p.preco)}</strong></td>
+        <td><strong>${p.quantidade}</strong> ${escapeHtml(p.unidade || 'UN')}</td>
+        <td>${p.minimo || 0}</td>
+        <td><span class="badge ${status.class}">${status.text}</span></td>
+        <td>
+          <div class="table-actions">
+            <button class="btn btn-ghost btn-sm" onclick="abrirModalEditar(${p.id})" title="Editar">✏️</button>
+            <button class="btn btn-info btn-sm" onclick="abrirModalAjuste(${p.id})" title="Ajustar estoque">📊</button>
+            <button class="btn btn-danger btn-sm" onclick="abrirModalDelete(${p.id})" title="Excluir">🗑️</button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+// ============================================
+// SALVAR PRODUTO
+// ============================================
+async function salvarProduto() {
+  const nome = document.getElementById('m-nome').value.trim();
+  const sku = document.getElementById('m-sku').value.trim();
+  const preco = parseFloat(document.getElementById('m-preco').value) || 0;
+  const quantidade = parseInt(document.getElementById('m-quantidade').value) || 0;
+  const unidade = document.getElementById('m-unidade').value;
+  const minimo = parseInt(document.getElementById('m-minimo').value) || 0;
+
+  if (!nome) {
+    showToast('Nome é obrigatório', 'error');
+    return;
+  }
+
+  const payload = { nome, sku, preco, quantidade, unidade, minimo };
+
+  try {
+    const url = editandoId ? `/api/produtos/${editandoId}` : '/api/produtos';
+    const method = editandoId ? 'PUT' : 'POST';
+
+    const res = await fetch(url, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    if (!res.ok) throw new Error('Erro ao salvar');
+
+    showToast(editandoId ? '✅ Produto atualizado!' : '✅ Produto cadastrado!');
+    fecharModal('modal-produto');
+    await carregarProdutos();
+  } catch (e) {
+    showToast(e.message, 'error');
+  }
+}
+
+// ============================================
+// AJUSTAR ESTOQUE
+// ============================================
+async function confirmarAjuste() {
+  if (!ajustandoId) return;
+
+  const tipo = document.getElementById('aj-tipo').value;
+  const quantidade = parseInt(document.getElementById('aj-quantidade').value) || 0;
+
+  if (quantidade <= 0) {
+    showToast('Quantidade inválida', 'error');
+    return;
+  }
+
+  try {
+    const res = await fetch(`/api/produtos/${ajustandoId}/ajustar`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tipo, quantidade })
+    });
+
+    if (!res.ok) throw new Error('Erro ao ajustar');
+
+    const msg = tipo === 'entrada' ? `✅ +${quantidade} adicionado!` : `✅ -${quantidade} removido!`;
+    showToast(msg);
+    fecharModal('modal-ajuste');
+    await carregarProdutos();
+  } catch (e) {
+    showToast(e.message, 'error');
+  }
+}
+
+// ============================================
+// EXCLUIR PRODUTO
+// ============================================
+async function confirmarExclusao() {
+  if (!deletandoId) return;
+
+  try {
+    const res = await fetch(`/api/produtos/${deletandoId}`, { method: 'DELETE' });
+    if (!res.ok) throw new Error('Erro ao excluir');
+
+    showToast('🗑️ Produto excluído!');
+    fecharModal('modal-delete');
+    await carregarProdutos();
+  } catch (e) {
+    showToast(e.message, 'error');
+  }
+}
+
+// ============================================
+// EVENTOS
+// ============================================
+document.getElementById('search').addEventListener('input', renderizarTabela);
+
+// Fechar modais clicando fora
+document.querySelectorAll('.modal-backdrop').forEach(modal => {
+  modal.addEventListener('click', (e) => {
+    if (e.target.classList.contains('modal-backdrop')) {
+      modal.classList.remove('show');
+    }
+  });
+});
+
+// ============================================
+// INICIALIZAÇÃO
+// ============================================
+carregarProdutos();
+</script>
+</body>
+</html>

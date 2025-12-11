@@ -1,0 +1,400 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Configurações - MegaClean</title>
+<style>
+:root{
+  --bg:#f4f7fb;
+  --card:#fff;
+  --primary:#0aa04e;
+  --primary-light:#e6f9ee;
+  --primary-600:#0a8a44;
+  --muted:#6b7280;
+  --danger:#dc2626;
+  --danger-light:#fef2f2;
+  --warning:#f59e0b;
+  --warning-light:#fffbeb;
+  --info:#3b82f6;
+  --info-light:#eff6ff;
+  --radius:12px;
+  --shadow: 0 8px 24px rgba(12,20,30,0.06);
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+  background:linear-gradient(180deg,#f7fafc 0%, var(--bg) 100%);
+  color:#0f172a;
+  padding:22px;
+  min-height:100vh;
+}
+.container{max-width:800px;margin:0 auto}
+
+/* Header */
+header{margin-bottom:22px}
+header h1{margin:0;color:var(--primary);font-size:28px;display:flex;align-items:center;gap:10px}
+header h1 span{font-size:32px}
+header p{margin:4px 0 0;color:var(--muted);font-size:14px}
+.back-link{color:var(--primary);text-decoration:none;font-weight:600;display:inline-flex;align-items:center;gap:6px;margin-bottom:10px}
+.back-link:hover{text-decoration:underline}
+
+/* Card principal */
+.card{background:var(--card);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow);margin-bottom:18px}
+.card-header{display:flex;align-items:center;gap:12px;margin-bottom:20px;padding-bottom:16px;border-bottom:2px solid #f0f3f7}
+.card-icon{width:50px;height:50px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px}
+.card-icon.green{background:var(--primary-light);color:var(--primary)}
+.card-icon.blue{background:var(--info-light);color:var(--info)}
+.card-icon.red{background:var(--danger-light);color:var(--danger)}
+.card-title{margin:0;font-size:18px;font-weight:700}
+.card-subtitle{margin:4px 0 0;font-size:13px;color:var(--muted)}
+
+/* Perfil do usuário */
+.profile-header{display:flex;align-items:center;gap:20px;margin-bottom:24px}
+.profile-avatar{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg, #0aa04e 0%, #059669 100%);display:flex;align-items:center;justify-content:center;font-size:32px;color:#fff;font-weight:700}
+.profile-info h2{margin:0;font-size:22px}
+.profile-info p{margin:4px 0 0;color:var(--muted);font-size:14px}
+.profile-info .badge{margin-top:8px}
+
+/* Formulário */
+.form-group{margin-bottom:20px}
+.form-group label{display:block;font-size:13px;font-weight:600;color:#374151;margin-bottom:8px}
+.form-group input{width:100%;padding:14px 16px;border:2px solid #e6e9ef;border-radius:10px;font-size:15px;transition:all .2s;background:#f8fafc}
+.form-group input:focus{outline:none;border-color:var(--primary);background:#fff;box-shadow:0 0 0 4px rgba(10,160,78,0.1)}
+.form-group input:disabled{background:#f0f3f7;color:#9ca3af}
+.form-group .hint{font-size:12px;color:var(--muted);margin-top:6px}
+
+/* Botões */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:14px 24px;border-radius:10px;border:none;cursor:pointer;font-weight:600;font-size:15px;transition:all .2s}
+.btn-primary{background:linear-gradient(135deg, #0aa04e 0%, #059669 100%);color:#fff;box-shadow:0 4px 14px rgba(10,160,78,0.2)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(10,160,78,0.3)}
+.btn-ghost{background:#f8fafc;color:var(--muted);border:2px solid #e6e9ef}
+.btn-ghost:hover{border-color:var(--primary);color:var(--primary)}
+.btn-danger{background:var(--danger);color:#fff}
+
+/* Badge */
+.badge{display:inline-flex;padding:6px 12px;border-radius:20px;font-size:12px;font-weight:600}
+.badge.admin{background:#f5f3ff;color:#8b5cf6}
+.badge.operador{background:var(--info-light);color:var(--info)}
+
+/* Alerta */
+.alert{padding:14px 18px;border-radius:10px;margin-bottom:20px;display:flex;align-items:flex-start;gap:12px}
+.alert.success{background:var(--primary-light);border:2px solid #86efac}
+.alert.success .icon{color:var(--primary)}
+.alert.error{background:var(--danger-light);border:2px solid #fecaca}
+.alert.error .icon{color:var(--danger)}
+.alert.warning{background:var(--warning-light);border:2px solid #fde68a}
+.alert.warning .icon{color:var(--warning)}
+.alert .icon{font-size:20px;flex-shrink:0}
+.alert .text{flex:1}
+.alert .text strong{display:block;margin-bottom:2px}
+.alert .text p{margin:0;font-size:13px}
+
+/* Separador */
+.separator{height:2px;background:#f0f3f7;margin:24px 0}
+
+/* Toast */
+.toast{position:fixed;bottom:24px;right:24px;background:#0f172a;color:#fff;padding:14px 20px;border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,0.2);transform:translateY(100px);opacity:0;transition:all .3s ease;z-index:200;font-weight:500}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.success{background:var(--primary)}
+.toast.error{background:var(--danger)}
+
+/* Responsivo */
+@media (max-width:600px){
+  .profile-header{flex-direction:column;text-align:center}
+}
+</style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <a href="/admin.html" class="back-link">← Voltar ao painel</a>
+      <h1><span>⚙️</span> Configurações</h1>
+      <p>Gerencie suas informações de conta</p>
+    </header>
+
+    <!-- Perfil do usuário -->
+    <div class="card">
+      <div class="profile-header">
+        <div class="profile-avatar" id="user-avatar">?</div>
+        <div class="profile-info">
+          <h2 id="user-name">Carregando...</h2>
+          <p id="user-username">@username</p>
+          <span class="badge admin" id="user-role">Admin</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Alterar nome -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon green">👤</div>
+        <div>
+          <h3 class="card-title">Alterar Nome</h3>
+          <p class="card-subtitle">Atualize seu nome de exibição no sistema</p>
+        </div>
+      </div>
+
+      <form id="form-nome">
+        <div class="form-group">
+          <label for="novo-nome">Novo nome</label>
+          <input type="text" id="novo-nome" placeholder="Digite seu nome completo" required />
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+          💾 Salvar Nome
+        </button>
+      </form>
+    </div>
+
+    <!-- Alterar senha -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon blue">🔐</div>
+        <div>
+          <h3 class="card-title">Alterar Senha</h3>
+          <p class="card-subtitle">Mantenha sua conta segura com uma senha forte</p>
+        </div>
+      </div>
+
+      <div class="alert warning" style="margin-bottom:20px">
+        <span class="icon">⚠️</span>
+        <div class="text">
+          <strong>Importante</strong>
+          <p>Após alterar a senha, você precisará fazer login novamente.</p>
+        </div>
+      </div>
+
+      <form id="form-senha">
+        <div class="form-group">
+          <label for="senha-atual">Senha atual</label>
+          <input type="password" id="senha-atual" placeholder="Digite sua senha atual" required />
+        </div>
+
+        <div class="form-group">
+          <label for="nova-senha">Nova senha</label>
+          <input type="password" id="nova-senha" placeholder="Digite a nova senha" required />
+          <div class="hint">A senha deve ter pelo menos 6 caracteres</div>
+        </div>
+
+        <div class="form-group">
+          <label for="confirmar-senha">Confirmar nova senha</label>
+          <input type="password" id="confirmar-senha" placeholder="Digite a nova senha novamente" required />
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+          🔐 Alterar Senha
+        </button>
+      </form>
+    </div>
+
+    <!-- Informações da conta -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon red">ℹ️</div>
+        <div>
+          <h3 class="card-title">Informações da Conta</h3>
+          <p class="card-subtitle">Dados da sua conta no sistema</p>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Nome de usuário (login)</label>
+        <input type="text" id="info-username" disabled />
+        <div class="hint">O nome de usuário não pode ser alterado</div>
+      </div>
+
+      <div class="form-group">
+        <label>Tipo de conta</label>
+        <input type="text" id="info-role" disabled />
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast"></div>
+
+<script>
+// ============================================
+// VARIÁVEIS GLOBAIS
+// ============================================
+let usuario = null;
+
+// ============================================
+// FUNÇÕES UTILITÁRIAS
+// ============================================
+function getToken() {
+  return localStorage.getItem('admin_token') || '';
+}
+
+function getInitials(name) {
+  if (!name) return '?';
+  const parts = name.trim().split(' ');
+  if (parts.length >= 2) {
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  }
+  return name.substring(0, 2).toUpperCase();
+}
+
+function showToast(msg, type = 'success') {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.className = 'toast show ' + type;
+  setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+// ============================================
+// CARREGAR DADOS DO USUÁRIO
+// ============================================
+async function carregarUsuario() {
+  try {
+    const res = await fetch('/api/admin/me', {
+      headers: { 'x-auth-token': getToken() }
+    });
+
+    if (!res.ok) {
+      window.location.href = '/index.html';
+      return;
+    }
+
+    usuario = await res.json();
+    renderizarPerfil();
+  } catch (e) {
+    console.error(e);
+    window.location.href = '/index.html';
+  }
+}
+
+// ============================================
+// RENDERIZAR PERFIL
+// ============================================
+function renderizarPerfil() {
+  document.getElementById('user-avatar').textContent = getInitials(usuario.name);
+  document.getElementById('user-name').textContent = usuario.name;
+  document.getElementById('user-username').textContent = '@' + usuario.username;
+  
+  const roleEl = document.getElementById('user-role');
+  if (usuario.role === 'admin') {
+    roleEl.textContent = '👑 Administrador';
+    roleEl.className = 'badge admin';
+  } else {
+    roleEl.textContent = '👤 Operador';
+    roleEl.className = 'badge operador';
+  }
+
+  // Preencher formulários
+  document.getElementById('novo-nome').value = usuario.name;
+  document.getElementById('info-username').value = usuario.username;
+  document.getElementById('info-role').value = usuario.role === 'admin' ? 'Administrador' : 'Operador';
+}
+
+// ============================================
+// ALTERAR NOME
+// ============================================
+document.getElementById('form-nome').addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const novoNome = document.getElementById('novo-nome').value.trim();
+
+  if (!novoNome) {
+    showToast('Digite um nome válido', 'error');
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/usuarios/me', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-auth-token': getToken()
+      },
+      body: JSON.stringify({ nome: novoNome })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.error || 'Erro ao salvar');
+    }
+
+    // Atualizar localStorage
+    localStorage.setItem('admin_name', novoNome);
+
+    showToast('✅ Nome atualizado com sucesso!');
+    await carregarUsuario();
+  } catch (e) {
+    showToast(e.message, 'error');
+  }
+});
+
+// ============================================
+// ALTERAR SENHA
+// ============================================
+document.getElementById('form-senha').addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const senhaAtual = document.getElementById('senha-atual').value;
+  const novaSenha = document.getElementById('nova-senha').value;
+  const confirmarSenha = document.getElementById('confirmar-senha').value;
+
+  if (!senhaAtual || !novaSenha || !confirmarSenha) {
+    showToast('Preencha todos os campos', 'error');
+    return;
+  }
+
+  if (novaSenha.length < 6) {
+    showToast('A nova senha deve ter pelo menos 6 caracteres', 'error');
+    return;
+  }
+
+  if (novaSenha !== confirmarSenha) {
+    showToast('As senhas não coincidem', 'error');
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/usuarios/me', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-auth-token': getToken()
+      },
+      body: JSON.stringify({ senhaAtual, novaSenha })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.error || 'Erro ao alterar senha');
+    }
+
+    showToast('✅ Senha alterada! Fazendo logout...');
+
+    // Limpar formulário
+    document.getElementById('form-senha').reset();
+
+    // Fazer logout após 2 segundos
+    setTimeout(() => {
+      localStorage.removeItem('admin_token');
+      localStorage.removeItem('admin_name');
+      window.location.href = '/index.html';
+    }, 2000);
+  } catch (e) {
+    showToast(e.message, 'error');
+  }
+});
+
+// ============================================
+// INICIALIZAÇÃO
+// ============================================
+if (!getToken()) {
+  window.location.href = '/index.html';
+} else {
+  carregarUsuario();
+}
+</script>
+</body>
+</html>
+
+

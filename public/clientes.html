@@ -1,0 +1,615 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Clientes - MegaClean</title>
+<style>
+:root{
+  --bg:#f4f7fb;
+  --card:#fff;
+  --primary:#0aa04e;
+  --primary-light:#e6f9ee;
+  --primary-600:#0a8a44;
+  --muted:#6b7280;
+  --danger:#dc2626;
+  --danger-light:#fef2f2;
+  --warning:#f59e0b;
+  --warning-light:#fffbeb;
+  --info:#3b82f6;
+  --info-light:#eff6ff;
+  --radius:12px;
+  --shadow: 0 8px 24px rgba(12,20,30,0.06);
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+  background:linear-gradient(180deg,#f7fafc 0%, var(--bg) 100%);
+  color:#0f172a;
+  padding:22px;
+  min-height:100vh;
+}
+.container{max-width:1300px;margin:0 auto}
+
+/* Header */
+header{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:22px;flex-wrap:wrap}
+header h1{margin:0;color:var(--primary);font-size:28px;display:flex;align-items:center;gap:10px}
+header h1 span{font-size:32px}
+header p{margin:4px 0 0;color:var(--muted);font-size:14px}
+.back-link{color:var(--primary);text-decoration:none;font-weight:600;display:inline-flex;align-items:center;gap:6px}
+.back-link:hover{text-decoration:underline}
+
+/* Cards de estatísticas */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:22px}
+.stat-card{background:var(--card);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);display:flex;align-items:center;gap:14px}
+.stat-card .icon{width:50px;height:50px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px}
+.stat-card .icon.green{background:var(--primary-light);color:var(--primary)}
+.stat-card .icon.blue{background:#eff6ff;color:#3b82f6}
+.stat-card .icon.red{background:var(--danger-light);color:var(--danger)}
+.stat-card .info h3{margin:0;font-size:24px;font-weight:800}
+.stat-card .info p{margin:4px 0 0;color:var(--muted);font-size:13px}
+
+/* Card principal */
+.card{background:var(--card);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);margin-bottom:18px}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:12px}
+.card-title{font-size:18px;font-weight:700;margin:0;display:flex;align-items:center;gap:8px}
+
+/* Grid layout */
+.grid{display:grid;grid-template-columns:420px 1fr;gap:20px;align-items:start}
+
+/* Formulário */
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:13px;font-weight:600;color:#374151;margin-bottom:8px}
+.form-group input,.form-group select{width:100%;padding:12px 14px;border:2px solid #e6e9ef;border-radius:10px;font-size:14px;transition:all .2s;background:#f8fafc}
+.form-group input:focus,.form-group select:focus{outline:none;border-color:var(--primary);background:#fff;box-shadow:0 0 0 4px rgba(10,160,78,0.1)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-actions{display:flex;gap:10px;margin-top:20px}
+
+/* Status toggle */
+.status-toggle{display:flex;gap:10px}
+.status-option{flex:1;padding:12px;border:2px solid #e6e9ef;border-radius:10px;text-align:center;cursor:pointer;transition:all .2s;font-weight:600;font-size:14px}
+.status-option:hover{border-color:#ccc}
+.status-option.active.ativo{border-color:var(--primary);background:var(--primary-light);color:var(--primary)}
+.status-option.active.inativo{border-color:var(--danger);background:var(--danger-light);color:var(--danger)}
+.status-option input{display:none}
+
+/* Botões */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 20px;border-radius:10px;border:none;cursor:pointer;font-weight:600;font-size:14px;transition:all .2s}
+.btn-primary{background:linear-gradient(135deg, #0aa04e 0%, #059669 100%);color:#fff;box-shadow:0 4px 14px rgba(10,160,78,0.2)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(10,160,78,0.3)}
+.btn-ghost{background:#f8fafc;color:var(--muted);border:2px solid #e6e9ef}
+.btn-ghost:hover{border-color:var(--primary);color:var(--primary)}
+.btn-danger{background:var(--danger-light);color:var(--danger)}
+.btn-danger:hover{background:var(--danger);color:#fff}
+.btn-sm{padding:6px 10px;font-size:12px}
+
+/* Busca e filtros */
+.filters{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.search-box{position:relative;flex:1;max-width:300px}
+.search-box input{width:100%;padding:12px 14px 12px 42px;border-radius:10px;border:2px solid #e6e9ef;font-size:14px;transition:all .2s}
+.search-box input:focus{outline:none;border-color:var(--primary)}
+.search-box::before{content:'🔍';position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:16px}
+.filter-btn{padding:10px 16px;border-radius:10px;border:2px solid #e6e9ef;background:#fff;cursor:pointer;font-size:13px;font-weight:600;transition:all .2s}
+.filter-btn:hover{border-color:var(--primary);color:var(--primary)}
+.filter-btn.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+
+/* Tabela */
+.table-container{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}
+thead th{background:#f8fafc;padding:14px 12px;text-align:left;font-weight:600;color:var(--muted);border-bottom:2px solid #e6e9ef;white-space:nowrap}
+tbody tr{transition:background .15s;cursor:pointer}
+tbody tr:hover{background:#f0f9ff}
+tbody tr.inativo{opacity:0.6}
+tbody td{padding:14px 12px;border-bottom:1px solid #f0f3f7;vertical-align:middle}
+.cliente-nome{font-weight:600;color:#0f172a}
+.cliente-hint{font-size:11px;color:var(--muted);margin-top:2px}
+
+/* Badge */
+.badge{display:inline-flex;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.badge.id{background:var(--primary-light);color:var(--primary)}
+.badge.ativo{background:var(--primary-light);color:var(--primary)}
+.badge.inativo{background:var(--danger-light);color:var(--danger)}
+
+/* Empty state */
+.empty-state{text-align:center;padding:60px 20px;color:var(--muted)}
+.empty-state .icon{font-size:48px;margin-bottom:12px}
+.empty-state h4{margin:0 0 8px;color:#0f172a;font-size:18px}
+
+/* Toast */
+.toast{position:fixed;bottom:24px;right:24px;background:#0f172a;color:#fff;padding:14px 20px;border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,0.2);transform:translateY(100px);opacity:0;transition:all .3s ease;z-index:200;display:flex;align-items:center;gap:10px;font-weight:500}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.success{background:var(--primary)}
+.toast.error{background:var(--danger)}
+
+/* Feedback */
+.feedback{min-height:20px;margin-top:8px;font-size:13px;font-weight:500}
+.feedback.error{color:var(--danger)}
+.feedback.success{color:var(--primary)}
+
+/* Modal */
+.modal-backdrop{position:fixed;inset:0;background:rgba(2,6,23,0.5);display:none;align-items:center;justify-content:center;z-index:100;padding:20px}
+.modal-backdrop.show{display:flex}
+.modal{background:#fff;padding:24px;border-radius:16px;max-width:500px;width:100%;box-shadow:0 20px 60px rgba(2,6,23,0.3);animation:modalIn .25s ease}
+@keyframes modalIn{from{opacity:0;transform:scale(0.95)}to{opacity:1;transform:scale(1)}}
+.modal h3{margin:0 0 12px;font-size:20px;display:flex;align-items:center;gap:10px}
+.modal p{margin:0 0 20px;color:var(--muted);font-size:14px;line-height:1.6}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end}
+
+/* Dica de clique */
+.click-hint{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:12px 16px;
+  background:var(--info-light);
+  border-radius:10px;
+  margin-bottom:16px;
+  font-size:13px;
+  color:var(--info);
+}
+
+/* Responsivo */
+@media (max-width:900px){
+  .grid{grid-template-columns:1fr}
+  header{flex-direction:column;align-items:flex-start}
+  .form-row{grid-template-columns:1fr}
+  .filters{flex-direction:column;align-items:stretch}
+  .search-box{max-width:none}
+}
+</style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div>
+        <a href="/admin.html" class="back-link">← Voltar ao painel</a>
+        <h1><span>👥</span> Clientes</h1>
+        <p>Cadastre e gerencie seus clientes</p>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:13px;color:var(--muted)">Última atualização</div>
+        <div id="last-update" style="font-weight:600">--:--</div>
+      </div>
+    </header>
+
+    <!-- Cards de estatísticas -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="icon green">👥</div>
+        <div class="info">
+          <h3 id="stat-total">0</h3>
+          <p>Total de clientes</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="icon blue">✓</div>
+        <div class="info">
+          <h3 id="stat-ativos">0</h3>
+          <p>Clientes ativos</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="icon red">✕</div>
+        <div class="info">
+          <h3 id="stat-inativos">0</h3>
+          <p>Clientes inativos</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <!-- Formulário -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">➕ Novo Cliente</h2>
+        </div>
+        
+        <form id="form-cliente" autocomplete="off">
+          <div class="form-group">
+            <label for="nome">Nome completo *</label>
+            <input type="text" id="nome" placeholder="Digite o nome do cliente" required />
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="cpf">CPF/CNPJ *</label>
+              <input type="text" id="cpf" placeholder="000.000.000-00" maxlength="18" required />
+            </div>
+            <div class="form-group">
+              <label for="nascimento">Data de Nascimento</label>
+              <input type="date" id="nascimento" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="endereco">Endereço</label>
+            <input type="text" id="endereco" placeholder="Rua, número, bairro, cidade" />
+          </div>
+
+          <div class="form-group">
+            <label>Status do cliente *</label>
+            <div class="status-toggle">
+              <label class="status-option active ativo" id="opt-ativo">
+                <input type="radio" name="status" value="ativo" checked />
+                ✓ Ativo
+              </label>
+              <label class="status-option inativo" id="opt-inativo">
+                <input type="radio" name="status" value="inativo" />
+                ✕ Inativo
+              </label>
+            </div>
+          </div>
+
+          <div id="feedback" class="feedback"></div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary" id="btn-salvar">
+              💾 Salvar Cliente
+            </button>
+            <button type="button" class="btn btn-ghost" id="btn-limpar">
+              Limpar
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Lista de clientes -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">📋 Lista de Clientes</h2>
+        </div>
+
+        <div class="filters" style="margin-bottom:16px">
+          <div class="search-box">
+            <input type="text" id="search" placeholder="Buscar por nome ou CPF..." />
+          </div>
+          <button class="filter-btn active" data-filter="todos">Todos</button>
+          <button class="filter-btn" data-filter="ativo">✓ Ativos</button>
+          <button class="filter-btn" data-filter="inativo">✕ Inativos</button>
+        </div>
+
+        <!-- Dica de clique -->
+        <div class="click-hint">
+          💡 <strong>Dica:</strong> Clique em um cliente para ver seus detalhes e histórico de pedidos
+        </div>
+
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:60px">ID</th>
+                <th>Nome</th>
+                <th>CPF/CNPJ</th>
+                <th>Status</th>
+                <th>Endereço</th>
+                <th style="width:80px">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="table-body">
+              <tr>
+                <td colspan="6" class="empty-state">
+                  <div class="icon">👥</div>
+                  <h4>Carregando clientes...</h4>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de confirmação de exclusão -->
+  <div id="modal-delete" class="modal-backdrop">
+    <div class="modal">
+      <h3>⚠️ Confirmar Exclusão</h3>
+      <p>Tem certeza que deseja excluir este cliente? Esta ação não pode ser desfeita.</p>
+      <div style="background:#fef2f2;padding:12px;border-radius:8px;margin-bottom:20px">
+        <strong style="color:var(--danger)" id="delete-nome">Nome do cliente</strong>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" onclick="fecharModalDelete()">Cancelar</button>
+        <button class="btn btn-danger" id="btn-confirm-delete">🗑️ Excluir</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast"></div>
+
+<script>
+// ============================================
+// VARIÁVEIS GLOBAIS
+// ============================================
+let clientes = [];
+let deletandoId = null;
+let filtroStatus = 'todos';
+
+// ============================================
+// FUNÇÕES UTILITÁRIAS
+// ============================================
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[c]));
+}
+
+function showToast(msg, type = 'success') {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.className = 'toast show ' + type;
+  setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+function setFeedback(msg, isError = false) {
+  const feedback = document.getElementById('feedback');
+  feedback.textContent = msg;
+  feedback.className = 'feedback ' + (isError ? 'error' : 'success');
+  if (!isError) setTimeout(() => feedback.textContent = '', 3000);
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  if (isNaN(d)) return dateStr;
+  return d.toLocaleDateString('pt-BR');
+}
+
+function maskCpfCnpj(value) {
+  const v = value.replace(/\D/g, '');
+  if (v.length <= 11) {
+    return v.replace(/(\d{3})(\d{3})?(\d{3})?(\d{2})?/, (m, a, b, c, d) => {
+      let out = a || '';
+      if (b) out += '.' + b;
+      if (c) out += '.' + c;
+      if (d) out += '-' + d;
+      return out;
+    });
+  } else {
+    return v.replace(/(\d{2})(\d{3})?(\d{3})?(\d{4})?(\d{2})?/, (m, a, b, c, d, e) => {
+      let out = a || '';
+      if (b) out += '.' + b;
+      if (c) out += '.' + c;
+      if (d) out += '/' + d;
+      if (e) out += '-' + e;
+      return out;
+    });
+  }
+}
+
+// ============================================
+// TOGGLE DE STATUS
+// ============================================
+document.querySelectorAll('.status-option').forEach(opt => {
+  opt.addEventListener('click', () => {
+    document.querySelectorAll('.status-option').forEach(o => o.classList.remove('active'));
+    opt.classList.add('active');
+    opt.querySelector('input').checked = true;
+  });
+});
+
+function getStatusSelecionado() {
+  return document.querySelector('input[name="status"]:checked').value;
+}
+
+// ============================================
+// CARREGAR DADOS
+// ============================================
+async function carregarClientes() {
+  try {
+    const res = await fetch('/api/clientes');
+    if (!res.ok) throw new Error('Erro ao carregar');
+    clientes = await res.json();
+    
+    atualizarEstatisticas();
+    renderizarTabela();
+    atualizarHorario();
+  } catch (e) {
+    console.error(e);
+    document.getElementById('table-body').innerHTML = `
+      <tr>
+        <td colspan="6" class="empty-state">
+          <div class="icon">❌</div>
+          <h4>Erro ao carregar clientes</h4>
+        </td>
+      </tr>
+    `;
+  }
+}
+
+// ============================================
+// ATUALIZAR ESTATÍSTICAS
+// ============================================
+function atualizarEstatisticas() {
+  const ativos = clientes.filter(c => c.status === 'ativo' || !c.status).length;
+  const inativos = clientes.filter(c => c.status === 'inativo').length;
+  
+  document.getElementById('stat-total').textContent = clientes.length;
+  document.getElementById('stat-ativos').textContent = ativos;
+  document.getElementById('stat-inativos').textContent = inativos;
+}
+
+// ============================================
+// RENDERIZAR TABELA
+// ============================================
+function renderizarTabela() {
+  const tbody = document.getElementById('table-body');
+  const searchTerm = document.getElementById('search').value.toLowerCase();
+  
+  let lista = clientes.filter(c => {
+    // Filtro de busca
+    const matchSearch = !searchTerm || 
+      (c.nome || '').toLowerCase().includes(searchTerm) ||
+      (c.cpf || '').toLowerCase().includes(searchTerm);
+    
+    // Filtro de status
+    const status = c.status || 'ativo';
+    const matchStatus = filtroStatus === 'todos' || status === filtroStatus;
+    
+    return matchSearch && matchStatus;
+  });
+
+  if (lista.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="6" class="empty-state">
+          <div class="icon">📭</div>
+          <h4>Nenhum cliente encontrado</h4>
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  tbody.innerHTML = lista.map(c => {
+    const status = c.status || 'ativo';
+    const statusLabel = status === 'ativo' ? '✓ Ativo' : '✕ Inativo';
+    
+    return `
+      <tr class="${status}" onclick="abrirDetalhes(${c.id})">
+        <td><span class="badge id">#${c.id}</span></td>
+        <td>
+          <div class="cliente-nome">${escapeHtml(c.nome)}</div>
+          <div class="cliente-hint">Clique para ver detalhes</div>
+        </td>
+        <td>${escapeHtml(c.cpf || '')}</td>
+        <td><span class="badge ${status}">${statusLabel}</span></td>
+        <td>${escapeHtml(c.endereco || '—')}</td>
+        <td>
+          <button class="btn btn-danger btn-sm" onclick="event.stopPropagation(); confirmarExclusao(${c.id})" title="Excluir">🗑️</button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+// ============================================
+// FILTROS
+// ============================================
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    filtroStatus = btn.dataset.filter;
+    renderizarTabela();
+  });
+});
+
+// ============================================
+// ABRIR DETALHES DO CLIENTE
+// ============================================
+function abrirDetalhes(id) {
+  window.location.href = `/cliente.html?id=${id}`;
+}
+
+// ============================================
+// FORMULÁRIO - SALVAR
+// ============================================
+document.getElementById('form-cliente').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  
+  const nome = document.getElementById('nome').value.trim();
+  const cpf = document.getElementById('cpf').value.trim();
+  const endereco = document.getElementById('endereco').value.trim();
+  const nascimento = document.getElementById('nascimento').value || null;
+  const status = getStatusSelecionado();
+
+  if (!nome || !cpf) {
+    setFeedback('Preencha nome e CPF/CNPJ', true);
+    return;
+  }
+
+  const payload = { nome, cpf, endereco, nascimento, status };
+
+  try {
+    const res = await fetch('/api/clientes', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || 'Erro ao salvar');
+    }
+
+    showToast('✅ Cliente cadastrado com sucesso!');
+    limparFormulario();
+    await carregarClientes();
+  } catch (e) {
+    setFeedback(e.message, true);
+  }
+});
+
+function limparFormulario() {
+  document.getElementById('form-cliente').reset();
+  document.getElementById('feedback').textContent = '';
+  
+  // Reset status para ativo
+  document.querySelectorAll('.status-option').forEach(o => o.classList.remove('active'));
+  document.getElementById('opt-ativo').classList.add('active');
+  document.querySelector('input[value="ativo"]').checked = true;
+}
+
+// ============================================
+// EXCLUSÃO
+// ============================================
+function confirmarExclusao(id) {
+  const cliente = clientes.find(c => c.id === id);
+  if (!cliente) return;
+  
+  deletandoId = id;
+  document.getElementById('delete-nome').textContent = cliente.nome;
+  document.getElementById('modal-delete').classList.add('show');
+}
+
+function fecharModalDelete() {
+  document.getElementById('modal-delete').classList.remove('show');
+  deletandoId = null;
+}
+
+document.getElementById('btn-confirm-delete').addEventListener('click', async () => {
+  if (!deletandoId) return;
+
+  try {
+    const res = await fetch(`/api/clientes/${deletandoId}`, { method: 'DELETE' });
+    if (!res.ok) throw new Error('Erro ao excluir');
+
+    showToast('🗑️ Cliente excluído!');
+    fecharModalDelete();
+    await carregarClientes();
+  } catch (e) {
+    showToast(e.message, 'error');
+  }
+});
+
+// ============================================
+// EVENTOS
+// ============================================
+document.getElementById('btn-limpar').addEventListener('click', limparFormulario);
+
+document.getElementById('search').addEventListener('input', renderizarTabela);
+
+// Máscara CPF/CNPJ
+document.getElementById('cpf').addEventListener('input', (e) => {
+  e.target.value = maskCpfCnpj(e.target.value);
+});
+
+// Fechar modal clicando fora
+document.getElementById('modal-delete').addEventListener('click', (e) => {
+  if (e.target.id === 'modal-delete') fecharModalDelete();
+});
+
+function atualizarHorario() {
+  document.getElementById('last-update').textContent = new Date().toLocaleTimeString('pt-BR');
+}
+
+// ============================================
+// INICIALIZAÇÃO
+// ============================================
+carregarClientes();
+</script>
+</body>
+</html>

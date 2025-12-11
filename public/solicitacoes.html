@@ -1,0 +1,495 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Solicitações - MegaClean</title>
+<style>
+:root{
+  --bg:#f4f7fb;
+  --card:#fff;
+  --primary:#0aa04e;
+  --primary-light:#e6f9ee;
+  --primary-600:#0a8a44;
+  --muted:#6b7280;
+  --danger:#dc2626;
+  --danger-light:#fef2f2;
+  --warning:#f59e0b;
+  --warning-light:#fffbeb;
+  --info:#3b82f6;
+  --info-light:#eff6ff;
+  --purple:#8b5cf6;
+  --purple-light:#f5f3ff;
+  --radius:12px;
+  --shadow: 0 8px 24px rgba(12,20,30,0.06);
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+  background:linear-gradient(180deg,#f7fafc 0%, var(--bg) 100%);
+  color:#0f172a;
+  padding:22px;
+  min-height:100vh;
+}
+.container{max-width:1200px;margin:0 auto}
+
+/* Header */
+header{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:22px;flex-wrap:wrap}
+header h1{margin:0;color:var(--primary);font-size:28px;display:flex;align-items:center;gap:10px}
+header h1 span{font-size:32px}
+header p{margin:4px 0 0;color:var(--muted);font-size:14px}
+.back-link{color:var(--primary);text-decoration:none;font-weight:600;display:inline-flex;align-items:center;gap:6px}
+.back-link:hover{text-decoration:underline}
+
+/* Cards de estatísticas */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:22px}
+.stat-card{background:var(--card);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);display:flex;align-items:center;gap:14px}
+.stat-card .icon{width:50px;height:50px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px}
+.stat-card .icon.yellow{background:var(--warning-light);color:var(--warning)}
+.stat-card .icon.green{background:var(--primary-light);color:var(--primary)}
+.stat-card .icon.red{background:var(--danger-light);color:var(--danger)}
+.stat-card .info h3{margin:0;font-size:24px;font-weight:800}
+.stat-card .info p{margin:4px 0 0;color:var(--muted);font-size:13px}
+
+/* Card principal */
+.card{background:var(--card);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);margin-bottom:18px}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:12px}
+.card-title{font-size:18px;font-weight:700;margin:0;display:flex;align-items:center;gap:8px}
+
+/* Filtros */
+.filters{display:flex;gap:8px;flex-wrap:wrap}
+.filter-btn{padding:10px 16px;border-radius:10px;border:2px solid #e6e9ef;background:#fff;cursor:pointer;font-size:13px;font-weight:600;transition:all .2s}
+.filter-btn:hover{border-color:var(--primary);color:var(--primary)}
+.filter-btn.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+
+/* Lista de solicitações */
+.solicitacao-item{
+  background:#f8fafc;
+  border-radius:12px;
+  padding:20px;
+  margin-bottom:14px;
+  border-left:4px solid var(--warning);
+  transition:all .2s;
+}
+.solicitacao-item.aprovado{border-left-color:var(--primary)}
+.solicitacao-item.rejeitado{border-left-color:var(--danger)}
+
+.solicitacao-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;flex-wrap:wrap;gap:10px}
+.solicitacao-info h4{margin:0 0 4px;font-size:16px;display:flex;align-items:center;gap:8px}
+.solicitacao-info p{margin:0;font-size:13px;color:var(--muted)}
+.solicitacao-meta{text-align:right}
+.solicitacao-meta .data{font-size:14px;font-weight:600;color:var(--warning)}
+.solicitacao-meta .valor{font-size:18px;font-weight:800;color:var(--primary)}
+
+.solicitacao-details{margin:12px 0;padding:12px;background:#fff;border-radius:8px}
+.solicitacao-details h5{margin:0 0 8px;font-size:13px;color:var(--muted)}
+.item-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f0f3f7;font-size:13px}
+.item-row:last-child{border-bottom:none}
+
+.solicitacao-motivo{margin:12px 0;padding:12px;background:#fffbeb;border-radius:8px;font-size:13px}
+.solicitacao-motivo strong{color:#92400e}
+
+.solicitacao-actions{display:flex;gap:10px;margin-top:14px;justify-content:flex-end}
+
+/* Botões */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 18px;border-radius:10px;border:none;cursor:pointer;font-weight:600;font-size:14px;transition:all .2s}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-primary:hover{background:var(--primary-600)}
+.btn-danger{background:var(--danger);color:#fff}
+.btn-danger:hover{background:#b91c1c}
+.btn-ghost{background:#fff;color:var(--muted);border:2px solid #e6e9ef}
+.btn-ghost:hover{border-color:var(--primary);color:var(--primary)}
+.btn-sm{padding:8px 14px;font-size:13px}
+
+/* Badge */
+.badge{display:inline-flex;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.badge.pendente{background:var(--warning-light);color:#b45309}
+.badge.aprovado{background:var(--primary-light);color:var(--primary)}
+.badge.rejeitado{background:var(--danger-light);color:var(--danger)}
+
+/* Empty state */
+.empty-state{text-align:center;padding:60px 20px;color:var(--muted)}
+.empty-state .icon{font-size:48px;margin-bottom:12px}
+.empty-state h4{margin:0 0 8px;color:#0f172a;font-size:18px}
+
+/* Toast */
+.toast{position:fixed;bottom:24px;right:24px;background:#0f172a;color:#fff;padding:14px 20px;border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,0.2);transform:translateY(100px);opacity:0;transition:all .3s ease;z-index:200;font-weight:500}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.success{background:var(--primary)}
+.toast.error{background:var(--danger)}
+
+/* Modal */
+.modal-backdrop{position:fixed;inset:0;background:rgba(2,6,23,0.5);display:none;align-items:center;justify-content:center;z-index:100;padding:20px}
+.modal-backdrop.show{display:flex}
+.modal{background:#fff;padding:24px;border-radius:16px;max-width:500px;width:100%;box-shadow:0 20px 60px rgba(2,6,23,0.3);animation:modalIn .25s ease}
+@keyframes modalIn{from{opacity:0;transform:scale(0.95)}to{opacity:1;transform:scale(1)}}
+.modal h3{margin:0 0 12px;font-size:20px;display:flex;align-items:center;gap:10px}
+.modal p{margin:0 0 16px;color:var(--muted);font-size:14px}
+.modal textarea{width:100%;padding:12px;border:2px solid #e6e9ef;border-radius:10px;font-size:14px;resize:vertical;min-height:80px}
+.modal textarea:focus{outline:none;border-color:var(--primary)}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:16px}
+
+/* Responsivo */
+@media (max-width:768px){
+  header{flex-direction:column;align-items:flex-start}
+  .solicitacao-header{flex-direction:column}
+  .solicitacao-meta{text-align:left}
+  .solicitacao-actions{flex-direction:column}
+}
+</style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div>
+        <a href="/admin.html" class="back-link">← Voltar ao painel</a>
+        <h1><span>📋</span> Solicitações de Pedidos</h1>
+        <p>Gerencie solicitações de pedidos retroativos</p>
+      </div>
+    </header>
+
+    <!-- Cards de estatísticas -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="icon yellow">⏳</div>
+        <div class="info">
+          <h3 id="stat-pendentes">0</h3>
+          <p>Pendentes</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="icon green">✓</div>
+        <div class="info">
+          <h3 id="stat-aprovados">0</h3>
+          <p>Aprovados</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="icon red">✕</div>
+        <div class="info">
+          <h3 id="stat-rejeitados">0</h3>
+          <p>Rejeitados</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lista de solicitações -->
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">📋 Lista de Solicitações</h2>
+        <div class="filters">
+          <button class="filter-btn active" data-filter="pendente">⏳ Pendentes</button>
+          <button class="filter-btn" data-filter="aprovado">✓ Aprovados</button>
+          <button class="filter-btn" data-filter="rejeitado">✕ Rejeitados</button>
+          <button class="filter-btn" data-filter="todos">Todos</button>
+        </div>
+      </div>
+
+      <div id="lista-solicitacoes">
+        <div class="empty-state">
+          <div class="icon">📋</div>
+          <h4>Carregando...</h4>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de rejeição -->
+  <div id="modal-rejeitar" class="modal-backdrop">
+    <div class="modal">
+      <h3>❌ Rejeitar Solicitação</h3>
+      <p>Informe o motivo da rejeição para que o operador entenda.</p>
+      <textarea id="motivo-rejeicao" placeholder="Motivo da rejeição (opcional)"></textarea>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" onclick="fecharModal()">Cancelar</button>
+        <button class="btn btn-danger" onclick="confirmarRejeicao()">Rejeitar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast"></div>
+
+<script>
+// ============================================
+// VARIÁVEIS GLOBAIS
+// ============================================
+let solicitacoes = [];
+let filtroAtual = 'pendente';
+let rejeitandoId = null;
+
+// ============================================
+// FUNÇÕES UTILITÁRIAS
+// ============================================
+function getToken() {
+  return localStorage.getItem('admin_token') || '';
+}
+
+function formatMoney(valor) {
+  return 'R$ ' + Number(valor || 0).toFixed(2).replace('.', ',');
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return '—';
+  const d = new Date(dateStr);
+  return d.toLocaleDateString('pt-BR');
+}
+
+function formatDateTime(dateStr) {
+  if (!dateStr) return '—';
+  const d = new Date(dateStr);
+  return d.toLocaleString('pt-BR');
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[c]));
+}
+
+function showToast(msg, type = 'success') {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.className = 'toast show ' + type;
+  setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+// ============================================
+// CARREGAR DADOS
+// ============================================
+async function carregarSolicitacoes() {
+  try {
+    const res = await fetch('/api/solicitacoes', {
+      headers: { 'x-auth-token': getToken() }
+    });
+    
+    const data = await res.json();
+    
+    if (!res.ok) throw new Error(data.error || 'Erro ao carregar');
+    
+    solicitacoes = data;
+    atualizarEstatisticas();
+    renderizarLista();
+  } catch (e) {
+    console.error('Erro:', e);
+    document.getElementById('lista-solicitacoes').innerHTML = `
+      <div class="empty-state">
+        <div class="icon">❌</div>
+        <h4>Erro ao carregar solicitações</h4>
+        <p style="font-size:12px;margin-top:8px">Verifique se você está logado como administrador. <a href="/index.html">Fazer login novamente</a></p>
+      </div>
+    `;
+  }
+}
+
+// ============================================
+// ESTATÍSTICAS
+// ============================================
+function atualizarEstatisticas() {
+  const pendentes = solicitacoes.filter(s => s.status === 'pendente').length;
+  const aprovados = solicitacoes.filter(s => s.status === 'aprovado').length;
+  const rejeitados = solicitacoes.filter(s => s.status === 'rejeitado').length;
+  
+  document.getElementById('stat-pendentes').textContent = pendentes;
+  document.getElementById('stat-aprovados').textContent = aprovados;
+  document.getElementById('stat-rejeitados').textContent = rejeitados;
+}
+
+// ============================================
+// RENDERIZAR LISTA
+// ============================================
+function renderizarLista() {
+  const container = document.getElementById('lista-solicitacoes');
+  
+  let lista = solicitacoes;
+  if (filtroAtual !== 'todos') {
+    lista = solicitacoes.filter(s => s.status === filtroAtual);
+  }
+  
+  // Ordenar por data (mais recentes primeiro)
+  lista = [...lista].sort((a, b) => new Date(b.dataSolicitacao) - new Date(a.dataSolicitacao));
+  
+  if (lista.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="icon">📭</div>
+        <h4>Nenhuma solicitação ${filtroAtual !== 'todos' ? filtroAtual : ''}</h4>
+        <p>As solicitações aparecerão aqui</p>
+      </div>
+    `;
+    return;
+  }
+  
+  container.innerHTML = lista.map(s => {
+    const statusLabel = {
+      'pendente': '⏳ Pendente',
+      'aprovado': '✓ Aprovado',
+      'rejeitado': '✕ Rejeitado'
+    }[s.status];
+    
+    return `
+      <div class="solicitacao-item ${s.status}">
+        <div class="solicitacao-header">
+          <div class="solicitacao-info">
+            <h4>
+              <span class="badge ${s.status}">${statusLabel}</span>
+              Solicitação #${s.id}
+            </h4>
+            <p>
+              <strong>Cliente:</strong> ${escapeHtml(s.clienteNome)} &nbsp;|&nbsp;
+              <strong>Solicitante:</strong> ${escapeHtml(s.usuarioNome)}
+            </p>
+            <p style="margin-top:4px">
+              📅 Solicitado em: ${formatDateTime(s.dataSolicitacao)}
+            </p>
+          </div>
+          <div class="solicitacao-meta">
+            <div class="data">📅 Data do pedido: ${formatDate(s.dataDesejada)}</div>
+            <div class="valor">${formatMoney(s.total)}</div>
+          </div>
+        </div>
+        
+        <div class="solicitacao-details">
+          <h5>Itens do pedido:</h5>
+          ${s.items.map(it => `
+            <div class="item-row">
+              <span>${escapeHtml(it.nome)} × ${it.quantidade}</span>
+              <span>${formatMoney(it.quantidade * it.preco)}</span>
+            </div>
+          `).join('')}
+        </div>
+        
+        ${s.motivo ? `
+          <div class="solicitacao-motivo">
+            <strong>Motivo da solicitação:</strong> ${escapeHtml(s.motivo)}
+          </div>
+        ` : ''}
+        
+        ${s.status === 'rejeitado' && s.motivoRejeicao ? `
+          <div class="solicitacao-motivo" style="background:#fef2f2">
+            <strong style="color:var(--danger)">Motivo da rejeição:</strong> ${escapeHtml(s.motivoRejeicao)}
+          </div>
+        ` : ''}
+        
+        ${s.status === 'aprovado' ? `
+          <div class="solicitacao-motivo" style="background:var(--primary-light)">
+            <strong style="color:var(--primary)">✓ Pedido #${s.pedidoId} criado em ${formatDateTime(s.dataResposta)}</strong>
+          </div>
+        ` : ''}
+        
+        ${s.status === 'pendente' ? `
+          <div class="solicitacao-actions">
+            <button class="btn btn-primary btn-sm" onclick="aprovarSolicitacao(${s.id})">
+              ✓ Aprovar
+            </button>
+            <button class="btn btn-danger btn-sm" onclick="abrirModalRejeitar(${s.id})">
+              ✕ Rejeitar
+            </button>
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+// ============================================
+// APROVAR SOLICITAÇÃO
+// ============================================
+async function aprovarSolicitacao(id) {
+  if (!confirm('Confirma a aprovação desta solicitação? O pedido será criado e o estoque será atualizado.')) {
+    return;
+  }
+  
+  try {
+    const res = await fetch(`/api/solicitacoes/${id}/aprovar`, {
+      method: 'POST',
+      headers: { 'x-auth-token': getToken() }
+    });
+    
+    const data = await res.json();
+    
+    if (!res.ok) {
+      throw new Error(data.error || 'Erro ao aprovar');
+    }
+    
+    showToast('✅ Solicitação aprovada! Pedido criado.');
+    await carregarSolicitacoes();
+  } catch (e) {
+    showToast(e.message, 'error');
+  }
+}
+
+// ============================================
+// REJEITAR SOLICITAÇÃO
+// ============================================
+function abrirModalRejeitar(id) {
+  rejeitandoId = id;
+  document.getElementById('motivo-rejeicao').value = '';
+  document.getElementById('modal-rejeitar').classList.add('show');
+}
+
+function fecharModal() {
+  document.getElementById('modal-rejeitar').classList.remove('show');
+  rejeitandoId = null;
+}
+
+async function confirmarRejeicao() {
+  if (!rejeitandoId) return;
+  
+  const motivo = document.getElementById('motivo-rejeicao').value.trim();
+  
+  try {
+    const res = await fetch(`/api/solicitacoes/${rejeitandoId}/rejeitar`, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'x-auth-token': getToken() 
+      },
+      body: JSON.stringify({ motivo })
+    });
+    
+    const data = await res.json();
+    
+    if (!res.ok) {
+      throw new Error(data.error || 'Erro ao rejeitar');
+    }
+    
+    showToast('❌ Solicitação rejeitada');
+    fecharModal();
+    await carregarSolicitacoes();
+  } catch (e) {
+    showToast(e.message, 'error');
+  }
+}
+
+// ============================================
+// FILTROS
+// ============================================
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    filtroAtual = btn.dataset.filter;
+    renderizarLista();
+  });
+});
+
+// Fechar modal clicando fora
+document.getElementById('modal-rejeitar').addEventListener('click', (e) => {
+  if (e.target.id === 'modal-rejeitar') fecharModal();
+});
+
+// ============================================
+// INICIALIZAÇÃO
+// ============================================
+if (!getToken()) {
+  window.location.href = '/index.html';
+} else {
+  carregarSolicitacoes();
+}
+</script>
+</body>
+</html>
+

@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>MegaClean — Login</title>
+<style>
+:root{
+  --bg:#f4f7fb;
+  --card:#fff;
+  --primary:#0aa04e;
+  --primary-light:#e6f9ee;
+  --primary-600:#0a8a44;
+  --muted:#6b7280;
+  --danger:#dc2626;
+  --radius:16px;
+  --shadow: 0 20px 60px rgba(12,20,30,0.12);
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+  background: linear-gradient(135deg, #e6f9ee 0%, #f4f7fb 50%, #e0f2fe 100%);
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+}
+
+.login-container{
+  display:flex;
+  max-width:900px;
+  width:100%;
+  background:var(--card);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  overflow:hidden;
+}
+
+/* Lado esquerdo - Branding */
+.brand-side{
+  flex:1;
+  background: linear-gradient(135deg, #0aa04e 0%, #059669 100%);
+  padding:50px 40px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  color:#fff;
+  position:relative;
+  overflow:hidden;
+}
+.brand-side::before{
+  content:'';
+  position:absolute;
+  top:-50%;
+  right:-50%;
+  width:100%;
+  height:100%;
+  background:rgba(255,255,255,0.05);
+  border-radius:50%;
+}
+.brand-side::after{
+  content:'';
+  position:absolute;
+  bottom:-30%;
+  left:-30%;
+  width:80%;
+  height:80%;
+  background:rgba(255,255,255,0.03);
+  border-radius:50%;
+}
+.brand-logo{
+  font-size:48px;
+  margin-bottom:20px;
+  position:relative;
+  z-index:1;
+}
+.brand-title{
+  font-size:32px;
+  font-weight:800;
+  margin:0 0 10px;
+  position:relative;
+  z-index:1;
+}
+.brand-subtitle{
+  font-size:16px;
+  opacity:0.9;
+  line-height:1.6;
+  position:relative;
+  z-index:1;
+}
+.brand-features{
+  margin-top:30px;
+  position:relative;
+  z-index:1;
+}
+.brand-features li{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-bottom:12px;
+  font-size:14px;
+  opacity:0.95;
+}
+.brand-features li::before{
+  content:'✓';
+  width:22px;
+  height:22px;
+  background:rgba(255,255,255,0.2);
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:12px;
+}
+
+/* Lado direito - Formulário */
+.form-side{
+  flex:1;
+  padding:50px 40px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+}
+.form-header{
+  margin-bottom:30px;
+}
+.form-header h2{
+  margin:0 0 8px;
+  font-size:24px;
+  color:#0f172a;
+}
+.form-header p{
+  margin:0;
+  color:var(--muted);
+  font-size:14px;
+}
+
+.form-group{
+  margin-bottom:20px;
+}
+.form-group label{
+  display:block;
+  font-size:13px;
+  font-weight:600;
+  color:#374151;
+  margin-bottom:8px;
+}
+.form-group input{
+  width:100%;
+  padding:14px 16px;
+  border:2px solid #e6e9ef;
+  border-radius:10px;
+  font-size:15px;
+  transition:all .2s;
+  background:#f8fafc;
+}
+.form-group input:focus{
+  outline:none;
+  border-color:var(--primary);
+  background:#fff;
+  box-shadow:0 0 0 4px rgba(10,160,78,0.1);
+}
+.form-group input::placeholder{
+  color:#9ca3af;
+}
+
+.error-message{
+  background:var(--danger);
+  color:#fff;
+  padding:12px 16px;
+  border-radius:10px;
+  font-size:14px;
+  margin-bottom:20px;
+  display:none;
+  align-items:center;
+  gap:8px;
+  animation:shake .4s ease;
+}
+@keyframes shake{
+  0%,100%{transform:translateX(0)}
+  25%{transform:translateX(-5px)}
+  75%{transform:translateX(5px)}
+}
+.error-message.show{
+  display:flex;
+}
+
+.btn-login{
+  width:100%;
+  padding:14px;
+  background: linear-gradient(135deg, #0aa04e 0%, #059669 100%);
+  color:#fff;
+  border:none;
+  border-radius:10px;
+  font-size:16px;
+  font-weight:700;
+  cursor:pointer;
+  transition:all .2s;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+}
+.btn-login:hover{
+  transform:translateY(-2px);
+  box-shadow:0 8px 25px rgba(10,160,78,0.3);
+}
+.btn-login:active{
+  transform:translateY(0);
+}
+.btn-login:disabled{
+  opacity:0.7;
+  cursor:not-allowed;
+  transform:none;
+}
+
+.credentials-hint{
+  margin-top:24px;
+  padding:16px;
+  background:var(--primary-light);
+  border-radius:10px;
+  text-align:center;
+}
+.credentials-hint p{
+  margin:0;
+  font-size:13px;
+  color:#065f46;
+}
+.credentials-hint strong{
+  color:var(--primary);
+}
+
+.footer-text{
+  margin-top:30px;
+  text-align:center;
+  font-size:12px;
+  color:var(--muted);
+}
+
+/* Responsivo */
+@media (max-width:768px){
+  .login-container{
+    flex-direction:column;
+  }
+  .brand-side{
+    padding:30px;
+    text-align:center;
+  }
+  .brand-logo{font-size:36px}
+  .brand-title{font-size:24px}
+  .brand-features{display:none}
+  .form-side{padding:30px}
+}
+</style>
+</head>
+<body>
+  <div class="login-container">
+    <!-- Lado esquerdo - Branding -->
+    <div class="brand-side">
+      <div class="brand-logo">🧹</div>
+      <h1 class="brand-title">MegaClean</h1>
+      <p class="brand-subtitle">Sistema completo para gestão de produtos de limpeza, clientes e pedidos.</p>
+      
+      <ul class="brand-features">
+        <li>Controle de estoque em tempo real</li>
+        <li>Gestão de clientes e pedidos</li>
+        <li>Relatórios e estatísticas</li>
+        <li>Interface moderna e intuitiva</li>
+      </ul>
+    </div>
+
+    <!-- Lado direito - Formulário -->
+    <div class="form-side">
+      <div class="form-header">
+        <h2>Bem-vindo de volta! 👋</h2>
+        <p>Faça login para acessar o painel administrativo</p>
+      </div>
+
+      <div id="error" class="error-message">
+        <span>⚠️</span>
+        <span id="error-text">Usuário ou senha incorretos</span>
+      </div>
+
+      <form id="login-form">
+        <div class="form-group">
+          <label for="username">Usuário</label>
+          <input type="text" id="username" placeholder="Digite seu usuário" autocomplete="username" required />
+        </div>
+
+        <div class="form-group">
+          <label for="password">Senha</label>
+          <input type="password" id="password" placeholder="Digite sua senha" autocomplete="current-password" required />
+        </div>
+
+        <button type="submit" class="btn-login" id="btn-login">
+          <span>Entrar</span>
+          <span>→</span>
+        </button>
+      </form>
+
+      <div class="credentials-hint">
+        <p>Credenciais padrão: <strong>admin</strong> / <strong>admin123</strong></p>
+      </div>
+
+      <p class="footer-text">© 2024 MegaClean — Todos os direitos reservados</p>
+    </div>
+  </div>
+
+<script>
+const form = document.getElementById('login-form');
+const errorDiv = document.getElementById('error');
+const errorText = document.getElementById('error-text');
+const btnLogin = document.getElementById('btn-login');
+
+// Verificar se já está logado
+const existingToken = localStorage.getItem('admin_token');
+if (existingToken) {
+  window.location.href = '/admin.html';
+}
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  
+  errorDiv.classList.remove('show');
+  
+  const username = document.getElementById('username').value.trim();
+  const password = document.getElementById('password').value.trim();
+  
+  if (!username || !password) {
+    errorText.textContent = 'Preencha usuário e senha.';
+    errorDiv.classList.add('show');
+    return;
+  }
+
+  try {
+    btnLogin.disabled = true;
+    btnLogin.innerHTML = '<span>Entrando...</span>';
+
+    const res = await fetch('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
+
+    const json = await res.json();
+
+    if (!res.ok) {
+      errorText.textContent = json.error || 'Login falhou';
+      errorDiv.classList.add('show');
+      btnLogin.disabled = false;
+      btnLogin.innerHTML = '<span>Entrar</span><span>→</span>';
+      return;
+    }
+
+    // Salvar token, nome e role
+    localStorage.setItem('admin_token', json.token);
+    localStorage.setItem('admin_name', json.name || json.username || 'Admin');
+    localStorage.setItem('admin_role', json.role || 'admin');
+    
+    btnLogin.innerHTML = '<span>✓ Sucesso!</span>';
+    
+    setTimeout(() => {
+      window.location.href = '/admin.html';
+    }, 500);
+
+  } catch (e) {
+    errorText.textContent = 'Erro de conexão com o servidor';
+    errorDiv.classList.add('show');
+    btnLogin.disabled = false;
+    btnLogin.innerHTML = '<span>Entrar</span><span>→</span>';
+  }
+});
+
+// Enter para submeter
+document.getElementById('password').addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') {
+    form.dispatchEvent(new Event('submit'));
+  }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,777 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Detalhes do Cliente - MegaClean</title>
+<style>
+:root{
+  --bg:#f4f7fb;
+  --card:#fff;
+  --primary:#0aa04e;
+  --primary-light:#e6f9ee;
+  --primary-600:#0a8a44;
+  --muted:#6b7280;
+  --danger:#dc2626;
+  --danger-light:#fef2f2;
+  --warning:#f59e0b;
+  --warning-light:#fffbeb;
+  --info:#3b82f6;
+  --info-light:#eff6ff;
+  --purple:#8b5cf6;
+  --purple-light:#f5f3ff;
+  --radius:12px;
+  --shadow: 0 8px 24px rgba(12,20,30,0.06);
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+  background:linear-gradient(180deg,#f7fafc 0%, var(--bg) 100%);
+  color:#0f172a;
+  padding:22px;
+  min-height:100vh;
+}
+.container{max-width:1200px;margin:0 auto}
+
+/* Header */
+header{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:22px;flex-wrap:wrap}
+header h1{margin:0;color:var(--primary);font-size:28px;display:flex;align-items:center;gap:10px}
+header h1 span{font-size:32px}
+header p{margin:4px 0 0;color:var(--muted);font-size:14px}
+.back-link{color:var(--primary);text-decoration:none;font-weight:600;display:inline-flex;align-items:center;gap:6px}
+.back-link:hover{text-decoration:underline}
+.header-actions{display:flex;gap:10px}
+
+/* Cards de estatísticas */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:22px}
+.stat-card{background:var(--card);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);display:flex;align-items:center;gap:14px}
+.stat-card .icon{width:50px;height:50px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px}
+.stat-card .icon.green{background:var(--primary-light);color:var(--primary)}
+.stat-card .icon.blue{background:var(--info-light);color:var(--info)}
+.stat-card .icon.purple{background:var(--purple-light);color:var(--purple)}
+.stat-card .icon.yellow{background:var(--warning-light);color:var(--warning)}
+.stat-card .info h3{margin:0;font-size:24px;font-weight:800}
+.stat-card .info p{margin:4px 0 0;color:var(--muted);font-size:13px}
+
+/* Card principal */
+.card{background:var(--card);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow);margin-bottom:18px}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px}
+.card-title{font-size:18px;font-weight:700;margin:0;display:flex;align-items:center;gap:8px}
+
+/* Grid */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+
+/* Dados do cliente */
+.client-avatar{
+  width:80px;
+  height:80px;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:32px;
+  color:#fff;
+  font-weight:700;
+  margin-right:20px;
+  flex-shrink:0;
+}
+.client-avatar.ativo{background:linear-gradient(135deg, #0aa04e 0%, #059669 100%)}
+.client-avatar.inativo{background:linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)}
+
+.client-header{display:flex;align-items:center;margin-bottom:24px;padding-bottom:24px;border-bottom:2px solid #f0f3f7}
+.client-header-info h2{margin:0 0 4px;font-size:24px}
+.client-header-info p{margin:0;color:var(--muted);font-size:14px}
+.client-header-info .badges{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+
+.data-row{display:flex;justify-content:space-between;padding:14px 0;border-bottom:1px solid #f0f3f7}
+.data-row:last-child{border-bottom:none}
+.data-label{color:var(--muted);font-size:13px;font-weight:600}
+.data-value{font-weight:600;text-align:right}
+
+/* Botões */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 20px;border-radius:10px;border:none;cursor:pointer;font-weight:600;font-size:14px;transition:all .2s}
+.btn-primary{background:linear-gradient(135deg, #0aa04e 0%, #059669 100%);color:#fff;box-shadow:0 4px 14px rgba(10,160,78,0.2)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(10,160,78,0.3)}
+.btn-ghost{background:#f8fafc;color:var(--muted);border:2px solid #e6e9ef}
+.btn-ghost:hover{border-color:var(--primary);color:var(--primary)}
+.btn-warning{background:var(--warning-light);color:#b45309}
+.btn-warning:hover{background:var(--warning);color:#fff}
+.btn-danger{background:var(--danger-light);color:var(--danger)}
+.btn-danger:hover{background:var(--danger);color:#fff}
+.btn-sm{padding:8px 14px;font-size:13px}
+
+/* Badge */
+.badge{display:inline-flex;padding:6px 12px;border-radius:20px;font-size:12px;font-weight:600}
+.badge.green,.badge.ativo{background:var(--primary-light);color:var(--primary)}
+.badge.red,.badge.inativo{background:var(--danger-light);color:var(--danger)}
+.badge.purple{background:var(--purple-light);color:var(--purple)}
+
+/* Status toggle */
+.status-toggle{display:flex;gap:10px;margin-top:8px}
+.status-option{flex:1;padding:12px;border:2px solid #e6e9ef;border-radius:10px;text-align:center;cursor:pointer;transition:all .2s;font-weight:600;font-size:14px}
+.status-option:hover{border-color:#ccc}
+.status-option.active.ativo{border-color:var(--primary);background:var(--primary-light);color:var(--primary)}
+.status-option.active.inativo{border-color:var(--danger);background:var(--danger-light);color:var(--danger)}
+.status-option input{display:none}
+
+/* Lista de pedidos */
+.orders-list{max-height:500px;overflow-y:auto}
+.order-item{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:16px;
+  background:#f8fafc;
+  border-radius:12px;
+  margin-bottom:12px;
+  transition:all .2s;
+  cursor:pointer;
+}
+.order-item:hover{background:#f0f3f7;transform:translateX(4px)}
+.order-info h4{margin:0 0 4px;font-size:15px;font-weight:600;display:flex;align-items:center;gap:8px}
+.order-info p{margin:0;font-size:12px;color:var(--muted)}
+.order-total{text-align:right}
+.order-total h4{margin:0;font-size:18px;font-weight:800;color:var(--primary)}
+.order-total p{margin:4px 0 0;font-size:12px;color:var(--muted)}
+
+/* Empty state */
+.empty-state{text-align:center;padding:60px 20px;color:var(--muted)}
+.empty-state .icon{font-size:48px;margin-bottom:12px}
+.empty-state h4{margin:0 0 8px;color:#0f172a;font-size:18px}
+.empty-state p{margin:0;font-size:14px}
+
+/* Loading */
+.loading{text-align:center;padding:40px;color:var(--muted)}
+
+/* Toast */
+.toast{position:fixed;bottom:24px;right:24px;background:#0f172a;color:#fff;padding:14px 20px;border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,0.2);transform:translateY(100px);opacity:0;transition:all .3s ease;z-index:200;display:flex;align-items:center;gap:10px;font-weight:500}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.success{background:var(--primary)}
+.toast.error{background:var(--danger)}
+
+/* Modal */
+.modal-backdrop{position:fixed;inset:0;background:rgba(2,6,23,0.5);display:none;align-items:center;justify-content:center;z-index:100;padding:20px}
+.modal-backdrop.show{display:flex}
+.modal{background:#fff;padding:24px;border-radius:16px;max-width:600px;width:100%;box-shadow:0 20px 60px rgba(2,6,23,0.3);animation:modalIn .25s ease;max-height:90vh;overflow-y:auto}
+@keyframes modalIn{from{opacity:0;transform:scale(0.95)}to{opacity:1;transform:scale(1)}}
+.modal h3{margin:0 0 20px;font-size:20px;display:flex;align-items:center;gap:10px}
+.modal-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f0f3f7}
+.modal-row:last-child{border-bottom:none}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:24px}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:13px;font-weight:600;color:#374151;margin-bottom:8px}
+.form-group input,.form-group select{width:100%;padding:12px 14px;border:2px solid #e6e9ef;border-radius:10px;font-size:14px;transition:all .2s;background:#f8fafc}
+.form-group input:focus,.form-group select:focus{outline:none;border-color:var(--primary);background:#fff}
+.form-group input:disabled{background:#f0f3f7;color:#9ca3af}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+/* Aviso de cliente inativo */
+.alert-inativo{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:14px 18px;
+  background:var(--danger-light);
+  border:2px solid #fecaca;
+  border-radius:12px;
+  margin-bottom:20px;
+}
+.alert-inativo .icon{font-size:24px}
+.alert-inativo .text{flex:1}
+.alert-inativo .text h5{margin:0;color:var(--danger);font-size:14px}
+.alert-inativo .text p{margin:4px 0 0;font-size:12px;color:#991b1b}
+
+/* Responsivo */
+@media (max-width:768px){
+  .grid-2{grid-template-columns:1fr}
+  header{flex-direction:column;align-items:flex-start}
+  .header-actions{width:100%}
+  .client-header{flex-direction:column;text-align:center}
+  .client-avatar{margin:0 0 16px}
+  .form-row{grid-template-columns:1fr}
+  .client-header-info .badges{justify-content:center}
+}
+</style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div>
+        <a href="/clientes.html" class="back-link">← Voltar para clientes</a>
+        <h1><span>👤</span> <span id="page-title">Detalhes do Cliente</span></h1>
+        <p>Visualize informações e histórico de pedidos</p>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-warning" onclick="abrirModalEdicao()">✏️ Editar Cliente</button>
+        <button class="btn btn-danger" onclick="abrirModalExclusao()">🗑️ Excluir</button>
+      </div>
+    </header>
+
+    <!-- Aviso de cliente inativo -->
+    <div class="alert-inativo" id="alert-inativo" style="display:none">
+      <div class="icon">⚠️</div>
+      <div class="text">
+        <h5>Cliente Inativo</h5>
+        <p>Este cliente está marcado como inativo no sistema.</p>
+      </div>
+      <button class="btn btn-sm btn-primary" onclick="abrirModalEdicao()">Reativar</button>
+    </div>
+
+    <!-- Cards de estatísticas -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="icon purple">🛒</div>
+        <div class="info">
+          <h3 id="stat-pedidos">0</h3>
+          <p>Total de pedidos</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="icon green">💰</div>
+        <div class="info">
+          <h3 id="stat-total">R$ 0</h3>
+          <p>Total em compras</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="icon blue">📅</div>
+        <div class="info">
+          <h3 id="stat-ultimo">—</h3>
+          <p>Último pedido</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="icon yellow">⭐</div>
+        <div class="info">
+          <h3 id="stat-media">R$ 0</h3>
+          <p>Ticket médio</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <!-- Dados do cliente -->
+      <div class="card">
+        <div class="client-header">
+          <div class="client-avatar ativo" id="client-avatar">?</div>
+          <div class="client-header-info">
+            <h2 id="client-name">Carregando...</h2>
+            <p id="client-cpf">—</p>
+            <div class="badges">
+              <span class="badge ativo" id="client-status">✓ Ativo</span>
+              <span class="badge purple" id="client-id">#0</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-header">
+          <h3 class="card-title">📋 Informações Cadastrais</h3>
+        </div>
+
+        <div id="client-data">
+          <div class="data-row">
+            <span class="data-label">Nome completo</span>
+            <span class="data-value" id="data-nome">—</span>
+          </div>
+          <div class="data-row">
+            <span class="data-label">CPF/CNPJ</span>
+            <span class="data-value" id="data-cpf">—</span>
+          </div>
+          <div class="data-row">
+            <span class="data-label">Data de nascimento</span>
+            <span class="data-value" id="data-nascimento">—</span>
+          </div>
+          <div class="data-row">
+            <span class="data-label">Endereço</span>
+            <span class="data-value" id="data-endereco">—</span>
+          </div>
+          <div class="data-row">
+            <span class="data-label">Status</span>
+            <span class="data-value" id="data-status">—</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Histórico de pedidos -->
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">🛒 Histórico de Pedidos</h3>
+          <span class="badge purple" id="pedidos-count">0 pedidos</span>
+        </div>
+
+        <div class="orders-list" id="orders-list">
+          <div class="loading">
+            <p>Carregando pedidos...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de edição -->
+  <div id="modal-edit" class="modal-backdrop">
+    <div class="modal">
+      <h3>✏️ Editar Cliente</h3>
+      <p style="color:var(--muted);margin:-10px 0 20px;font-size:14px">Altere os dados do cliente abaixo</p>
+      
+      <div class="form-group">
+        <label>Nome completo</label>
+        <input type="text" id="edit-nome" placeholder="Nome do cliente" />
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>CPF/CNPJ</label>
+          <input type="text" id="edit-cpf" placeholder="000.000.000-00" maxlength="18" />
+        </div>
+        <div class="form-group">
+          <label>Data de nascimento</label>
+          <input type="date" id="edit-nascimento" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Endereço</label>
+        <input type="text" id="edit-endereco" placeholder="Rua, número, bairro, cidade" />
+      </div>
+
+      <div class="form-group">
+        <label>Status do cliente</label>
+        <div class="status-toggle" id="edit-status-toggle">
+          <label class="status-option ativo" id="edit-opt-ativo">
+            <input type="radio" name="edit-status" value="ativo" />
+            ✓ Ativo
+          </label>
+          <label class="status-option inativo" id="edit-opt-inativo">
+            <input type="radio" name="edit-status" value="inativo" />
+            ✕ Inativo
+          </label>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn btn-ghost" onclick="fecharModalEdicao()">Cancelar</button>
+        <button class="btn btn-primary" onclick="salvarEdicao()">💾 Salvar Alterações</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de confirmação de exclusão -->
+  <div id="modal-delete" class="modal-backdrop">
+    <div class="modal">
+      <h3>⚠️ Excluir Cliente</h3>
+      <p style="color:var(--muted);margin:-10px 0 20px;font-size:14px">
+        Tem certeza que deseja excluir este cliente? Esta ação não pode ser desfeita.
+      </p>
+      <div style="background:#fef2f2;padding:14px;border-radius:10px;margin-bottom:20px">
+        <strong style="color:var(--danger)" id="delete-nome">Nome do cliente</strong>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" onclick="fecharModalExclusao()">Cancelar</button>
+        <button class="btn btn-danger" onclick="confirmarExclusao()">🗑️ Sim, excluir</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de detalhes do pedido -->
+  <div id="modal-pedido" class="modal-backdrop">
+    <div class="modal">
+      <h3>📋 Detalhes do Pedido</h3>
+      <div id="modal-pedido-content"></div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" onclick="fecharModalPedido()">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast"></div>
+
+<script>
+// ============================================
+// VARIÁVEIS GLOBAIS
+// ============================================
+let cliente = null;
+let pedidosCliente = [];
+let clienteId = null;
+
+// ============================================
+// FUNÇÕES UTILITÁRIAS
+// ============================================
+function getUrlParam(param) {
+  const urlParams = new URLSearchParams(window.location.search);
+  return urlParams.get(param);
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[c]));
+}
+
+function formatMoney(valor) {
+  return 'R$ ' + Number(valor || 0).toFixed(2).replace('.', ',');
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return '—';
+  const d = new Date(dateStr);
+  if (isNaN(d)) return dateStr;
+  return d.toLocaleDateString('pt-BR');
+}
+
+function formatDateTime(dateStr) {
+  if (!dateStr) return '—';
+  const d = new Date(dateStr);
+  if (isNaN(d)) return dateStr;
+  return d.toLocaleString('pt-BR');
+}
+
+function getInitials(name) {
+  if (!name) return '?';
+  const parts = name.trim().split(' ');
+  if (parts.length >= 2) {
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  }
+  return name.substring(0, 2).toUpperCase();
+}
+
+function showToast(msg, type = 'success') {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.className = 'toast show ' + type;
+  setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+function maskCpfCnpj(value) {
+  const v = value.replace(/\D/g, '');
+  if (v.length <= 11) {
+    return v.replace(/(\d{3})(\d{3})?(\d{3})?(\d{2})?/, (m, a, b, c, d) => {
+      let out = a || '';
+      if (b) out += '.' + b;
+      if (c) out += '.' + c;
+      if (d) out += '-' + d;
+      return out;
+    });
+  } else {
+    return v.replace(/(\d{2})(\d{3})?(\d{3})?(\d{4})?(\d{2})?/, (m, a, b, c, d, e) => {
+      let out = a || '';
+      if (b) out += '.' + b;
+      if (c) out += '.' + c;
+      if (d) out += '/' + d;
+      if (e) out += '-' + e;
+      return out;
+    });
+  }
+}
+
+// ============================================
+// CARREGAR DADOS
+// ============================================
+async function carregarCliente() {
+  try {
+    const res = await fetch(`/api/clientes/${clienteId}`);
+    if (!res.ok) throw new Error('Cliente não encontrado');
+    cliente = await res.json();
+    
+    renderizarCliente();
+    await carregarPedidos();
+  } catch (e) {
+    console.error(e);
+    document.body.innerHTML = `
+      <div class="container">
+        <div class="card">
+          <div class="empty-state">
+            <div class="icon">❌</div>
+            <h4>Cliente não encontrado</h4>
+            <p>O cliente solicitado não existe ou foi removido.</p>
+            <a href="/clientes.html" class="btn btn-primary" style="margin-top:20px">← Voltar para clientes</a>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+}
+
+async function carregarPedidos() {
+  try {
+    const res = await fetch('/api/pedidos');
+    if (!res.ok) throw new Error('Erro ao carregar pedidos');
+    const todosPedidos = await res.json();
+    
+    // Filtrar pedidos deste cliente
+    pedidosCliente = todosPedidos.filter(p => p.clienteId === cliente.id);
+    
+    atualizarEstatisticas();
+    renderizarPedidos();
+  } catch (e) {
+    console.error(e);
+    document.getElementById('orders-list').innerHTML = `
+      <div class="empty-state">
+        <div class="icon">❌</div>
+        <h4>Erro ao carregar pedidos</h4>
+      </div>
+    `;
+  }
+}
+
+// ============================================
+// RENDERIZAR CLIENTE
+// ============================================
+function renderizarCliente() {
+  const status = cliente.status || 'ativo';
+  const isAtivo = status === 'ativo';
+
+  // Header
+  document.getElementById('page-title').textContent = cliente.nome;
+  document.getElementById('client-avatar').textContent = getInitials(cliente.nome);
+  document.getElementById('client-avatar').className = 'client-avatar ' + status;
+  document.getElementById('client-name').textContent = cliente.nome;
+  document.getElementById('client-cpf').textContent = cliente.cpf || 'Sem CPF cadastrado';
+  
+  // Status badge
+  const statusBadge = document.getElementById('client-status');
+  statusBadge.textContent = isAtivo ? '✓ Ativo' : '✕ Inativo';
+  statusBadge.className = 'badge ' + status;
+  
+  document.getElementById('client-id').textContent = '#' + cliente.id;
+
+  // Alerta de inativo
+  document.getElementById('alert-inativo').style.display = isAtivo ? 'none' : 'flex';
+
+  // Dados
+  document.getElementById('data-nome').textContent = cliente.nome || '—';
+  document.getElementById('data-cpf').textContent = cliente.cpf || '—';
+  document.getElementById('data-nascimento').textContent = formatDate(cliente.nascimento);
+  document.getElementById('data-endereco').textContent = cliente.endereco || '—';
+  document.getElementById('data-status').innerHTML = isAtivo 
+    ? '<span class="badge ativo">✓ Ativo</span>' 
+    : '<span class="badge inativo">✕ Inativo</span>';
+}
+
+// ============================================
+// ESTATÍSTICAS
+// ============================================
+function atualizarEstatisticas() {
+  const totalPedidos = pedidosCliente.length;
+  const valorTotal = pedidosCliente.reduce((s, p) => s + (p.total || 0), 0);
+  const ticketMedio = totalPedidos > 0 ? valorTotal / totalPedidos : 0;
+  
+  // Último pedido
+  let ultimoPedido = '—';
+  if (pedidosCliente.length > 0) {
+    const pedidosOrdenados = [...pedidosCliente].sort((a, b) => 
+      new Date(b.dateISO || 0) - new Date(a.dateISO || 0)
+    );
+    ultimoPedido = formatDate(pedidosOrdenados[0].dateISO);
+  }
+
+  document.getElementById('stat-pedidos').textContent = totalPedidos;
+  document.getElementById('stat-total').textContent = formatMoney(valorTotal);
+  document.getElementById('stat-ultimo').textContent = ultimoPedido;
+  document.getElementById('stat-media').textContent = formatMoney(ticketMedio);
+  document.getElementById('pedidos-count').textContent = totalPedidos + ' pedido' + (totalPedidos !== 1 ? 's' : '');
+}
+
+// ============================================
+// RENDERIZAR PEDIDOS
+// ============================================
+function renderizarPedidos() {
+  const container = document.getElementById('orders-list');
+
+  if (pedidosCliente.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="icon">🛒</div>
+        <h4>Nenhum pedido encontrado</h4>
+        <p>Este cliente ainda não realizou nenhum pedido.</p>
+      </div>
+    `;
+    return;
+  }
+
+  // Ordenar do mais recente para o mais antigo
+  const pedidosOrdenados = [...pedidosCliente].sort((a, b) => 
+    new Date(b.dateISO || 0) - new Date(a.dateISO || 0)
+  );
+
+  container.innerHTML = pedidosOrdenados.map(p => `
+    <div class="order-item" onclick="verDetalhesPedido(${p.id})">
+      <div class="order-info">
+        <h4>
+          <span class="badge purple">#${p.id}</span>
+          ${p.items?.length || 0} item(s)
+        </h4>
+        <p>📅 ${formatDateTime(p.dateISO)}</p>
+      </div>
+      <div class="order-total">
+        <h4>${formatMoney(p.total)}</h4>
+        <p>Ver detalhes →</p>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ============================================
+// DETALHES DO PEDIDO
+// ============================================
+function verDetalhesPedido(pedidoId) {
+  const pedido = pedidosCliente.find(p => p.id === pedidoId);
+  if (!pedido) return;
+
+  let html = `
+    <div style="margin-bottom:16px;padding-bottom:16px;border-bottom:2px solid #f0f3f7">
+      <p><strong>Pedido:</strong> #${pedido.id}</p>
+      <p><strong>Data:</strong> ${formatDateTime(pedido.dateISO)}</p>
+    </div>
+    <h4 style="margin:0 0 12px;font-size:14px;color:var(--muted)">Itens do pedido:</h4>
+  `;
+
+  pedido.items?.forEach(item => {
+    const subtotal = item.quantidade * item.preco;
+    html += `
+      <div class="modal-row">
+        <span>${escapeHtml(item.nome)} <span style="color:var(--muted)">× ${item.quantidade}</span></span>
+        <span><strong>${formatMoney(subtotal)}</strong></span>
+      </div>
+    `;
+  });
+
+  html += `
+    <div style="margin-top:16px;padding-top:16px;border-top:2px solid #e6e9ef;display:flex;justify-content:space-between">
+      <span style="font-size:18px;font-weight:700">Total:</span>
+      <span style="font-size:18px;font-weight:700;color:var(--primary)">${formatMoney(pedido.total)}</span>
+    </div>
+  `;
+
+  document.getElementById('modal-pedido-content').innerHTML = html;
+  document.getElementById('modal-pedido').classList.add('show');
+}
+
+function fecharModalPedido() {
+  document.getElementById('modal-pedido').classList.remove('show');
+}
+
+// ============================================
+// EDIÇÃO
+// ============================================
+function abrirModalEdicao() {
+  if (!cliente) return;
+
+  document.getElementById('edit-nome').value = cliente.nome || '';
+  document.getElementById('edit-cpf').value = cliente.cpf || '';
+  document.getElementById('edit-nascimento').value = cliente.nascimento || '';
+  document.getElementById('edit-endereco').value = cliente.endereco || '';
+  
+  // Setar status
+  const status = cliente.status || 'ativo';
+  document.querySelectorAll('#edit-status-toggle .status-option').forEach(opt => {
+    opt.classList.remove('active');
+  });
+  document.getElementById('edit-opt-' + status).classList.add('active');
+  document.querySelector(`input[name="edit-status"][value="${status}"]`).checked = true;
+  
+  document.getElementById('modal-edit').classList.add('show');
+}
+
+function fecharModalEdicao() {
+  document.getElementById('modal-edit').classList.remove('show');
+}
+
+// Toggle de status no modal de edição
+document.querySelectorAll('#edit-status-toggle .status-option').forEach(opt => {
+  opt.addEventListener('click', () => {
+    document.querySelectorAll('#edit-status-toggle .status-option').forEach(o => o.classList.remove('active'));
+    opt.classList.add('active');
+    opt.querySelector('input').checked = true;
+  });
+});
+
+async function salvarEdicao() {
+  const nome = document.getElementById('edit-nome').value.trim();
+  const cpf = document.getElementById('edit-cpf').value.trim();
+  const nascimento = document.getElementById('edit-nascimento').value || null;
+  const endereco = document.getElementById('edit-endereco').value.trim();
+  const status = document.querySelector('input[name="edit-status"]:checked').value;
+
+  if (!nome || !cpf) {
+    showToast('Nome e CPF são obrigatórios', 'error');
+    return;
+  }
+
+  try {
+    const res = await fetch(`/api/clientes/${clienteId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nome, cpf, nascimento, endereco, status })
+    });
+
+    if (!res.ok) throw new Error('Erro ao salvar');
+
+    showToast('✅ Cliente atualizado com sucesso!');
+    fecharModalEdicao();
+    await carregarCliente();
+  } catch (e) {
+    showToast(e.message, 'error');
+  }
+}
+
+// ============================================
+// EXCLUSÃO
+// ============================================
+function abrirModalExclusao() {
+  if (!cliente) return;
+  document.getElementById('delete-nome').textContent = cliente.nome;
+  document.getElementById('modal-delete').classList.add('show');
+}
+
+function fecharModalExclusao() {
+  document.getElementById('modal-delete').classList.remove('show');
+}
+
+async function confirmarExclusao() {
+  try {
+    const res = await fetch(`/api/clientes/${clienteId}`, { method: 'DELETE' });
+    if (!res.ok) throw new Error('Erro ao excluir');
+
+    showToast('🗑️ Cliente excluído!');
+    setTimeout(() => {
+      window.location.href = '/clientes.html';
+    }, 1000);
+  } catch (e) {
+    showToast(e.message, 'error');
+  }
+}
+
+// ============================================
+// EVENTOS
+// ============================================
+// Máscara CPF
+document.getElementById('edit-cpf').addEventListener('input', (e) => {
+  e.target.value = maskCpfCnpj(e.target.value);
+});
+
+// Fechar modais clicando fora
+document.querySelectorAll('.modal-backdrop').forEach(modal => {
+  modal.addEventListener('click', (e) => {
+    if (e.target.classList.contains('modal-backdrop')) {
+      modal.classList.remove('show');
+    }
+  });
+});
+
+// ============================================
+// INICIALIZAÇÃO
+// ============================================
+clienteId = getUrlParam('id');
+
+if (!clienteId) {
+  window.location.href = '/clientes.html';
+} else {
+  carregarCliente();
+}
+</script>
+</body>
+</html>

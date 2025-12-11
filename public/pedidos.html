@@ -1,0 +1,1380 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Pedidos - MegaClean</title>
+<style>
+:root{
+  --bg:#f4f7fb;
+  --card:#fff;
+  --primary:#0aa04e;
+  --primary-light:#e6f9ee;
+  --primary-600:#0a8a44;
+  --muted:#6b7280;
+  --danger:#dc2626;
+  --danger-light:#fef2f2;
+  --warning:#f59e0b;
+  --warning-light:#fffbeb;
+  --info:#3b82f6;
+  --info-light:#eff6ff;
+  --purple:#8b5cf6;
+  --purple-light:#f5f3ff;
+  --radius:12px;
+  --shadow: 0 8px 24px rgba(12,20,30,0.06);
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+  background:linear-gradient(180deg,#f7fafc 0%, var(--bg) 100%);
+  color:#0f172a;
+  padding:22px;
+  min-height:100vh;
+}
+.container{max-width:1400px;margin:0 auto}
+
+/* Header */
+header{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:22px;flex-wrap:wrap}
+header h1{margin:0;color:var(--primary);font-size:28px;display:flex;align-items:center;gap:10px}
+header h1 span{font-size:32px}
+header p{margin:4px 0 0;color:var(--muted);font-size:14px}
+.back-link{color:var(--primary);text-decoration:none;font-weight:600;display:inline-flex;align-items:center;gap:6px}
+.back-link:hover{text-decoration:underline}
+
+/* Cards de estatísticas */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:22px}
+.stat-card{background:var(--card);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);display:flex;align-items:center;gap:14px}
+.stat-card .icon{width:50px;height:50px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px}
+.stat-card .icon.green{background:var(--primary-light);color:var(--primary)}
+.stat-card .icon.blue{background:var(--info-light);color:var(--info)}
+.stat-card .icon.purple{background:var(--purple-light);color:var(--purple)}
+.stat-card .icon.yellow{background:var(--warning-light);color:var(--warning)}
+.stat-card .info h3{margin:0;font-size:24px;font-weight:800}
+.stat-card .info p{margin:4px 0 0;color:var(--muted);font-size:13px}
+
+/* Card principal */
+.card{background:var(--card);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);margin-bottom:18px}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:12px}
+.card-title{font-size:18px;font-weight:700;margin:0;display:flex;align-items:center;gap:8px}
+
+/* Grid de criação de pedido */
+.pedido-grid{display:grid;grid-template-columns:1fr 420px;gap:20px}
+
+/* Select de cliente */
+.cliente-select{margin-bottom:20px}
+.cliente-select label{display:block;font-size:13px;font-weight:600;color:#374151;margin-bottom:8px}
+.cliente-select select{width:100%;padding:14px;border:2px solid #e6e9ef;border-radius:10px;font-size:14px;background:#f8fafc;cursor:pointer}
+.cliente-select select:focus{outline:none;border-color:var(--primary)}
+
+/* Busca de produtos */
+.search-box{position:relative;margin-bottom:16px}
+.search-box input{width:100%;padding:12px 14px 12px 42px;border-radius:10px;border:2px solid #e6e9ef;font-size:14px;transition:all .2s}
+.search-box input:focus{outline:none;border-color:var(--primary)}
+.search-box::before{content:'🔍';position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:16px}
+
+/* Lista de produtos */
+.product-list{max-height:400px;overflow-y:auto;border:2px solid #e6e9ef;border-radius:12px;background:#f8fafc}
+.product-item{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid #e6e9ef;background:#fff;transition:background .15s}
+.product-item:last-child{border-bottom:none}
+.product-item:hover{background:#f8fafc}
+.product-info h4{margin:0;font-size:14px;font-weight:600}
+.product-info p{margin:4px 0 0;font-size:12px;color:var(--muted)}
+.product-actions{display:flex;align-items:center;gap:10px}
+.product-actions .stock{font-size:12px;color:var(--muted);min-width:60px;text-align:right}
+.product-actions input{width:70px;padding:8px;border:2px solid #e6e9ef;border-radius:8px;text-align:center;font-size:14px}
+.product-actions input:focus{outline:none;border-color:var(--primary)}
+
+/* Botões */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 16px;border-radius:10px;border:none;cursor:pointer;font-weight:600;font-size:14px;transition:all .2s}
+.btn-primary{background:linear-gradient(135deg, #0aa04e 0%, #059669 100%);color:#fff;box-shadow:0 4px 14px rgba(10,160,78,0.2)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(10,160,78,0.3)}
+.btn-primary:disabled{opacity:0.6;cursor:not-allowed;transform:none}
+.btn-ghost{background:#f8fafc;color:var(--muted);border:2px solid #e6e9ef}
+.btn-ghost:hover{border-color:var(--primary);color:var(--primary)}
+.btn-add{background:var(--info);color:#fff;padding:8px 14px}
+.btn-add:hover{background:#2563eb}
+.btn-sm{padding:6px 10px;font-size:12px}
+
+/* Carrinho */
+.cart-section{background:#f8fafc;border-radius:12px;padding:20px}
+.cart-title{font-size:16px;font-weight:700;margin:0 0 16px;display:flex;align-items:center;gap:8px}
+.cart-items{max-height:280px;overflow-y:auto;margin-bottom:16px}
+.cart-item{display:flex;align-items:center;justify-content:space-between;padding:12px;background:#fff;border-radius:10px;margin-bottom:8px;box-shadow:0 2px 6px rgba(0,0,0,0.04)}
+.cart-item-info h5{margin:0;font-size:14px;font-weight:600}
+.cart-item-info p{margin:4px 0 0;font-size:12px;color:var(--muted)}
+.cart-item-actions{display:flex;align-items:center;gap:8px}
+.cart-item-actions input{width:60px;padding:6px;border:2px solid #e6e9ef;border-radius:6px;text-align:center;font-size:13px}
+.cart-item-actions .remove{background:none;border:none;color:var(--danger);cursor:pointer;font-size:18px;padding:4px}
+.cart-empty{text-align:center;padding:40px 20px;color:var(--muted)}
+.cart-empty .icon{font-size:40px;margin-bottom:10px}
+
+/* Totais */
+.cart-totals{border-top:2px solid #e6e9ef;padding-top:16px;margin-top:8px}
+.cart-total-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.cart-total-row.final{font-size:18px;font-weight:800;color:var(--primary)}
+.cart-actions{display:flex;gap:10px;margin-top:16px}
+.cart-actions .btn{flex:1}
+
+/* Histórico de pedidos */
+.filter-buttons{display:flex;gap:8px}
+.filter-btn{padding:8px 16px;border-radius:8px;border:2px solid #e6e9ef;background:#fff;cursor:pointer;font-size:13px;font-weight:600;transition:all .2s}
+.filter-btn:hover{border-color:var(--primary);color:var(--primary)}
+.filter-btn.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+
+/* Lista de pedidos */
+.orders-list{max-height:400px;overflow-y:auto}
+.order-item{display:flex;align-items:center;justify-content:space-between;padding:16px;background:#f8fafc;border-radius:10px;margin-bottom:10px;transition:all .15s}
+.order-item:hover{background:#f0f3f7}
+.order-info h4{margin:0;font-size:15px;font-weight:600}
+.order-info p{margin:4px 0 0;font-size:12px;color:var(--muted)}
+.order-total{text-align:right}
+.order-total h4{margin:0;font-size:16px;font-weight:800;color:var(--primary)}
+.order-total button{margin-top:8px}
+
+/* Badge */
+.badge{display:inline-flex;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.badge.green{background:var(--primary-light);color:var(--primary)}
+.badge.yellow{background:var(--warning-light);color:#b45309}
+.badge.red{background:var(--danger-light);color:var(--danger)}
+.badge.retroativo{background:var(--purple-light);color:var(--purple);font-size:10px}
+
+/* Data selector */
+.date-section{margin:16px 0;padding:16px;background:#f8fafc;border-radius:10px;border:2px solid #e6e9ef}
+.date-section.admin-mode{border-color:var(--primary);background:var(--primary-light)}
+.date-section.solicitacao-mode{border-color:var(--warning);background:var(--warning-light)}
+.date-row{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.date-row label{font-size:13px;font-weight:600;color:#374151}
+.date-row input[type="date"]{padding:10px 14px;border:2px solid #e6e9ef;border-radius:8px;font-size:14px}
+.date-row input[type="date"]:focus{outline:none;border-color:var(--primary)}
+.date-info{font-size:12px;color:var(--muted);margin-top:8px}
+.date-info.admin{color:var(--primary)}
+.date-info.solicitacao{color:#b45309}
+
+/* Minhas solicitações */
+.solicitacoes-card{background:var(--warning-light);border:2px solid var(--warning);border-radius:var(--radius);padding:16px;margin-bottom:18px}
+.solicitacoes-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.solicitacoes-header h4{margin:0;display:flex;align-items:center;gap:8px;color:#b45309}
+.solicitacao-mini{background:#fff;padding:12px;border-radius:8px;margin-bottom:8px;border-left:3px solid var(--warning)}
+.solicitacao-mini.aprovado{border-left-color:var(--primary);background:var(--primary-light)}
+.solicitacao-mini.rejeitado{border-left-color:var(--danger);background:var(--danger-light)}
+.solicitacao-mini h5{margin:0 0 4px;font-size:13px}
+.solicitacao-mini p{margin:0;font-size:12px;color:var(--muted)}
+
+/* Motivo field */
+.motivo-section{margin-top:12px}
+.motivo-section textarea{width:100%;padding:12px;border:2px solid #e6e9ef;border-radius:8px;font-size:14px;resize:vertical;min-height:60px}
+.motivo-section textarea:focus{outline:none;border-color:var(--primary)}
+
+/* Empty state */
+.empty-state{text-align:center;padding:40px 20px;color:var(--muted)}
+.empty-state .icon{font-size:40px;margin-bottom:10px}
+.empty-state h4{margin:0 0 8px;color:#0f172a;font-size:16px}
+
+/* Toast */
+.toast{position:fixed;bottom:24px;right:24px;background:#0f172a;color:#fff;padding:14px 20px;border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,0.2);transform:translateY(100px);opacity:0;transition:all .3s ease;z-index:200;display:flex;align-items:center;gap:10px;font-weight:500}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.success{background:var(--primary)}
+.toast.error{background:var(--danger)}
+
+/* Modal */
+.modal-backdrop{position:fixed;inset:0;background:rgba(2,6,23,0.5);display:none;align-items:center;justify-content:center;z-index:100;padding:20px}
+.modal-backdrop.show{display:flex}
+.modal{background:#fff;padding:24px;border-radius:16px;max-width:600px;width:100%;box-shadow:0 20px 60px rgba(2,6,23,0.3);animation:modalIn .25s ease;max-height:90vh;overflow-y:auto}
+@keyframes modalIn{from{opacity:0;transform:scale(0.95)}to{opacity:1;transform:scale(1)}}
+.modal h3{margin:0 0 20px;font-size:20px;display:flex;align-items:center;gap:10px}
+.modal-detail-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f0f3f7}
+.modal-detail-row:last-child{border-bottom:none}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:24px}
+
+/* Responsivo */
+@media (max-width:1000px){
+  .pedido-grid{grid-template-columns:1fr}
+}
+@media (max-width:768px){
+  header{flex-direction:column;align-items:flex-start}
+  .stats-grid{grid-template-columns:1fr 1fr}
+}
+
+/* ==========================================
+   ESTILOS DE IMPRESSÃO (A4 - 1 página)
+   ========================================== */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #print-area, #print-area * {
+    visibility: visible;
+  }
+  #print-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    background: #fff;
+  }
+  @page {
+    size: A4;
+    margin: 15mm;
+  }
+}
+
+/* Área de impressão (invisível na tela normal) */
+#print-area {
+  display: none;
+}
+
+.print-content {
+  font-family: 'Arial', sans-serif;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 0;
+  color: #000;
+  font-size: 12px;
+}
+
+/* Cabeçalho da impressão */
+.print-header {
+  text-align: center;
+  border-bottom: 3px solid #0aa04e;
+  padding-bottom: 15px;
+  margin-bottom: 20px;
+}
+
+.print-header h1 {
+  margin: 0;
+  font-size: 26px;
+  color: #0aa04e;
+}
+
+.print-header p {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: #666;
+}
+
+.print-header .order-num {
+  font-size: 16px;
+  font-weight: bold;
+  margin-top: 12px;
+  background: #f0f0f0;
+  display: inline-block;
+  padding: 8px 20px;
+  border-radius: 6px;
+}
+
+/* Seções */
+.print-section {
+  margin-bottom: 18px;
+}
+
+.print-section-title {
+  font-size: 13px;
+  font-weight: bold;
+  color: #0aa04e;
+  text-transform: uppercase;
+  border-bottom: 2px solid #e0e0e0;
+  padding-bottom: 6px;
+  margin-bottom: 12px;
+}
+
+/* Dados do cliente */
+.print-cliente-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 30px;
+}
+
+.print-cliente-item {
+  padding: 6px 0;
+  border-bottom: 1px dashed #e0e0e0;
+}
+
+.print-cliente-item label {
+  display: block;
+  font-size: 10px;
+  color: #666;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+
+.print-cliente-item span {
+  font-size: 13px;
+  font-weight: 600;
+  color: #333;
+}
+
+/* Tabela de itens */
+.print-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 8px;
+}
+
+.print-table th {
+  background: #f5f5f5;
+  padding: 10px 8px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: bold;
+  border-bottom: 2px solid #ddd;
+  text-transform: uppercase;
+}
+
+.print-table td {
+  padding: 10px 8px;
+  border-bottom: 1px solid #e5e5e5;
+  font-size: 13px;
+}
+
+.print-table .qty-col {
+  text-align: center;
+  width: 60px;
+}
+
+.print-table .price-col {
+  text-align: right;
+  width: 100px;
+}
+
+.print-table .total-row {
+  font-weight: bold;
+  background: #f0fff4;
+}
+
+.print-table .total-row td {
+  border-top: 2px solid #0aa04e;
+  font-size: 15px;
+  padding: 12px 8px;
+}
+
+/* Área de assinatura */
+.print-signature {
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 2px dashed #ccc;
+}
+
+.print-signature-title {
+  font-size: 11px;
+  color: #666;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.print-signature-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 50px;
+  margin-top: 15px;
+}
+
+.print-signature-box {
+  text-align: center;
+}
+
+.print-signature-line {
+  border-top: 2px solid #333;
+  padding-top: 8px;
+  margin-top: 40px;
+}
+
+.print-signature-label {
+  font-size: 12px;
+  color: #333;
+  font-weight: 600;
+}
+
+.print-signature-sub {
+  font-size: 10px;
+  color: #666;
+  margin-top: 2px;
+}
+
+/* Rodapé */
+.print-footer {
+  margin-top: 25px;
+  padding-top: 12px;
+  border-top: 1px solid #e0e0e0;
+  text-align: center;
+  font-size: 10px;
+  color: #999;
+}
+
+.print-footer p {
+  margin: 2px 0;
+}
+
+/* Observações */
+.print-obs {
+  background: #fffbeb;
+  border: 1px solid #f59e0b;
+  border-radius: 6px;
+  padding: 12px 15px;
+  margin-top: 15px;
+}
+
+.print-obs-title {
+  font-size: 11px;
+  font-weight: bold;
+  color: #b45309;
+  margin-bottom: 6px;
+}
+
+.print-obs-text {
+  font-size: 12px;
+  color: #333;
+  min-height: 30px;
+}
+</style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div>
+        <a href="/admin.html" class="back-link">← Voltar ao painel</a>
+        <h1><span>🛒</span> Pedidos</h1>
+        <p>Crie pedidos e dê baixa automática no estoque</p>
+      </div>
+    </header>
+
+    <!-- Cards de estatísticas -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="icon purple">🛒</div>
+        <div class="info">
+          <h3 id="stat-total">0</h3>
+          <p>Total de pedidos</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="icon green">📅</div>
+        <div class="info">
+          <h3 id="stat-hoje">0</h3>
+          <p>Pedidos hoje</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="icon blue">💰</div>
+        <div class="info">
+          <h3 id="stat-valor-hoje">R$ 0</h3>
+          <p>Vendas hoje</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="icon yellow">📊</div>
+        <div class="info">
+          <h3 id="stat-valor-mes">R$ 0</h3>
+          <p>Vendas no mês</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Criar pedido -->
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">➕ Novo Pedido</h2>
+      </div>
+
+      <div class="cliente-select">
+        <label>Selecione o cliente *</label>
+        <select id="select-cliente">
+          <option value="">-- Selecione um cliente --</option>
+        </select>
+      </div>
+
+      <!-- Seção de Data (Admin: data livre / Operador: cria solicitação) -->
+      <div class="date-section" id="date-section">
+        <div class="date-row">
+          <label>📅 Data do Pedido:</label>
+          <input type="date" id="input-data" />
+          <button class="btn btn-ghost btn-sm" onclick="definirDataHoje()">Hoje</button>
+        </div>
+        <p class="date-info" id="date-info">
+          Selecione a data do pedido. Data de hoje = pedido normal.
+        </p>
+        <!-- Campo de motivo (aparece quando é solicitação) -->
+        <div class="motivo-section" id="motivo-section" style="display:none">
+          <label style="font-size:13px;font-weight:600;color:#374151">Motivo da solicitação (obrigatório):</label>
+          <textarea id="input-motivo" placeholder="Explique por que precisa registrar este pedido em data anterior..."></textarea>
+        </div>
+      </div>
+
+      <!-- Card de solicitações pendentes (só para operador) -->
+      <div class="solicitacoes-card" id="solicitacoes-card" style="display:none">
+        <div class="solicitacoes-header">
+          <h4>📋 Minhas Solicitações</h4>
+          <a href="/solicitacoes.html" class="btn btn-ghost btn-sm" style="display:none" id="link-todas-solicitacoes">Ver todas</a>
+        </div>
+        <div id="lista-minhas-solicitacoes"></div>
+      </div>
+
+      <div class="pedido-grid">
+        <!-- Lista de produtos -->
+        <div>
+          <div class="search-box">
+            <input type="text" id="search-produto" placeholder="Buscar produto por nome ou SKU..." />
+          </div>
+          <div class="product-list" id="product-list">
+            <div class="empty-state">
+              <div class="icon">📦</div>
+              <h4>Carregando produtos...</h4>
+            </div>
+          </div>
+        </div>
+
+        <!-- Carrinho -->
+        <div class="cart-section">
+          <h3 class="cart-title">🛒 Carrinho</h3>
+          
+          <div class="cart-items" id="cart-items">
+            <div class="cart-empty">
+              <div class="icon">🛒</div>
+              <p>Carrinho vazio</p>
+              <p style="font-size:12px">Adicione produtos ao carrinho</p>
+            </div>
+          </div>
+
+          <div class="cart-totals">
+            <div class="cart-total-row">
+              <span>Itens:</span>
+              <span id="cart-count">0</span>
+            </div>
+            <div class="cart-total-row final">
+              <span>Total:</span>
+              <span id="cart-total">R$ 0,00</span>
+            </div>
+          </div>
+
+          <div class="cart-actions">
+            <button class="btn btn-ghost" onclick="limparCarrinho()">🗑️ Limpar</button>
+            <button class="btn btn-primary" id="btn-confirmar" onclick="confirmarPedido()">
+              ✓ Confirmar Pedido
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Histórico de pedidos -->
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">📋 Histórico de Pedidos</h2>
+        <div class="filter-buttons">
+          <button class="filter-btn active" data-filter="all">Todos</button>
+          <button class="filter-btn" data-filter="today">Hoje</button>
+          <button class="filter-btn" data-filter="month">Este mês</button>
+        </div>
+      </div>
+
+      <div class="orders-list" id="orders-list">
+        <div class="empty-state">
+          <div class="icon">📋</div>
+          <h4>Carregando pedidos...</h4>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal detalhes do pedido -->
+  <div id="modal-detail" class="modal-backdrop">
+    <div class="modal">
+      <h3>📋 Detalhes do Pedido</h3>
+      <div id="modal-content"></div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" onclick="fecharModal()">Fechar</button>
+        <button class="btn btn-primary" id="btn-imprimir" onclick="imprimirPedido()">🖨️ Imprimir Pedido</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast"></div>
+
+  <!-- Área de Impressão (invisível na tela) -->
+  <div id="print-area">
+    <div class="print-content" id="print-content"></div>
+  </div>
+
+<script>
+// ============================================
+// VARIÁVEIS GLOBAIS
+// ============================================
+let clientes = [];
+let produtos = [];
+let pedidos = [];
+let carrinho = []; // { produtoId, nome, quantidade, preco, unidade }
+let filtroAtual = 'all';
+let userRole = 'admin';
+let minhasSolicitacoes = [];
+let pedidoAtual = null; // Pedido sendo visualizado no modal
+
+// ============================================
+// FUNÇÕES UTILITÁRIAS
+// ============================================
+function getToken() {
+  return localStorage.getItem('admin_token') || '';
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[c]));
+}
+
+function formatMoney(valor) {
+  return 'R$ ' + Number(valor || 0).toFixed(2).replace('.', ',');
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return '—';
+  const d = new Date(dateStr);
+  return d.toLocaleDateString('pt-BR');
+}
+
+function showToast(msg, type = 'success') {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.className = 'toast show ' + type;
+  setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+function getHoje() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function isDataAnterior(data) {
+  return data < getHoje();
+}
+
+// ============================================
+// CONFIGURAÇÃO DE DATA
+// ============================================
+function definirDataHoje() {
+  document.getElementById('input-data').value = getHoje();
+  verificarData();
+}
+
+function verificarData() {
+  const data = document.getElementById('input-data').value;
+  const dateSection = document.getElementById('date-section');
+  const dateInfo = document.getElementById('date-info');
+  const motivoSection = document.getElementById('motivo-section');
+  const btnConfirmar = document.getElementById('btn-confirmar');
+  
+  if (!data || data >= getHoje()) {
+    // Data de hoje ou futura - pedido normal
+    dateSection.className = 'date-section';
+    dateInfo.className = 'date-info';
+    dateInfo.innerHTML = 'Selecione a data do pedido. Data de hoje = pedido normal.';
+    motivoSection.style.display = 'none';
+    btnConfirmar.innerHTML = '✓ Confirmar Pedido';
+  } else {
+    // Data anterior
+    if (userRole === 'admin') {
+      dateSection.className = 'date-section admin-mode';
+      dateInfo.className = 'date-info admin';
+      dateInfo.innerHTML = '👑 <strong>Modo Admin:</strong> Pedido será registrado diretamente na data selecionada.';
+      motivoSection.style.display = 'none';
+      btnConfirmar.innerHTML = '✓ Registrar Pedido Retroativo';
+    } else {
+      dateSection.className = 'date-section solicitacao-mode';
+      dateInfo.className = 'date-info solicitacao';
+      dateInfo.innerHTML = '⏳ <strong>Solicitação:</strong> Como a data é anterior, será criada uma solicitação que o administrador precisa aprovar.';
+      motivoSection.style.display = 'block';
+      btnConfirmar.innerHTML = '📋 Enviar Solicitação';
+    }
+  }
+}
+
+// ============================================
+// CARREGAR DADOS
+// ============================================
+async function carregarClientes() {
+  try {
+    const res = await fetch('/api/clientes');
+    if (!res.ok) throw new Error('Erro');
+    clientes = await res.json();
+    
+    const select = document.getElementById('select-cliente');
+    select.innerHTML = '<option value="">-- Selecione um cliente --</option>';
+    clientes.forEach(c => {
+      select.innerHTML += `<option value="${c.id}">${escapeHtml(c.nome)} ${c.cpf ? '(' + c.cpf + ')' : ''}</option>`;
+    });
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+async function carregarProdutos() {
+  try {
+    const res = await fetch('/api/produtos');
+    if (!res.ok) throw new Error('Erro');
+    produtos = await res.json();
+    renderizarProdutos();
+  } catch (e) {
+    console.error(e);
+    document.getElementById('product-list').innerHTML = `
+      <div class="empty-state">
+        <div class="icon">❌</div>
+        <h4>Erro ao carregar produtos</h4>
+      </div>
+    `;
+  }
+}
+
+async function carregarPedidos() {
+  try {
+    const res = await fetch('/api/pedidos');
+    if (!res.ok) throw new Error('Erro');
+    pedidos = await res.json();
+    
+    atualizarEstatisticas();
+    renderizarPedidos();
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+// ============================================
+// ESTATÍSTICAS
+// ============================================
+function atualizarEstatisticas() {
+  const hoje = new Date().toISOString().slice(0, 10);
+  const mes = new Date().toISOString().slice(0, 7);
+
+  const pedidosHoje = pedidos.filter(p => (p.dateISO || '').slice(0, 10) === hoje);
+  const pedidosMes = pedidos.filter(p => (p.dateISO || '').slice(0, 7) === mes);
+
+  const valorHoje = pedidosHoje.reduce((s, p) => s + (p.total || 0), 0);
+  const valorMes = pedidosMes.reduce((s, p) => s + (p.total || 0), 0);
+
+  document.getElementById('stat-total').textContent = pedidos.length;
+  document.getElementById('stat-hoje').textContent = pedidosHoje.length;
+  document.getElementById('stat-valor-hoje').textContent = formatMoney(valorHoje);
+  document.getElementById('stat-valor-mes').textContent = formatMoney(valorMes);
+}
+
+// ============================================
+// RENDERIZAR PRODUTOS
+// ============================================
+function renderizarProdutos() {
+  const container = document.getElementById('product-list');
+  const searchTerm = document.getElementById('search-produto').value.toLowerCase();
+
+  let lista = produtos.filter(p => {
+    return !searchTerm || 
+      (p.nome || '').toLowerCase().includes(searchTerm) ||
+      (p.sku || '').toLowerCase().includes(searchTerm);
+  });
+
+  if (lista.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="icon">📭</div>
+        <h4>Nenhum produto encontrado</h4>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = lista.map(p => `
+    <div class="product-item">
+      <div class="product-info">
+        <h4>${escapeHtml(p.nome)}</h4>
+        <p>SKU: ${escapeHtml(p.sku || '—')} | ${formatMoney(p.preco)}</p>
+      </div>
+      <div class="product-actions">
+        <span class="stock">${p.quantidade} ${escapeHtml(p.unidade || 'UN')}</span>
+        <input type="number" id="qty-${p.id}" min="1" max="${p.quantidade}" value="1" />
+        <button class="btn btn-add btn-sm" onclick="adicionarAoCarrinho(${p.id})" ${p.quantidade <= 0 ? 'disabled' : ''}>
+          ➕
+        </button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ============================================
+// CARRINHO
+// ============================================
+function adicionarAoCarrinho(produtoId) {
+  const produto = produtos.find(p => p.id === produtoId);
+  if (!produto) return;
+
+  const qtyInput = document.getElementById(`qty-${produtoId}`);
+  const quantidade = parseInt(qtyInput.value) || 1;
+
+  if (quantidade <= 0) {
+    showToast('Quantidade inválida', 'error');
+    return;
+  }
+
+  // Verificar estoque
+  const noCarrinho = carrinho.find(c => c.produtoId === produtoId);
+  const qtdAtual = noCarrinho ? noCarrinho.quantidade : 0;
+
+  if (qtdAtual + quantidade > produto.quantidade) {
+    showToast('Estoque insuficiente', 'error');
+    return;
+  }
+
+  if (noCarrinho) {
+    noCarrinho.quantidade += quantidade;
+  } else {
+    carrinho.push({
+      produtoId: produto.id,
+      nome: produto.nome,
+      quantidade,
+      preco: produto.preco,
+      unidade: produto.unidade || 'UN'
+    });
+  }
+
+  qtyInput.value = 1;
+  renderizarCarrinho();
+  showToast(`✓ ${produto.nome} adicionado!`);
+}
+
+function removerDoCarrinho(index) {
+  carrinho.splice(index, 1);
+  renderizarCarrinho();
+}
+
+function atualizarQuantidade(index, novaQtd) {
+  const item = carrinho[index];
+  if (!item) return;
+
+  const produto = produtos.find(p => p.id === item.produtoId);
+  if (!produto) return;
+
+  novaQtd = parseInt(novaQtd) || 1;
+  if (novaQtd > produto.quantidade) {
+    showToast('Estoque insuficiente', 'error');
+    return;
+  }
+  if (novaQtd < 1) novaQtd = 1;
+
+  carrinho[index].quantidade = novaQtd;
+  renderizarCarrinho();
+}
+
+function renderizarCarrinho() {
+  const container = document.getElementById('cart-items');
+
+  if (carrinho.length === 0) {
+    container.innerHTML = `
+      <div class="cart-empty">
+        <div class="icon">🛒</div>
+        <p>Carrinho vazio</p>
+        <p style="font-size:12px">Adicione produtos ao carrinho</p>
+      </div>
+    `;
+    document.getElementById('cart-count').textContent = '0';
+    document.getElementById('cart-total').textContent = 'R$ 0,00';
+    return;
+  }
+
+  let total = 0;
+  let itens = 0;
+
+  container.innerHTML = carrinho.map((item, index) => {
+    const subtotal = item.quantidade * item.preco;
+    total += subtotal;
+    itens += item.quantidade;
+
+    return `
+      <div class="cart-item">
+        <div class="cart-item-info">
+          <h5>${escapeHtml(item.nome)}</h5>
+          <p>${formatMoney(item.preco)} × ${item.quantidade} = <strong>${formatMoney(subtotal)}</strong></p>
+        </div>
+        <div class="cart-item-actions">
+          <input type="number" value="${item.quantidade}" min="1" onchange="atualizarQuantidade(${index}, this.value)" />
+          <button class="remove" onclick="removerDoCarrinho(${index})">✕</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  document.getElementById('cart-count').textContent = itens;
+  document.getElementById('cart-total').textContent = formatMoney(total);
+}
+
+function limparCarrinho() {
+  carrinho = [];
+  renderizarCarrinho();
+}
+
+// ============================================
+// CONFIRMAR PEDIDO
+// ============================================
+async function confirmarPedido() {
+  const clienteId = document.getElementById('select-cliente').value;
+  const dataSelecionada = document.getElementById('input-data').value;
+  const motivo = document.getElementById('input-motivo')?.value || '';
+
+  if (!clienteId) {
+    showToast('Selecione um cliente', 'error');
+    return;
+  }
+
+  if (carrinho.length === 0) {
+    showToast('Carrinho vazio', 'error');
+    return;
+  }
+
+  const btn = document.getElementById('btn-confirmar');
+  btn.disabled = true;
+  
+  const isRetroativo = dataSelecionada && isDataAnterior(dataSelecionada);
+  const isSolicitacao = isRetroativo && userRole !== 'admin';
+  
+  btn.innerHTML = isSolicitacao ? 'Enviando solicitação...' : 'Processando...';
+
+  try {
+    const itemsPayload = carrinho.map(c => ({
+      produtoId: c.produtoId,
+      quantidade: c.quantidade
+    }));
+
+    if (isSolicitacao) {
+      // Operador: criar solicitação
+      if (!motivo.trim()) {
+        throw new Error('Informe o motivo da solicitação');
+      }
+
+      const payload = {
+        clienteId: parseInt(clienteId),
+        items: itemsPayload,
+        dataDesejada: dataSelecionada,
+        motivo: motivo.trim()
+      };
+
+      const res = await fetch('/api/solicitacoes', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-auth-token': getToken()
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const json = await res.json();
+
+      if (!res.ok) {
+        throw new Error(json.error || 'Erro ao criar solicitação');
+      }
+
+      showToast('📋 Solicitação enviada! Aguarde aprovação do administrador.');
+      limparCarrinho();
+      document.getElementById('input-motivo').value = '';
+      definirDataHoje();
+      await carregarMinhasSolicitacoes();
+    } else {
+      // Admin ou pedido normal: criar pedido direto
+      const payload = {
+        clienteId: parseInt(clienteId),
+        items: itemsPayload
+      };
+
+      // Se admin e data retroativa, adicionar a data
+      if (isRetroativo && userRole === 'admin') {
+        payload.dataPersonalizada = dataSelecionada;
+      }
+
+      const res = await fetch('/api/pedidos', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-auth-token': getToken()
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const json = await res.json();
+
+      if (!res.ok) {
+        throw new Error(json.error || 'Erro ao criar pedido');
+      }
+
+      if (isRetroativo) {
+        showToast('✅ Pedido retroativo registrado! Estoque atualizado.');
+      } else {
+        showToast('✅ Pedido confirmado! Estoque atualizado.');
+      }
+      
+      limparCarrinho();
+      definirDataHoje();
+      await carregarProdutos();
+      await carregarPedidos();
+    }
+  } catch (e) {
+    showToast(e.message, 'error');
+  } finally {
+    btn.disabled = false;
+    verificarData();
+  }
+}
+
+// ============================================
+// CARREGAR MINHAS SOLICITAÇÕES (OPERADOR)
+// ============================================
+async function carregarMinhasSolicitacoes() {
+  if (userRole === 'admin') {
+    document.getElementById('solicitacoes-card').style.display = 'none';
+    document.getElementById('link-todas-solicitacoes').style.display = 'inline-flex';
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/solicitacoes', {
+      headers: { 'x-auth-token': getToken() }
+    });
+    
+    if (!res.ok) return;
+    
+    minhasSolicitacoes = await res.json();
+    renderizarMinhasSolicitacoes();
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+function renderizarMinhasSolicitacoes() {
+  const container = document.getElementById('lista-minhas-solicitacoes');
+  const card = document.getElementById('solicitacoes-card');
+  
+  // Mostrar só as últimas 3 e pendentes
+  const recentes = minhasSolicitacoes
+    .filter(s => s.status === 'pendente')
+    .slice(-3)
+    .reverse();
+  
+  if (recentes.length === 0) {
+    card.style.display = 'none';
+    return;
+  }
+  
+  card.style.display = 'block';
+  
+  container.innerHTML = recentes.map(s => {
+    const statusLabel = {
+      'pendente': '⏳ Aguardando aprovação',
+      'aprovado': '✓ Aprovado',
+      'rejeitado': '✕ Rejeitado'
+    }[s.status];
+    
+    const cliente = clientes.find(c => c.id === s.clienteId);
+    
+    return `
+      <div class="solicitacao-mini ${s.status}">
+        <h5>${escapeHtml(cliente?.nome || 'Cliente')} - ${formatDate(s.dataDesejada)}</h5>
+        <p>${statusLabel} • ${formatMoney(s.total)}</p>
+      </div>
+    `;
+  }).join('');
+}
+
+// ============================================
+// RENDERIZAR PEDIDOS
+// ============================================
+function renderizarPedidos() {
+  const container = document.getElementById('orders-list');
+  const hoje = new Date().toISOString().slice(0, 10);
+  const mes = new Date().toISOString().slice(0, 7);
+
+  let lista = pedidos;
+  if (filtroAtual === 'today') {
+    lista = pedidos.filter(p => (p.dateISO || '').slice(0, 10) === hoje);
+  } else if (filtroAtual === 'month') {
+    lista = pedidos.filter(p => (p.dateISO || '').slice(0, 7) === mes);
+  }
+
+  // Mais recentes primeiro
+  lista = [...lista].reverse();
+
+  if (lista.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="icon">📋</div>
+        <h4>Nenhum pedido encontrado</h4>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = lista.map(p => {
+    const cliente = clientes.find(c => c.id === p.clienteId);
+    const data = p.dateISO ? new Date(p.dateISO).toLocaleString('pt-BR') : '—';
+    const retroativoBadge = p.retroativo ? '<span class="badge retroativo">📅 Retroativo</span>' : '';
+
+    return `
+      <div class="order-item">
+        <div class="order-info">
+          <h4><span class="badge green">#${p.id}</span> ${retroativoBadge} ${escapeHtml(cliente?.nome || 'Cliente')}</h4>
+          <p>${data} • ${p.items?.length || 0} item(s)</p>
+        </div>
+        <div class="order-total">
+          <h4>${formatMoney(p.total)}</h4>
+          <button class="btn btn-ghost btn-sm" onclick="verDetalhesPedido(${p.id})">Ver detalhes</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ============================================
+// DETALHES DO PEDIDO
+// ============================================
+function verDetalhesPedido(pedidoId) {
+  const pedido = pedidos.find(p => p.id === pedidoId);
+  if (!pedido) return;
+
+  pedidoAtual = pedido; // Armazenar para impressão
+
+  const cliente = clientes.find(c => c.id === pedido.clienteId);
+  const data = pedido.dateISO ? new Date(pedido.dateISO).toLocaleString('pt-BR') : '—';
+  const retroativoInfo = pedido.retroativo 
+    ? '<p><span class="badge retroativo">📅 Pedido Retroativo</span></p>' 
+    : '';
+
+  let html = `
+    <div style="margin-bottom:16px">
+      <p><strong>Pedido:</strong> #${pedido.id}</p>
+      <p><strong>Cliente:</strong> ${escapeHtml(cliente?.nome || 'Cliente')}</p>
+      <p><strong>Data:</strong> ${data}</p>
+      ${retroativoInfo}
+    </div>
+    <h4 style="margin:0 0 12px">Itens do pedido:</h4>
+  `;
+
+  pedido.items?.forEach(item => {
+    const subtotal = item.quantidade * item.preco;
+    html += `
+      <div class="modal-detail-row">
+        <span>${escapeHtml(item.nome)} × ${item.quantidade}</span>
+        <span><strong>${formatMoney(subtotal)}</strong></span>
+      </div>
+    `;
+  });
+
+  html += `
+    <div class="modal-detail-row" style="margin-top:12px;padding-top:12px;border-top:2px solid #e6e9ef">
+      <span style="font-size:18px;font-weight:700">Total:</span>
+      <span style="font-size:18px;font-weight:700;color:var(--primary)">${formatMoney(pedido.total)}</span>
+    </div>
+  `;
+
+  document.getElementById('modal-content').innerHTML = html;
+  document.getElementById('modal-detail').classList.add('show');
+}
+
+function fecharModal() {
+  document.getElementById('modal-detail').classList.remove('show');
+  pedidoAtual = null;
+}
+
+// ============================================
+// IMPRESSÃO DO PEDIDO
+// ============================================
+function imprimirPedido() {
+  if (!pedidoAtual) {
+    showToast('Nenhum pedido selecionado', 'error');
+    return;
+  }
+
+  const pedido = pedidoAtual;
+  const cliente = clientes.find(c => c.id === pedido.clienteId);
+  const dataEmissao = new Date().toLocaleString('pt-BR');
+  const dataPedido = pedido.dateISO ? new Date(pedido.dateISO).toLocaleString('pt-BR') : '—';
+
+  // Gerar HTML de impressão
+  let itensHtml = '';
+  let subtotalGeral = 0;
+
+  pedido.items?.forEach(item => {
+    const subtotal = item.quantidade * item.preco;
+    subtotalGeral += subtotal;
+    itensHtml += `
+      <tr>
+        <td>${escapeHtml(item.nome)}</td>
+        <td class="qty-col">${item.quantidade}</td>
+        <td class="price-col">${formatMoney(item.preco)}</td>
+        <td class="price-col">${formatMoney(subtotal)}</td>
+      </tr>
+    `;
+  });
+
+  const printContent = `
+    <div class="print-header">
+      <h1>🧹 MegaClean</h1>
+      <p>Sistema de Gestão de Pedidos</p>
+      <div class="order-num">PEDIDO Nº ${String(pedido.id).padStart(4, '0')} ${pedido.retroativo ? '• RETROATIVO' : ''}</div>
+    </div>
+
+    <div class="print-section">
+      <div class="print-section-title">👤 Cliente</div>
+      <div class="print-cliente-grid">
+        <div class="print-cliente-item">
+          <label>Nome</label>
+          <span>${escapeHtml(cliente?.nome || 'Não informado')}</span>
+        </div>
+        <div class="print-cliente-item">
+          <label>CPF/CNPJ</label>
+          <span>${escapeHtml(cliente?.cpf || 'Não informado')}</span>
+        </div>
+        <div class="print-cliente-item">
+          <label>Telefone</label>
+          <span>${escapeHtml(cliente?.telefone || 'Não informado')}</span>
+        </div>
+        <div class="print-cliente-item">
+          <label>Data do Pedido</label>
+          <span>${dataPedido}</span>
+        </div>
+        <div class="print-cliente-item" style="grid-column: span 2">
+          <label>Endereço</label>
+          <span>${escapeHtml(cliente?.endereco || 'Não informado')}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="print-section">
+      <div class="print-section-title">📦 Itens do Pedido</div>
+      <table class="print-table">
+        <thead>
+          <tr>
+            <th>Produto</th>
+            <th class="qty-col">Qtd</th>
+            <th class="price-col">Unit.</th>
+            <th class="price-col">Subtotal</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${itensHtml}
+          <tr class="total-row">
+            <td colspan="3" style="text-align:right">TOTAL:</td>
+            <td class="price-col" style="color:#0aa04e">${formatMoney(pedido.total)}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="print-obs">
+      <div class="print-obs-title">📝 Observações</div>
+      <div class="print-obs-text">________________________________________________________________</div>
+    </div>
+
+    <div class="print-signature">
+      <div class="print-signature-title">Confirmação de Recebimento</div>
+      <p style="font-size:9px;color:#666;text-align:center;margin:0 0 5px">
+        Declaro que recebi os produtos/serviços descritos acima em perfeitas condições.
+      </p>
+      
+      <div class="print-signature-grid">
+        <div class="print-signature-box">
+          <div class="print-signature-line">
+            <div class="print-signature-label">Assinatura do Cliente</div>
+            <div class="print-signature-sub">${escapeHtml(cliente?.nome || 'Cliente')}</div>
+          </div>
+        </div>
+        <div class="print-signature-box">
+          <div class="print-signature-line">
+            <div class="print-signature-label">Data do Recebimento</div>
+            <div class="print-signature-sub">____/____/________</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="print-footer">
+      <p><strong>MegaClean</strong> • Documento gerado em ${dataEmissao}</p>
+    </div>
+  `;
+
+  // Inserir conteúdo na área de impressão
+  document.getElementById('print-content').innerHTML = printContent;
+  document.getElementById('print-area').style.display = 'block';
+
+  // Imprimir
+  setTimeout(() => {
+    window.print();
+    // Esconder área após impressão
+    setTimeout(() => {
+      document.getElementById('print-area').style.display = 'none';
+    }, 500);
+  }, 300);
+}
+
+// ============================================
+// EVENTOS
+// ============================================
+document.getElementById('search-produto').addEventListener('input', renderizarProdutos);
+
+// Mudança de data
+document.getElementById('input-data').addEventListener('change', verificarData);
+
+// Filtros de pedidos
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    filtroAtual = btn.dataset.filter;
+    renderizarPedidos();
+  });
+});
+
+// Fechar modal clicando fora
+document.getElementById('modal-detail').addEventListener('click', (e) => {
+  if (e.target.id === 'modal-detail') fecharModal();
+});
+
+// ============================================
+// INICIALIZAÇÃO
+// ============================================
+async function init() {
+  // Carregar role do usuário
+  userRole = localStorage.getItem('admin_role') || localStorage.getItem('user_role') || 'admin';
+  
+  // Configurar data de hoje
+  definirDataHoje();
+  
+  // Se for admin, mostrar link para todas as solicitações
+  if (userRole === 'admin') {
+    document.getElementById('link-todas-solicitacoes').style.display = 'inline-flex';
+    document.getElementById('link-todas-solicitacoes').parentElement.parentElement.style.display = 'block';
+    document.getElementById('link-todas-solicitacoes').parentElement.parentElement.style.background = 'var(--info-light)';
+    document.getElementById('link-todas-solicitacoes').parentElement.parentElement.style.borderColor = 'var(--info)';
+    document.getElementById('link-todas-solicitacoes').parentElement.querySelector('h4').style.color = 'var(--info)';
+    document.getElementById('link-todas-solicitacoes').parentElement.querySelector('h4').innerHTML = '📋 Solicitações Pendentes';
+    document.getElementById('lista-minhas-solicitacoes').innerHTML = '<a href="/solicitacoes.html" style="display:block;padding:10px;text-align:center;color:var(--info);text-decoration:none;font-weight:600">Clique para gerenciar solicitações →</a>';
+    
+    // Verificar se há pendentes
+    try {
+      const res = await fetch('/api/solicitacoes/pendentes/count', {
+        headers: { 'x-auth-token': getToken() }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.count > 0) {
+          document.getElementById('link-todas-solicitacoes').parentElement.querySelector('h4').innerHTML = `📋 Solicitações Pendentes <span class="badge yellow">${data.count}</span>`;
+        } else {
+          document.getElementById('link-todas-solicitacoes').parentElement.parentElement.style.display = 'none';
+        }
+      }
+    } catch (e) {}
+  }
+  
+  await carregarClientes();
+  await carregarProdutos();
+  await carregarPedidos();
+  await carregarMinhasSolicitacoes();
+  renderizarCarrinho();
+}
+
+init();
+</script>
+</body>
+</html>
