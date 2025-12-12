@@ -426,10 +426,10 @@ function abrirModalNovo() {
 }
 
 function abrirModalEditar(id) {
-  const produto = produtos.find(p => p.id === id);
+  const produto = produtos.find(p => (p._id || p.id) === id);
   if (!produto) return;
 
-  editandoId = id;
+  editandoId = produto._id || produto.id;
   document.getElementById('modal-title').innerHTML = '✏️ Editar Produto';
   document.getElementById('m-nome').value = produto.nome || '';
   document.getElementById('m-sku').value = produto.sku || '';
@@ -444,10 +444,10 @@ function abrirModalEditar(id) {
 }
 
 function abrirModalAjuste(id) {
-  const produto = produtos.find(p => p.id === id);
+  const produto = produtos.find(p => (p._id || p.id) === id);
   if (!produto) return;
 
-  ajustandoId = id;
+  ajustandoId = produto._id || produto.id;
   document.getElementById('ajuste-produto').textContent = produto.nome;
   document.getElementById('aj-tipo').value = 'entrada';
   document.getElementById('aj-quantidade').value = 1;
@@ -561,9 +561,9 @@ function renderizarTabela() {
         <td><span class="badge ${status.class}">${status.text}</span></td>
         <td>
           <div class="table-actions">
-            <button class="btn btn-ghost btn-sm" onclick="abrirModalEditar(${p.id})" title="Editar">✏️</button>
-            <button class="btn btn-info btn-sm" onclick="abrirModalAjuste(${p.id})" title="Ajustar estoque">📊</button>
-            <button class="btn btn-danger btn-sm" onclick="abrirModalDelete(${p.id})" title="Excluir">🗑️</button>
+            <button class="btn btn-ghost btn-sm" onclick="abrirModalEditar('${p._id || p.id}')" title="Editar">✏️</button>
+            <button class="btn btn-info btn-sm" onclick="abrirModalAjuste('${p._id || p.id}')" title="Ajustar estoque">📊</button>
+            <button class="btn btn-danger btn-sm" onclick="abrirModalDelete('${p._id || p.id}')" title="Excluir">🗑️</button>
           </div>
         </td>
       </tr>

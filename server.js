@@ -594,13 +594,16 @@ app.get('/api/relatorio/diario', async (req, res) => {
     
     if (dataInicio && dataFim) {
       pedidosDia = pedidos.filter(p => {
-        const dataP = p.dateISO.slice(0, 10);
+        const dataP = (p.dateISO || p.dataCriacao?.toISOString() || '').slice(0, 10);
         return dataP >= dataInicio && dataP <= dataFim;
       });
       periodoTexto = `${dataInicio} a ${dataFim}`;
     } else {
       const dataFiltro = data || new Date().toISOString().slice(0, 10);
-      pedidosDia = pedidos.filter(p => p.dateISO.slice(0, 10) === dataFiltro);
+      pedidosDia = pedidos.filter(p => {
+        const dataP = (p.dateISO || p.dataCriacao?.toISOString() || '').slice(0, 10);
+        return dataP === dataFiltro;
+      });
       periodoTexto = dataFiltro;
     }
     
