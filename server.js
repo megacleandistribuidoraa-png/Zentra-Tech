@@ -419,11 +419,13 @@ app.post("/api/produtos", async (req, res) => {
     const count = await Produto.countDocuments();
     const novo = await Produto.create({
       nome: req.body.nome,
+      precoCusto: Number(req.body.precoCusto) || 0,
       preco: Number(req.body.preco),
+      codigoBarras: req.body.codigoBarras || '',
       quantidade: Number(req.body.quantidade),
       minimo: Number(req.body.minimo),
       unidade: req.body.unidade,
-      sku: String(count + 1).padStart(3, "0")
+      sku: req.body.sku || String(count + 1).padStart(3, "0")
     });
     res.json(novo);
   } catch (error) {
@@ -437,7 +439,9 @@ app.put("/api/produtos/:id", async (req, res) => {
     if (!produto) return res.status(404).json({ error: "Produto não encontrado" });
 
     produto.nome = req.body.nome;
+    produto.precoCusto = Number(req.body.precoCusto) || 0;
     produto.preco = Number(req.body.preco);
+    produto.codigoBarras = req.body.codigoBarras || '';
     produto.quantidade = Number(req.body.quantidade);
     produto.minimo = Number(req.body.minimo);
     produto.unidade = req.body.unidade;
