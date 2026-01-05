@@ -177,6 +177,7 @@ tbody td{padding:14px 12px;border-bottom:1px solid #f0f3f7;vertical-align:middle
       </div>
       <div class="header-actions">
         <button class="btn btn-ghost" onclick="abrirRelatorio()">📊 Relatório de Lucros</button>
+        <button class="btn btn-ghost" onclick="gerarListaCliente()" style="background:#fff3cd;border-color:#ffc107;color:#856404">📋 Lista p/ Cliente</button>
         <button class="btn btn-primary" onclick="abrirModalNovo('unitario')">
           📄 Novo Unitário
         </button>
@@ -966,6 +967,244 @@ document.querySelectorAll('.modal-backdrop').forEach(modal => {
     }
   });
 });
+
+// ============================================
+// GERAR LISTA PARA CLIENTE
+// ============================================
+function gerarListaCliente() {
+  // Agrupar produtos: unitários e suas caixas correspondentes
+  const unitarios = produtos.filter(p => (p.tipo || 'unitario') === 'unitario');
+  const caixas = produtos.filter(p => p.tipo === 'caixa');
+  
+  // Criar mapa de produtos agrupados
+  const produtosAgrupados = [];
+  let numero = 1;
+  
+  unitarios.forEach(un => {
+    // Buscar caixa correspondente (mesmo nome base)
+    const nomeBase = un.nome.replace(/\s*-?\s*\d+[LlMmGgKk]+[Ll]?\s*$/i, '').trim();
+    const caixaCorrespondente = caixas.find(cx => {
+      const nomeCaixa = cx.nome.replace(/\s*-\s*Cx\s*c\/\d+/i, '').replace(/\s*-?\s*\d+[LlMmGgKk]+[Ll]?\s*$/i, '').trim();
+      return nomeCaixa.toLowerCase() === nomeBase.toLowerCase() || 
+             cx.nome.toLowerCase().includes(un.nome.toLowerCase().replace(/\s*\d+[LlMmGgKk]+[Ll]?\s*$/i, '').trim());
+    });
+    
+    produtosAgrupados.push({
+      numero: numero++,
+      nome: un.nome,
+      precoUnitario: un.preco,
+      precoCaixa: caixaCorrespondente ? caixaCorrespondente.preco : null,
+      qtdCaixa: caixaCorrespondente ? caixaCorrespondente.qtdPorCaixa : null
+    });
+  });
+  
+  // Calcular validade (30 dias)
+  const hoje = new Date();
+  const validade = new Date(hoje.getTime() + 30 * 24 * 60 * 60 * 1000);
+  const validadeStr = validade.toLocaleDateString('pt-BR');
+  const hojeStr = hoje.toLocaleDateString('pt-BR');
+  
+  // Gerar linhas da tabela
+  const linhasTabela = produtosAgrupados.map(p => `
+    <tr>
+      <td style="text-align:center;font-weight:600;color:#666">${String(p.numero).padStart(2, '0')}</td>
+      <td style="font-weight:500">${escapeHtml(p.nome)}</td>
+      <td style="text-align:center;font-weight:700;color:#0aa04e">R$ ${p.precoUnitario.toFixed(2).replace('.', ',')}</td>
+      <td style="text-align:center;font-weight:700;color:#8b5cf6">
+        ${p.precoCaixa ? `R$ ${p.precoCaixa.toFixed(2).replace('.', ',')}` : '—'}
+        ${p.qtdCaixa ? `<br><small style="color:#666;font-weight:400">(Cx c/${p.qtdCaixa})</small>` : ''}
+      </td>
+      <td style="text-align:center;border:1px dashed #ccc;background:#fafafa"></td>
+    </tr>
+  `).join('');
+  
+  // HTML da lista
+  const htmlLista = `
+    <!DOCTYPE html>
+    <html lang="pt-BR">
+    <head>
+      <meta charset="UTF-8">
+      <title>Tabela de Preços - MegaClean</title>
+      <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+          font-family: 'Segoe UI', Arial, sans-serif; 
+          background: #f5f5f5; 
+          padding: 20px;
+        }
+        .container {
+          max-width: 800px;
+          margin: 0 auto;
+          background: #fff;
+          border-radius: 12px;
+          box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+          overflow: hidden;
+        }
+        .header {
+          background: linear-gradient(135deg, #0aa04e 0%, #059669 100%);
+          color: #fff;
+          padding: 30px;
+          text-align: center;
+        }
+        .header h1 {
+          font-size: 32px;
+          margin-bottom: 8px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 12px;
+        }
+        .header p {
+          opacity: 0.9;
+          font-size: 14px;
+        }
+        .validade {
+          background: rgba(255,255,255,0.2);
+          display: inline-block;
+          padding: 8px 20px;
+          border-radius: 20px;
+          margin-top: 15px;
+          font-size: 13px;
+          font-weight: 600;
+        }
+        table {
+          width: 100%;
+          border-collapse: collapse;
+        }
+        thead th {
+          background: #f8f9fa;
+          padding: 14px 12px;
+          text-align: left;
+          font-weight: 700;
+          color: #333;
+          border-bottom: 2px solid #e0e0e0;
+          font-size: 13px;
+          text-transform: uppercase;
+        }
+        thead th:nth-child(1) { width: 50px; text-align: center; }
+        thead th:nth-child(3),
+        thead th:nth-child(4),
+        thead th:nth-child(5) { text-align: center; width: 110px; }
+        tbody tr { border-bottom: 1px solid #eee; }
+        tbody tr:nth-child(even) { background: #fafafa; }
+        tbody tr:hover { background: #f0fff4; }
+        tbody td { padding: 12px; font-size: 13px; }
+        .footer {
+          background: #f8f9fa;
+          padding: 25px 30px;
+          border-top: 2px solid #e0e0e0;
+        }
+        .footer-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 20px;
+        }
+        .footer-item {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          font-size: 14px;
+          color: #555;
+        }
+        .footer-item .icon {
+          font-size: 18px;
+        }
+        .footer-note {
+          margin-top: 20px;
+          padding-top: 15px;
+          border-top: 1px dashed #ddd;
+          text-align: center;
+          font-size: 12px;
+          color: #888;
+        }
+        .print-btn {
+          position: fixed;
+          bottom: 30px;
+          right: 30px;
+          background: #0aa04e;
+          color: #fff;
+          border: none;
+          padding: 15px 30px;
+          border-radius: 30px;
+          font-size: 16px;
+          font-weight: 600;
+          cursor: pointer;
+          box-shadow: 0 4px 15px rgba(10,160,78,0.4);
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+        .print-btn:hover { transform: scale(1.05); }
+        @media print {
+          body { background: #fff; padding: 0; }
+          .container { box-shadow: none; }
+          .print-btn { display: none; }
+          .header { padding: 20px; }
+          thead th, tbody td { padding: 8px; font-size: 11px; }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>🧹 MEGACLEAN DISTRIBUIDORA</h1>
+          <p>Produtos de Limpeza para Empresas</p>
+          <div class="validade">📅 Preços válidos até ${validadeStr}</div>
+        </div>
+        
+        <table>
+          <thead>
+            <tr>
+              <th>Nº</th>
+              <th>Produto</th>
+              <th>📄 Unitário</th>
+              <th>📦 Caixa</th>
+              <th>Qtd</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${linhasTabela}
+          </tbody>
+        </table>
+        
+        <div class="footer">
+          <div class="footer-grid">
+            <div class="footer-item">
+              <span class="icon">📞</span>
+              <span><strong>WhatsApp:</strong> (15) 98828-3792</span>
+            </div>
+            <div class="footer-item">
+              <span class="icon">📧</span>
+              <span><strong>E-mail:</strong> megacleandistribuidoraa@gmail.com</span>
+            </div>
+            <div class="footer-item">
+              <span class="icon">💳</span>
+              <span><strong>Pagamento:</strong> PIX, Boleto, Cartão</span>
+            </div>
+            <div class="footer-item">
+              <span class="icon">📍</span>
+              <span><strong>Região:</strong> Atendemos Sorocaba e região</span>
+            </div>
+          </div>
+          <div class="footer-note">
+            Preencha a coluna "Qtd" com a quantidade desejada e envie pelo WhatsApp!<br>
+            Lista gerada em ${hojeStr}
+          </div>
+        </div>
+      </div>
+      
+      <button class="print-btn" onclick="window.print()">
+        🖨️ Imprimir / Salvar PDF
+      </button>
+    </body>
+    </html>
+  `;
+  
+  // Abrir em nova janela
+  const novaJanela = window.open('', '_blank');
+  novaJanela.document.write(htmlLista);
+  novaJanela.document.close();
+}
 
 // ============================================
 // INICIALIZAÇÃO
