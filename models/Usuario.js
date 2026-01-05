@@ -18,3 +18,10 @@ usuarioSchema.set('toObject', { virtuals: true });
 
 module.exports = mongoose.model('Usuario', usuarioSchema);
 
+
+
+
+
+
+
+

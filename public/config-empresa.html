@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Configurações da Empresa - MegaClean</title>
+<style>
+:root{--bg:#f4f7fb;--card:#fff;--primary:#0aa04e;--primary-light:#e6f9ee;--muted:#6b7280;--danger:#dc2626;--warning:#f59e0b;--radius:12px;--shadow:0 8px 24px rgba(12,20,30,0.06)}
+[data-theme="dark"]{--bg:#1a1a2e;--card:#16213e;--primary:#00d9a5;--primary-light:#0f3d3e;--muted:#94a3b8;color:#e2e8f0}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Segoe UI',Roboto,Arial,sans-serif;background:var(--bg);padding:20px;min-height:100vh}
+[data-theme="dark"] body{color:#e2e8f0}
+.container{max-width:900px;margin:0 auto}
+header{margin-bottom:20px}
+header h1{margin:0;color:var(--primary);font-size:28px}
+.back-link{color:var(--primary);text-decoration:none;font-weight:600}
+
+.card{background:var(--card);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow);margin-bottom:20px}
+.card-title{font-size:18px;font-weight:700;margin:0 0 20px;display:flex;align-items:center;gap:10px;padding-bottom:12px;border-bottom:2px solid #f0f3f7}
+
+.alert{padding:16px;border-radius:10px;margin-bottom:20px;display:flex;align-items:flex-start;gap:12px}
+.alert.warning{background:#fffbeb;border:1px solid #f59e0b}
+.alert.info{background:#eff6ff;border:1px solid #3b82f6}
+.alert-icon{font-size:24px}
+.alert-text h4{margin:0 0 4px}
+.alert-text p{margin:0;font-size:13px;color:var(--muted)}
+
+.form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.form-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.form-group{margin-bottom:0}
+.form-group.full{grid-column:1/-1}
+.form-group label{display:block;font-size:13px;font-weight:600;margin-bottom:6px;color:var(--muted)}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:12px;border:2px solid #e5e7eb;border-radius:8px;font-size:14px}
+[data-theme="dark"] .form-group input,[data-theme="dark"] .form-group select,[data-theme="dark"] .form-group textarea{background:#1e293b;border-color:#374151;color:#e2e8f0}
+.form-group input:focus,.form-group select:focus{outline:none;border-color:var(--primary)}
+.form-group small{display:block;margin-top:4px;font-size:11px;color:var(--muted)}
+
+.btn{padding:12px 24px;border-radius:8px;border:none;cursor:pointer;font-weight:600;font-size:14px;display:inline-flex;align-items:center;gap:8px}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-primary:hover{background:#059669}
+.btn-ghost{background:#f0f3f7;color:var(--muted)}
+
+.section-divider{height:1px;background:#e5e7eb;margin:24px 0}
+
+.status-badge{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:20px;font-size:13px;font-weight:600}
+.status-badge.pending{background:#fffbeb;color:#b45309}
+.status-badge.ready{background:#e6f9ee;color:#0aa04e}
+
+.toast{position:fixed;bottom:24px;right:24px;background:var(--primary);color:#fff;padding:14px 20px;border-radius:12px;transform:translateY(100px);opacity:0;transition:all .3s;z-index:200}
+.toast.show{transform:translateY(0);opacity:1}
+
+@media(max-width:768px){.form-grid,.form-grid-3{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <a href="/admin.html" class="back-link">← Voltar ao painel</a>
+    <h1>🏢 Configurações da Empresa</h1>
+  </header>
+
+  <!-- Status NF-e -->
+  <div class="alert warning" id="alert-pendente">
+    <span class="alert-icon">⚠️</span>
+    <div class="alert-text">
+      <h4>NF-e não configurada</h4>
+      <p>Preencha os dados da empresa abaixo para habilitar a emissão de NF-e. Por enquanto, você pode gerar recibos.</p>
+    </div>
+  </div>
+
+  <div class="alert info" id="alert-pronto" style="display:none">
+    <span class="alert-icon">✅</span>
+    <div class="alert-text">
+      <h4>Dados cadastrados</h4>
+      <p>Quando você tiver o certificado digital A1, poderá emitir NF-e. Por enquanto, pode gerar recibos com os dados da empresa.</p>
+    </div>
+  </div>
+
+  <!-- Dados da Empresa -->
+  <div class="card">
+    <h3 class="card-title">📋 Dados da Empresa</h3>
+    <div class="form-grid">
+      <div class="form-group full">
+        <label>Razão Social *</label>
+        <input type="text" id="razaoSocial" placeholder="Ex: MEGACLEAN PRODUTOS DE LIMPEZA LTDA" />
+      </div>
+      <div class="form-group">
+        <label>Nome Fantasia</label>
+        <input type="text" id="nomeFantasia" placeholder="Ex: MegaClean" />
+      </div>
+      <div class="form-group">
+        <label>CNPJ *</label>
+        <input type="text" id="cnpj" placeholder="00.000.000/0000-00" />
+        <small>Necessário para emitir NF-e</small>
+      </div>
+      <div class="form-group">
+        <label>Inscrição Estadual</label>
+        <input type="text" id="inscricaoEstadual" placeholder="Número da IE" />
+        <small>Deixe em branco se isento</small>
+      </div>
+      <div class="form-group">
+        <label>Inscrição Municipal</label>
+        <input type="text" id="inscricaoMunicipal" placeholder="Número da IM" />
+      </div>
+      <div class="form-group">
+        <label>Regime Tributário</label>
+        <select id="regimeTributario">
+          <option value="mei">MEI - Microempreendedor Individual</option>
+          <option value="simples_nacional">Simples Nacional</option>
+          <option value="lucro_presumido">Lucro Presumido</option>
+          <option value="lucro_real">Lucro Real</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Endereço -->
+  <div class="card">
+    <h3 class="card-title">📍 Endereço</h3>
+    <div class="form-grid">
+      <div class="form-group" style="grid-column:span 2">
+        <label>Logradouro</label>
+        <input type="text" id="logradouro" placeholder="Rua, Avenida, etc." />
+      </div>
+      <div class="form-group">
+        <label>Número</label>
+        <input type="text" id="numero" placeholder="Nº" />
+      </div>
+      <div class="form-group">
+        <label>Complemento</label>
+        <input type="text" id="complemento" placeholder="Sala, Loja, etc." />
+      </div>
+      <div class="form-group">
+        <label>Bairro</label>
+        <input type="text" id="bairro" placeholder="Bairro" />
+      </div>
+      <div class="form-group">
+        <label>Cidade</label>
+        <input type="text" id="cidade" placeholder="Cidade" />
+      </div>
+      <div class="form-group">
+        <label>UF</label>
+        <select id="uf">
+          <option value="">Selecione...</option>
+          <option value="AC">AC</option><option value="AL">AL</option><option value="AP">AP</option>
+          <option value="AM">AM</option><option value="BA">BA</option><option value="CE">CE</option>
+          <option value="DF">DF</option><option value="ES">ES</option><option value="GO">GO</option>
+          <option value="MA">MA</option><option value="MT">MT</option><option value="MS">MS</option>
+          <option value="MG">MG</option><option value="PA">PA</option><option value="PB">PB</option>
+          <option value="PR">PR</option><option value="PE">PE</option><option value="PI">PI</option>
+          <option value="RJ">RJ</option><option value="RN">RN</option><option value="RS">RS</option>
+          <option value="RO">RO</option><option value="RR">RR</option><option value="SC">SC</option>
+          <option value="SP">SP</option><option value="SE">SE</option><option value="TO">TO</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>CEP</label>
+        <input type="text" id="cep" placeholder="00000-000" />
+      </div>
+    </div>
+  </div>
+
+  <!-- Contato -->
+  <div class="card">
+    <h3 class="card-title">📞 Contato</h3>
+    <div class="form-grid-3">
+      <div class="form-group">
+        <label>Telefone</label>
+        <input type="text" id="telefone" placeholder="(00) 00000-0000" />
+      </div>
+      <div class="form-group">
+        <label>E-mail</label>
+        <input type="email" id="email" placeholder="contato@empresa.com" />
+      </div>
+      <div class="form-group">
+        <label>Site</label>
+        <input type="text" id="site" placeholder="www.empresa.com.br" />
+      </div>
+    </div>
+  </div>
+
+  <!-- Configurações NF-e -->
+  <div class="card">
+    <h3 class="card-title">📄 Configurações NF-e</h3>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Ambiente</label>
+        <select id="ambiente">
+          <option value="homologacao">Homologação (Testes)</option>
+          <option value="producao">Produção (Real)</option>
+        </select>
+        <small>Use Homologação para testes iniciais</small>
+      </div>
+      <div class="form-group">
+        <label>Série NF-e</label>
+        <input type="number" id="serieNfe" value="1" min="1" />
+      </div>
+      <div class="form-group">
+        <label>Próximo Número NF-e</label>
+        <input type="number" id="proximoNumeroNfe" value="1" min="1" />
+      </div>
+      <div class="form-group full">
+        <label>Mensagem Padrão (rodapé)</label>
+        <textarea id="mensagemPadrao" rows="2" placeholder="Ex: Obrigado pela preferência! Volte sempre."></textarea>
+      </div>
+    </div>
+    
+    <div class="section-divider"></div>
+    
+    <div class="alert info" style="margin:0">
+      <span class="alert-icon">🔐</span>
+      <div class="alert-text">
+        <h4>Certificado Digital A1</h4>
+        <p>Para emitir NF-e real, você precisará de um Certificado Digital A1. Quando tiver, entre em contato para configurarmos a integração com a SEFAZ.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Botão Salvar -->
+  <div style="display:flex;justify-content:flex-end;gap:12px">
+    <button class="btn btn-ghost" onclick="location.href='/admin.html'">Cancelar</button>
+    <button class="btn btn-primary" onclick="salvarConfiguracoes()">💾 Salvar Configurações</button>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+if(localStorage.getItem('theme')==='dark')document.documentElement.setAttribute('data-theme','dark');
+
+function getToken(){return localStorage.getItem('admin_token')||''}
+function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.className='toast show';setTimeout(()=>t.classList.remove('show'),3000)}
+
+// Máscaras
+document.getElementById('cnpj').addEventListener('input', function(e) {
+  let v = e.target.value.replace(/\D/g, '');
+  v = v.replace(/^(\d{2})(\d)/, '$1.$2');
+  v = v.replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3');
+  v = v.replace(/\.(\d{3})(\d)/, '.$1/$2');
+  v = v.replace(/(\d{4})(\d)/, '$1-$2');
+  e.target.value = v.slice(0, 18);
+});
+
+document.getElementById('cep').addEventListener('input', function(e) {
+  let v = e.target.value.replace(/\D/g, '');
+  v = v.replace(/^(\d{5})(\d)/, '$1-$2');
+  e.target.value = v.slice(0, 9);
+});
+
+document.getElementById('telefone').addEventListener('input', function(e) {
+  let v = e.target.value.replace(/\D/g, '');
+  v = v.replace(/^(\d{2})(\d)/, '($1) $2');
+  v = v.replace(/(\d{5})(\d)/, '$1-$2');
+  e.target.value = v.slice(0, 15);
+});
+
+// Carregar configurações
+async function carregarConfiguracoes() {
+  try {
+    const res = await fetch('/api/config-empresa');
+    const data = await res.json();
+    
+    // Preencher campos
+    const campos = ['razaoSocial', 'nomeFantasia', 'cnpj', 'inscricaoEstadual', 'inscricaoMunicipal',
+      'regimeTributario', 'logradouro', 'numero', 'complemento', 'bairro', 'cidade', 'uf', 'cep',
+      'telefone', 'email', 'site', 'ambiente', 'serieNfe', 'proximoNumeroNfe', 'mensagemPadrao'];
+    
+    campos.forEach(campo => {
+      const el = document.getElementById(campo);
+      if (el && data[campo] !== undefined) {
+        el.value = data[campo];
+      }
+    });
+    
+    // Atualizar status
+    if (data.cnpj && data.razaoSocial) {
+      document.getElementById('alert-pendente').style.display = 'none';
+      document.getElementById('alert-pronto').style.display = 'flex';
+    }
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+async function salvarConfiguracoes() {
+  const campos = ['razaoSocial', 'nomeFantasia', 'cnpj', 'inscricaoEstadual', 'inscricaoMunicipal',
+    'regimeTributario', 'logradouro', 'numero', 'complemento', 'bairro', 'cidade', 'uf', 'cep',
+    'telefone', 'email', 'site', 'ambiente', 'serieNfe', 'proximoNumeroNfe', 'mensagemPadrao'];
+  
+  const data = {};
+  campos.forEach(campo => {
+    const el = document.getElementById(campo);
+    if (el) {
+      data[campo] = el.value;
+    }
+  });
+  
+  // Converter números
+  data.serieNfe = parseInt(data.serieNfe) || 1;
+  data.proximoNumeroNfe = parseInt(data.proximoNumeroNfe) || 1;
+  
+  try {
+    const res = await fetch('/api/config-empresa', {
+      method: 'PUT',
+      headers: { 
+        'Content-Type': 'application/json',
+        'x-auth-token': getToken()
+      },
+      body: JSON.stringify(data)
+    });
+    
+    if (res.ok) {
+      showToast('✅ Configurações salvas!');
+      carregarConfiguracoes();
+    } else {
+      showToast('❌ Erro ao salvar');
+    }
+  } catch (e) {
+    showToast('❌ Erro ao salvar');
+  }
+}
+
+carregarConfiguracoes();
+</script>
+</body>
+</html>
+

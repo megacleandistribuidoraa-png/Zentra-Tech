@@ -18,6 +18,8 @@
   --warning-light:#fffbeb;
   --info:#3b82f6;
   --info-light:#eff6ff;
+  --purple:#8b5cf6;
+  --purple-light:#f5f3ff;
   --radius:12px;
   --shadow: 0 8px 24px rgba(12,20,30,0.06);
 }
@@ -39,28 +41,38 @@ header h1 span{font-size:32px}
 header p{margin:4px 0 0;color:var(--muted);font-size:14px}
 .back-link{color:var(--primary);text-decoration:none;font-weight:600;display:inline-flex;align-items:center;gap:6px}
 .back-link:hover{text-decoration:underline}
-.header-actions{display:flex;gap:12px;align-items:center}
+.header-actions{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
 
 /* Cards de estatísticas */
-.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:22px}
-.stat-card{background:var(--card);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);display:flex;align-items:center;gap:14px}
-.stat-card .icon{width:50px;height:50px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:22px}
+.stat-card{background:var(--card);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);display:flex;align-items:center;gap:12px}
+.stat-card .icon{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px}
 .stat-card .icon.green{background:var(--primary-light);color:var(--primary)}
 .stat-card .icon.blue{background:var(--info-light);color:var(--info)}
 .stat-card .icon.yellow{background:var(--warning-light);color:var(--warning)}
 .stat-card .icon.red{background:var(--danger-light);color:var(--danger)}
-.stat-card .info h3{margin:0;font-size:24px;font-weight:800}
-.stat-card .info p{margin:4px 0 0;color:var(--muted);font-size:13px}
+.stat-card .icon.purple{background:var(--purple-light);color:var(--purple)}
+.stat-card .info h3{margin:0;font-size:22px;font-weight:800}
+.stat-card .info p{margin:4px 0 0;color:var(--muted);font-size:12px}
+
+/* Tabs */
+.tabs{display:flex;gap:0;margin-bottom:0;background:var(--card);border-radius:var(--radius) var(--radius) 0 0;padding:8px 8px 0;box-shadow:var(--shadow)}
+.tab-btn{flex:1;padding:16px 24px;border:none;background:transparent;cursor:pointer;font-size:15px;font-weight:600;color:var(--muted);border-radius:10px 10px 0 0;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:10px}
+.tab-btn:hover{background:#f8fafc;color:#0f172a}
+.tab-btn.active{background:var(--primary);color:#fff}
+.tab-btn.active.caixa{background:var(--purple)}
+.tab-btn .badge{background:rgba(255,255,255,0.2);padding:2px 10px;border-radius:20px;font-size:12px}
+.tab-btn:not(.active) .badge{background:#e6e9ef}
 
 /* Card principal */
-.card{background:var(--card);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);margin-bottom:18px}
+.card{background:var(--card);border-radius:0 0 var(--radius) var(--radius);padding:20px;box-shadow:var(--shadow);margin-bottom:18px}
 .card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:12px}
 .card-title{font-size:18px;font-weight:700;margin:0;display:flex;align-items:center;gap:8px}
 
 /* Filtros e busca */
 .filters{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 .search-box{position:relative}
-.search-box input{padding:10px 14px 10px 38px;border-radius:10px;border:2px solid #e6e9ef;min-width:280px;font-size:14px;transition:border .2s}
+.search-box input{padding:10px 14px 10px 38px;border-radius:10px;border:2px solid #e6e9ef;min-width:260px;font-size:14px;transition:border .2s}
 .search-box input:focus{outline:none;border-color:var(--primary)}
 .search-box::before{content:'🔍';position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:14px}
 
@@ -68,6 +80,8 @@ header p{margin:4px 0 0;color:var(--muted);font-size:14px}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 20px;border-radius:10px;border:none;cursor:pointer;font-weight:600;font-size:14px;transition:all .2s}
 .btn-primary{background:linear-gradient(135deg, #0aa04e 0%, #059669 100%);color:#fff;box-shadow:0 4px 14px rgba(10,160,78,0.2)}
 .btn-primary:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(10,160,78,0.3)}
+.btn-purple{background:linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);color:#fff;box-shadow:0 4px 14px rgba(139,92,246,0.2)}
+.btn-purple:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(139,92,246,0.3)}
 .btn-ghost{background:#f8fafc;color:var(--muted);border:2px solid #e6e9ef}
 .btn-ghost:hover{border-color:var(--primary);color:var(--primary)}
 .btn-danger{background:var(--danger-light);color:var(--danger)}
@@ -89,12 +103,16 @@ tbody td{padding:14px 12px;border-bottom:1px solid #f0f3f7;vertical-align:middle
 .produto-info{display:flex;flex-direction:column;gap:2px}
 .produto-nome{font-weight:600;color:#0f172a}
 .produto-sku{font-size:12px;color:var(--muted)}
+.produto-tipo{font-size:11px;padding:2px 8px;border-radius:12px;display:inline-block;margin-top:4px}
+.produto-tipo.caixa{background:var(--purple-light);color:var(--purple)}
+.produto-tipo.unitario{background:var(--primary-light);color:var(--primary)}
 
 /* Badge */
 .badge{display:inline-flex;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600}
 .badge.green{background:var(--primary-light);color:var(--primary)}
 .badge.red{background:var(--danger-light);color:var(--danger)}
 .badge.yellow{background:var(--warning-light);color:#b45309}
+.badge.purple{background:var(--purple-light);color:var(--purple)}
 
 /* Ações na tabela */
 .table-actions{display:flex;gap:6px}
@@ -113,7 +131,7 @@ tbody td{padding:14px 12px;border-bottom:1px solid #f0f3f7;vertical-align:middle
 /* Modal */
 .modal-backdrop{position:fixed;inset:0;background:rgba(2,6,23,0.5);display:none;align-items:center;justify-content:center;z-index:100;padding:20px}
 .modal-backdrop.show{display:flex}
-.modal{background:#fff;padding:24px;border-radius:16px;max-width:550px;width:100%;box-shadow:0 20px 60px rgba(2,6,23,0.3);animation:modalIn .25s ease}
+.modal{background:#fff;padding:24px;border-radius:16px;max-width:600px;width:100%;box-shadow:0 20px 60px rgba(2,6,23,0.3);animation:modalIn .25s ease;max-height:90vh;overflow-y:auto}
 @keyframes modalIn{from{opacity:0;transform:scale(0.95)}to{opacity:1;transform:scale(1)}}
 .modal h3{margin:0 0 20px;font-size:20px;display:flex;align-items:center;gap:10px}
 .modal-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
@@ -124,14 +142,28 @@ tbody td{padding:14px 12px;border-bottom:1px solid #f0f3f7;vertical-align:middle
 .form-group input:focus,.form-group select:focus{outline:none;border-color:var(--primary);background:#fff}
 .modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:24px}
 
+/* Tipo selector */
+.tipo-selector{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
+.tipo-option{padding:16px;border:3px solid #e6e9ef;border-radius:12px;cursor:pointer;text-align:center;transition:all .2s}
+.tipo-option:hover{border-color:#ccc}
+.tipo-option.active.unitario{border-color:var(--primary);background:var(--primary-light)}
+.tipo-option.active.caixa{border-color:var(--purple);background:var(--purple-light)}
+.tipo-option .icon{font-size:32px;margin-bottom:8px}
+.tipo-option .label{font-weight:700;font-size:14px}
+.tipo-option .desc{font-size:12px;color:var(--muted);margin-top:4px}
+
 /* Responsivo */
 @media (max-width:768px){
   header{flex-direction:column;align-items:flex-start}
-  .header-actions{width:100%}
+  .header-actions{width:100%;flex-direction:column}
+  .header-actions .btn{width:100%}
   .filters{width:100%}
   .search-box{width:100%}
   .search-box input{width:100%;min-width:auto}
   .modal-grid{grid-template-columns:1fr}
+  .tabs{flex-direction:column;padding:8px}
+  .tab-btn{border-radius:10px}
+  .stats-grid{grid-template-columns:1fr 1fr}
 }
 </style>
 </head>
@@ -141,11 +173,15 @@ tbody td{padding:14px 12px;border-bottom:1px solid #f0f3f7;vertical-align:middle
       <div>
         <a href="/admin.html" class="back-link">← Voltar ao painel</a>
         <h1><span>📦</span> Produtos</h1>
-        <p>Gerencie seu catálogo de produtos de limpeza</p>
+        <p>Gerencie seu catálogo de produtos (Unitários e Caixas)</p>
       </div>
       <div class="header-actions">
-        <button class="btn btn-primary" onclick="abrirModalNovo()">
-          ➕ Novo Produto
+        <button class="btn btn-ghost" onclick="abrirRelatorio()">📊 Relatório de Lucros</button>
+        <button class="btn btn-primary" onclick="abrirModalNovo('unitario')">
+          📄 Novo Unitário
+        </button>
+        <button class="btn btn-purple" onclick="abrirModalNovo('caixa')">
+          📦 Nova Caixa
         </button>
       </div>
     </header>
@@ -153,10 +189,17 @@ tbody td{padding:14px 12px;border-bottom:1px solid #f0f3f7;vertical-align:middle
     <!-- Cards de estatísticas -->
     <div class="stats-grid">
       <div class="stat-card">
-        <div class="icon green">📦</div>
+        <div class="icon green">📄</div>
         <div class="info">
-          <h3 id="stat-total">0</h3>
-          <p>Total de produtos</p>
+          <h3 id="stat-unitarios">0</h3>
+          <p>Produtos Unitários</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="icon purple">📦</div>
+        <div class="info">
+          <h3 id="stat-caixas">0</h3>
+          <p>Caixas Fechadas</p>
         </div>
       </div>
       <div class="stat-card">
@@ -174,13 +217,6 @@ tbody td{padding:14px 12px;border-bottom:1px solid #f0f3f7;vertical-align:middle
         </div>
       </div>
       <div class="stat-card">
-        <div class="icon red">⛔</div>
-        <div class="info">
-          <h3 id="stat-zerado">0</h3>
-          <p>Sem estoque</p>
-        </div>
-      </div>
-      <div class="stat-card">
         <div class="icon green">📈</div>
         <div class="info">
           <h3 id="stat-lucro">R$ 0</h3>
@@ -189,12 +225,23 @@ tbody td{padding:14px 12px;border-bottom:1px solid #f0f3f7;vertical-align:middle
       </div>
     </div>
 
+    <!-- Abas -->
+    <div class="tabs">
+      <button class="tab-btn active" data-tipo="unitario" onclick="mudarAba('unitario')">
+        📄 Produtos Unitários
+        <span class="badge" id="count-unitarios">0</span>
+      </button>
+      <button class="tab-btn caixa" data-tipo="caixa" onclick="mudarAba('caixa')">
+        📦 Caixas Fechadas
+        <span class="badge" id="count-caixas">0</span>
+      </button>
+    </div>
+
     <!-- Tabela de produtos -->
     <div class="card">
       <div class="card-header">
-        <h2 class="card-title">📋 Lista de Produtos</h2>
+        <h2 class="card-title" id="titulo-lista">📄 Produtos Unitários</h2>
         <div class="filters">
-          <button class="btn btn-ghost" onclick="abrirRelatorio()" style="margin-right:12px">📊 Relatório de Lucros</button>
           <div class="search-box">
             <input type="text" id="search" placeholder="Buscar por nome ou SKU..." />
           </div>
@@ -207,6 +254,7 @@ tbody td{padding:14px 12px;border-bottom:1px solid #f0f3f7;vertical-align:middle
             <tr>
               <th>Produto</th>
               <th>SKU</th>
+              <th id="col-qtd-caixa" style="display:none">Qtd/Cx</th>
               <th>Custo</th>
               <th>Venda</th>
               <th>Margem</th>
@@ -217,7 +265,7 @@ tbody td{padding:14px 12px;border-bottom:1px solid #f0f3f7;vertical-align:middle
           </thead>
           <tbody id="table-body">
             <tr>
-              <td colspan="8" class="empty-state">
+              <td colspan="9" class="empty-state">
                 <div class="icon">📦</div>
                 <h4>Carregando produtos...</h4>
               </td>
@@ -233,10 +281,28 @@ tbody td{padding:14px 12px;border-bottom:1px solid #f0f3f7;vertical-align:middle
     <div class="modal">
       <h3 id="modal-title">➕ Novo Produto</h3>
       
+      <!-- Seletor de Tipo -->
+      <div class="tipo-selector" id="tipo-selector">
+        <div class="tipo-option unitario" onclick="selecionarTipo('unitario')">
+          <div class="icon">📄</div>
+          <div class="label">Unitário</div>
+          <div class="desc">Produto vendido por unidade</div>
+        </div>
+        <div class="tipo-option caixa" onclick="selecionarTipo('caixa')">
+          <div class="icon">📦</div>
+          <div class="label">Caixa Fechada</div>
+          <div class="desc">Produto vendido em caixa</div>
+        </div>
+      </div>
+      
       <div class="modal-grid">
         <div class="form-group full">
           <label>Nome do produto *</label>
           <input type="text" id="m-nome" placeholder="Ex: Detergente Neutro 500ml" />
+        </div>
+        <div class="form-group" id="grupo-qtd-caixa" style="display:none">
+          <label>📦 Qtd por Caixa *</label>
+          <input type="number" id="m-qtdPorCaixa" min="1" value="12" placeholder="Ex: 12" />
         </div>
         <div class="form-group">
           <label>SKU (código)</label>
@@ -259,7 +325,7 @@ tbody td{padding:14px 12px;border-bottom:1px solid #f0f3f7;vertical-align:middle
           <input type="text" id="m-margem" readonly style="background:#e6f9ee;font-weight:bold;color:#0aa04e" placeholder="0%" />
         </div>
         <div class="form-group">
-          <label>Quantidade *</label>
+          <label id="label-quantidade">Quantidade em Estoque *</label>
           <input type="number" id="m-quantidade" min="0" placeholder="0" />
         </div>
         <div class="form-group">
@@ -280,7 +346,7 @@ tbody td{padding:14px 12px;border-bottom:1px solid #f0f3f7;vertical-align:middle
 
       <div class="modal-actions">
         <button class="btn btn-ghost" onclick="fecharModal('modal-produto')">Cancelar</button>
-        <button class="btn btn-primary" onclick="salvarProduto()">💾 Salvar</button>
+        <button class="btn btn-primary" id="btn-salvar" onclick="salvarProduto()">💾 Salvar</button>
       </div>
     </div>
   </div>
@@ -330,7 +396,7 @@ tbody td{padding:14px 12px;border-bottom:1px solid #f0f3f7;vertical-align:middle
 
   <!-- Modal Relatório de Lucros -->
   <div id="modal-relatorio" class="modal-backdrop">
-    <div class="modal" style="max-width:700px">
+    <div class="modal" style="max-width:800px">
       <h3>📊 Relatório de Lucros</h3>
       <div id="relatorio-content"></div>
       <div class="modal-actions">
@@ -351,6 +417,8 @@ let produtos = [];
 let editandoId = null;
 let ajustandoId = null;
 let deletandoId = null;
+let tipoAtual = 'unitario';
+let tipoSelecionado = 'unitario';
 
 // ============================================
 // FUNÇÕES UTILITÁRIAS
@@ -394,22 +462,85 @@ function calcularMargem() {
   }
 }
 
-function gerarSku() {
+function gerarSku(tipo) {
+  const prefix = tipo === 'caixa' ? 'CX' : 'UN';
   let max = 0;
-  produtos.forEach(p => {
+  produtos.filter(p => p.tipo === tipo).forEach(p => {
     const m = String(p.sku || '').match(/(\d+)/);
     if (m) {
       const num = parseInt(m[1], 10);
       if (num > max) max = num;
     }
   });
-  return String(max + 1).padStart(3, '0');
+  return prefix + String(max + 1).padStart(4, '0');
 }
 
 function getStockStatus(produto) {
   if (produto.quantidade <= 0) return { text: 'Sem estoque', class: 'red' };
   if (produto.quantidade <= (produto.minimo || 0)) return { text: 'Baixo', class: 'yellow' };
   return { text: 'OK', class: 'green' };
+}
+
+// ============================================
+// ABAS
+// ============================================
+function mudarAba(tipo) {
+  tipoAtual = tipo;
+  
+  // Atualizar botões das abas
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.classList.remove('active');
+    if (btn.dataset.tipo === tipo) {
+      btn.classList.add('active');
+    }
+  });
+  
+  // Atualizar título e coluna
+  const titulo = document.getElementById('titulo-lista');
+  const colQtdCaixa = document.getElementById('col-qtd-caixa');
+  
+  if (tipo === 'caixa') {
+    titulo.innerHTML = '📦 Caixas Fechadas';
+    colQtdCaixa.style.display = '';
+  } else {
+    titulo.innerHTML = '📄 Produtos Unitários';
+    colQtdCaixa.style.display = 'none';
+  }
+  
+  renderizarTabela();
+}
+
+// ============================================
+// TIPO SELETOR NO MODAL
+// ============================================
+function selecionarTipo(tipo) {
+  tipoSelecionado = tipo;
+  
+  document.querySelectorAll('.tipo-option').forEach(opt => {
+    opt.classList.remove('active');
+  });
+  document.querySelector(`.tipo-option.${tipo}`).classList.add('active');
+  
+  // Atualizar UI
+  const grupoQtdCaixa = document.getElementById('grupo-qtd-caixa');
+  const labelQuantidade = document.getElementById('label-quantidade');
+  const btnSalvar = document.getElementById('btn-salvar');
+  const unidadeSelect = document.getElementById('m-unidade');
+  
+  if (tipo === 'caixa') {
+    grupoQtdCaixa.style.display = '';
+    labelQuantidade.textContent = 'Quantidade de Caixas *';
+    btnSalvar.className = 'btn btn-purple';
+    unidadeSelect.value = 'CX';
+  } else {
+    grupoQtdCaixa.style.display = 'none';
+    labelQuantidade.textContent = 'Quantidade em Estoque *';
+    btnSalvar.className = 'btn btn-primary';
+    unidadeSelect.value = 'UN';
+  }
+  
+  // Atualizar SKU
+  document.getElementById('m-sku').value = gerarSku(tipo);
 }
 
 // ============================================
@@ -423,18 +554,23 @@ function fecharModal(id) {
   document.getElementById(id).classList.remove('show');
 }
 
-function abrirModalNovo() {
+function abrirModalNovo(tipo = 'unitario') {
   editandoId = null;
-  document.getElementById('modal-title').innerHTML = '➕ Novo Produto';
+  tipoSelecionado = tipo;
+  
+  document.getElementById('modal-title').innerHTML = tipo === 'caixa' ? '📦 Nova Caixa Fechada' : '📄 Novo Produto Unitário';
+  document.getElementById('tipo-selector').style.display = 'grid';
   document.getElementById('m-nome').value = '';
-  document.getElementById('m-sku').value = gerarSku();
+  document.getElementById('m-sku').value = gerarSku(tipo);
   document.getElementById('m-codigoBarras').value = '';
   document.getElementById('m-precoCusto').value = '';
   document.getElementById('m-preco').value = '';
   document.getElementById('m-margem').value = '—';
   document.getElementById('m-quantidade').value = '';
-  document.getElementById('m-unidade').value = 'UN';
+  document.getElementById('m-qtdPorCaixa').value = '12';
   document.getElementById('m-minimo').value = '5';
+  
+  selecionarTipo(tipo);
   abrirModal('modal-produto');
 }
 
@@ -443,7 +579,10 @@ function abrirModalEditar(id) {
   if (!produto) return;
 
   editandoId = produto._id || produto.id;
+  tipoSelecionado = produto.tipo || 'unitario';
+  
   document.getElementById('modal-title').innerHTML = '✏️ Editar Produto';
+  document.getElementById('tipo-selector').style.display = 'none'; // Não pode mudar tipo ao editar
   document.getElementById('m-nome').value = produto.nome || '';
   document.getElementById('m-sku').value = produto.sku || '';
   document.getElementById('m-codigoBarras').value = produto.codigoBarras || '';
@@ -452,6 +591,9 @@ function abrirModalEditar(id) {
   document.getElementById('m-quantidade').value = produto.quantidade || 0;
   document.getElementById('m-unidade').value = produto.unidade || 'UN';
   document.getElementById('m-minimo').value = produto.minimo || 0;
+  document.getElementById('m-qtdPorCaixa').value = produto.qtdPorCaixa || 12;
+  
+  selecionarTipo(tipoSelecionado);
   calcularMargem();
   abrirModal('modal-produto');
 }
@@ -488,7 +630,7 @@ async function carregarProdutos() {
     console.error(e);
     document.getElementById('table-body').innerHTML = `
       <tr>
-        <td colspan="8" class="empty-state">
+        <td colspan="9" class="empty-state">
           <div class="icon">❌</div>
           <h4>Erro ao carregar produtos</h4>
         </td>
@@ -503,8 +645,9 @@ async function carregarProdutos() {
 function atualizarEstatisticas() {
   let valorTotal = 0;
   let baixo = 0;
-  let zerado = 0;
   let lucroEstimado = 0;
+  let unitarios = 0;
+  let caixas = 0;
 
   produtos.forEach(p => {
     const qtd = p.quantidade || 0;
@@ -514,15 +657,20 @@ function atualizarEstatisticas() {
     valorTotal += qtd * venda;
     lucroEstimado += qtd * (venda - custo);
     
-    if (qtd <= 0) zerado++;
-    else if (qtd <= (p.minimo || 0)) baixo++;
+    if (qtd > 0 && qtd <= (p.minimo || 0)) baixo++;
+    
+    if (p.tipo === 'caixa') caixas++;
+    else unitarios++;
   });
 
-  document.getElementById('stat-total').textContent = produtos.length;
+  document.getElementById('stat-unitarios').textContent = unitarios;
+  document.getElementById('stat-caixas').textContent = caixas;
   document.getElementById('stat-valor').textContent = formatMoney(valorTotal);
   document.getElementById('stat-baixo').textContent = baixo;
-  document.getElementById('stat-zerado').textContent = zerado;
   document.getElementById('stat-lucro').textContent = formatMoney(lucroEstimado);
+  
+  document.getElementById('count-unitarios').textContent = unitarios;
+  document.getElementById('count-caixas').textContent = caixas;
 }
 
 // ============================================
@@ -531,19 +679,24 @@ function atualizarEstatisticas() {
 function renderizarTabela() {
   const tbody = document.getElementById('table-body');
   const searchTerm = document.getElementById('search').value.toLowerCase();
+  const colQtdCaixa = document.getElementById('col-qtd-caixa');
   
   let lista = produtos.filter(p => {
-    return !searchTerm || 
+    const matchTipo = (p.tipo || 'unitario') === tipoAtual;
+    const matchSearch = !searchTerm || 
       (p.nome || '').toLowerCase().includes(searchTerm) ||
       (p.sku || '').toLowerCase().includes(searchTerm);
+    return matchTipo && matchSearch;
   });
 
   if (lista.length === 0) {
+    const tipoLabel = tipoAtual === 'caixa' ? 'caixas' : 'produtos unitários';
     tbody.innerHTML = `
       <tr>
-        <td colspan="8" class="empty-state">
-          <div class="icon">📭</div>
-          <h4>Nenhum produto encontrado</h4>
+        <td colspan="9" class="empty-state">
+          <div class="icon">${tipoAtual === 'caixa' ? '📦' : '📄'}</div>
+          <h4>Nenhum(a) ${tipoLabel} encontrado(a)</h4>
+          <p>Clique em "Nov${tipoAtual === 'caixa' ? 'a Caixa' : 'o Unitário'}" para cadastrar</p>
         </td>
       </tr>
     `;
@@ -558,6 +711,7 @@ function renderizarTabela() {
     const lucro = venda - custo;
     const margemPct = custo > 0 ? ((lucro / custo) * 100).toFixed(0) : 0;
     const margemClass = lucro > 0 ? 'margem-positiva' : (lucro < 0 ? 'margem-negativa' : '');
+    const qtdPorCaixaCol = tipoAtual === 'caixa' ? `<td><strong>${p.qtdPorCaixa || 1}</strong> un</td>` : '';
 
     return `
       <tr class="${isLow ? 'lowstock' : ''}">
@@ -567,9 +721,10 @@ function renderizarTabela() {
           </div>
         </td>
         <td><span class="produto-sku">${escapeHtml(p.sku || '—')}</span></td>
+        ${qtdPorCaixaCol}
         <td style="color:var(--muted)">${formatMoney(custo)}</td>
         <td><strong>${formatMoney(venda)}</strong></td>
-        <td class="${margemClass}"><strong>${margemPct}%</strong> <small>(${formatMoney(lucro)})</small></td>
+        <td class="${margemClass}"><strong>${margemPct}%</strong></td>
         <td><strong>${p.quantidade}</strong> ${escapeHtml(p.unidade || 'UN')}</td>
         <td><span class="badge ${status.class}">${status.text}</span></td>
         <td>
@@ -596,13 +751,18 @@ async function salvarProduto() {
   const quantidade = parseInt(document.getElementById('m-quantidade').value) || 0;
   const unidade = document.getElementById('m-unidade').value;
   const minimo = parseInt(document.getElementById('m-minimo').value) || 0;
+  const qtdPorCaixa = parseInt(document.getElementById('m-qtdPorCaixa').value) || 1;
 
   if (!nome) {
     showToast('Nome é obrigatório', 'error');
     return;
   }
 
-  const payload = { nome, sku, codigoBarras, precoCusto, preco, quantidade, unidade, minimo };
+  const payload = { 
+    nome, sku, codigoBarras, precoCusto, preco, quantidade, unidade, minimo,
+    tipo: tipoSelecionado,
+    qtdPorCaixa: tipoSelecionado === 'caixa' ? qtdPorCaixa : 1
+  };
 
   try {
     const url = editandoId ? `/api/produtos/${editandoId}` : '/api/produtos';
@@ -616,9 +776,13 @@ async function salvarProduto() {
 
     if (!res.ok) throw new Error('Erro ao salvar');
 
-    showToast(editandoId ? '✅ Produto atualizado!' : '✅ Produto cadastrado!');
+    const tipoLabel = tipoSelecionado === 'caixa' ? 'Caixa' : 'Produto';
+    showToast(editandoId ? `✅ ${tipoLabel} atualizado!` : `✅ ${tipoLabel} cadastrado!`);
     fecharModal('modal-produto');
     await carregarProdutos();
+    
+    // Mudar para a aba do tipo cadastrado
+    mudarAba(tipoSelecionado);
   } catch (e) {
     showToast(e.message, 'error');
   }
@@ -690,6 +854,7 @@ function abrirRelatorio() {
     const vendaTotal = qtd * venda;
     const lucro = vendaTotal - custoTotal;
     const margemPct = custo > 0 ? ((venda - custo) / custo * 100).toFixed(1) : 0;
+    const tipoIcon = p.tipo === 'caixa' ? '📦' : '📄';
     
     totalCusto += custoTotal;
     totalVenda += vendaTotal;
@@ -697,7 +862,7 @@ function abrirRelatorio() {
     
     return `
       <tr>
-        <td>${escapeHtml(p.nome)}</td>
+        <td>${tipoIcon} ${escapeHtml(p.nome)}</td>
         <td style="text-align:center">${qtd}</td>
         <td style="text-align:right">${formatMoney(custo)}</td>
         <td style="text-align:right">${formatMoney(venda)}</td>
@@ -711,37 +876,44 @@ function abrirRelatorio() {
   
   const margemMedia = totalCusto > 0 ? ((totalLucro / totalCusto) * 100).toFixed(1) : 0;
   
+  const unitarios = produtos.filter(p => p.tipo !== 'caixa').length;
+  const caixas = produtos.filter(p => p.tipo === 'caixa').length;
+  
   document.getElementById('relatorio-content').innerHTML = `
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px">
       <div style="background:#f0f3f7;padding:14px;border-radius:10px;text-align:center">
         <p style="margin:0;font-size:12px;color:#6b7280">Custo Total</p>
-        <h3 style="margin:4px 0 0;font-size:18px">${formatMoney(totalCusto)}</h3>
+        <h3 style="margin:4px 0 0;font-size:16px">${formatMoney(totalCusto)}</h3>
       </div>
       <div style="background:#f0f3f7;padding:14px;border-radius:10px;text-align:center">
         <p style="margin:0;font-size:12px;color:#6b7280">Venda Total</p>
-        <h3 style="margin:4px 0 0;font-size:18px">${formatMoney(totalVenda)}</h3>
+        <h3 style="margin:4px 0 0;font-size:16px">${formatMoney(totalVenda)}</h3>
       </div>
       <div style="background:#e6f9ee;padding:14px;border-radius:10px;text-align:center">
         <p style="margin:0;font-size:12px;color:#0aa04e">Lucro Estimado</p>
-        <h3 style="margin:4px 0 0;font-size:18px;color:#0aa04e">${formatMoney(totalLucro)}</h3>
+        <h3 style="margin:4px 0 0;font-size:16px;color:#0aa04e">${formatMoney(totalLucro)}</h3>
       </div>
       <div style="background:#e6f9ee;padding:14px;border-radius:10px;text-align:center">
         <p style="margin:0;font-size:12px;color:#0aa04e">Margem Média</p>
-        <h3 style="margin:4px 0 0;font-size:18px;color:#0aa04e">${margemMedia}%</h3>
+        <h3 style="margin:4px 0 0;font-size:16px;color:#0aa04e">${margemMedia}%</h3>
       </div>
     </div>
+    <div style="display:flex;gap:20px;margin-bottom:16px">
+      <span style="font-size:14px">📄 <strong>${unitarios}</strong> unitários</span>
+      <span style="font-size:14px">📦 <strong>${caixas}</strong> caixas</span>
+    </div>
     <div style="max-height:300px;overflow-y:auto">
-      <table style="width:100%;border-collapse:collapse;font-size:13px">
+      <table style="width:100%;border-collapse:collapse;font-size:12px">
         <thead>
           <tr style="background:#f0f3f7">
-            <th style="padding:10px;text-align:left">Produto</th>
-            <th style="padding:10px;text-align:center">Qtd</th>
-            <th style="padding:10px;text-align:right">Custo Un.</th>
-            <th style="padding:10px;text-align:right">Venda Un.</th>
-            <th style="padding:10px;text-align:right">Custo Total</th>
-            <th style="padding:10px;text-align:right">Venda Total</th>
-            <th style="padding:10px;text-align:right">Lucro</th>
-            <th style="padding:10px;text-align:center">Margem</th>
+            <th style="padding:8px;text-align:left">Produto</th>
+            <th style="padding:8px;text-align:center">Qtd</th>
+            <th style="padding:8px;text-align:right">Custo</th>
+            <th style="padding:8px;text-align:right">Venda</th>
+            <th style="padding:8px;text-align:right">Custo Total</th>
+            <th style="padding:8px;text-align:right">Venda Total</th>
+            <th style="padding:8px;text-align:right">Lucro</th>
+            <th style="padding:8px;text-align:center">Margem</th>
           </tr>
         </thead>
         <tbody>${linhas}</tbody>

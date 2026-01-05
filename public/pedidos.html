@@ -67,6 +67,16 @@ header p{margin:4px 0 0;color:var(--muted);font-size:14px}
 .cliente-select select{width:100%;padding:14px;border:2px solid #e6e9ef;border-radius:10px;font-size:14px;background:#f8fafc;cursor:pointer}
 .cliente-select select:focus{outline:none;border-color:var(--primary)}
 
+/* Seletor de tipo de produto */
+.tipo-pedido-selector{display:flex;gap:10px;margin-bottom:16px}
+.tipo-pedido-btn{flex:1;padding:14px 20px;border:3px solid #e6e9ef;background:#fff;border-radius:12px;cursor:pointer;font-size:15px;font-weight:600;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:10px}
+.tipo-pedido-btn:hover{border-color:#ccc}
+.tipo-pedido-btn.active{border-color:var(--primary);background:var(--primary-light);color:var(--primary)}
+.tipo-pedido-btn.caixa.active{border-color:#8b5cf6;background:#f5f3ff;color:#8b5cf6}
+.tipo-pedido-btn .badge{background:#e6e9ef;padding:2px 10px;border-radius:20px;font-size:12px}
+.tipo-pedido-btn.active .badge{background:rgba(10,160,78,0.2)}
+.tipo-pedido-btn.caixa.active .badge{background:rgba(139,92,246,0.2)}
+
 /* Busca de produtos */
 .search-box{position:relative;margin-bottom:16px}
 .search-box input{width:100%;padding:12px 14px 12px 42px;border-radius:10px;border:2px solid #e6e9ef;font-size:14px;transition:all .2s}
@@ -513,6 +523,18 @@ header p{margin:4px 0 0;color:var(--muted);font-size:14px}
       <div class="pedido-grid">
         <!-- Lista de produtos -->
         <div>
+          <!-- Seletor de Tipo de Produto -->
+          <div class="tipo-pedido-selector">
+            <button class="tipo-pedido-btn active" data-tipo="unitario" onclick="mudarTipoProduto('unitario')">
+              📄 Unitários
+              <span class="badge" id="badge-unitarios">0</span>
+            </button>
+            <button class="tipo-pedido-btn caixa" data-tipo="caixa" onclick="mudarTipoProduto('caixa')">
+              📦 Caixas
+              <span class="badge" id="badge-caixas">0</span>
+            </button>
+          </div>
+          
           <div class="search-box">
             <input type="text" id="search-produto" placeholder="Buscar produto por nome ou SKU..." />
           </div>
@@ -605,11 +627,12 @@ header p{margin:4px 0 0;color:var(--muted);font-size:14px}
 let clientes = [];
 let produtos = [];
 let pedidos = [];
-let carrinho = []; // { produtoId, nome, quantidade, preco, unidade }
+let carrinho = []; // { produtoId, nome, quantidade, preco, unidade, tipo }
 let filtroAtual = 'all';
 let userRole = 'admin';
 let minhasSolicitacoes = [];
 let pedidoAtual = null; // Pedido sendo visualizado no modal
+let tipoProdutoAtual = 'unitario'; // 'unitario' ou 'caixa'
 
 // ============================================
 // FUNÇÕES UTILITÁRIAS
@@ -714,6 +737,7 @@ async function carregarProdutos() {
     const res = await fetch('/api/produtos');
     if (!res.ok) throw new Error('Erro');
     produtos = await res.json();
+    atualizarContadoresTipo();
     renderizarProdutos();
   } catch (e) {
     console.error(e);
@@ -759,6 +783,31 @@ function atualizarEstatisticas() {
 }
 
 // ============================================
+// MUDAR TIPO DE PRODUTO
+// ============================================
+function mudarTipoProduto(tipo) {
+  tipoProdutoAtual = tipo;
+  
+  // Atualizar botões
+  document.querySelectorAll('.tipo-pedido-btn').forEach(btn => {
+    btn.classList.remove('active');
+    if (btn.dataset.tipo === tipo) {
+      btn.classList.add('active');
+    }
+  });
+  
+  renderizarProdutos();
+}
+
+function atualizarContadoresTipo() {
+  const unitarios = produtos.filter(p => (p.tipo || 'unitario') === 'unitario').length;
+  const caixas = produtos.filter(p => p.tipo === 'caixa').length;
+  
+  document.getElementById('badge-unitarios').textContent = unitarios;
+  document.getElementById('badge-caixas').textContent = caixas;
+}
+
+// ============================================
 // RENDERIZAR PRODUTOS
 // ============================================
 function renderizarProdutos() {
@@ -766,46 +815,54 @@ function renderizarProdutos() {
   const searchTerm = document.getElementById('search-produto').value.toLowerCase();
 
   let lista = produtos.filter(p => {
-    return !searchTerm || 
+    const matchTipo = (p.tipo || 'unitario') === tipoProdutoAtual;
+    const matchSearch = !searchTerm || 
       (p.nome || '').toLowerCase().includes(searchTerm) ||
       (p.sku || '').toLowerCase().includes(searchTerm);
+    return matchTipo && matchSearch;
   });
+
+  const tipoLabel = tipoProdutoAtual === 'caixa' ? 'caixas' : 'produtos unitários';
+  const tipoIcon = tipoProdutoAtual === 'caixa' ? '📦' : '📄';
 
   if (lista.length === 0) {
     container.innerHTML = `
       <div class="empty-state">
-        <div class="icon">📭</div>
-        <h4>Nenhum produto encontrado</h4>
+        <div class="icon">${tipoIcon}</div>
+        <h4>Nenhum(a) ${tipoLabel} encontrado(a)</h4>
+        <p style="font-size:12px">Cadastre ${tipoLabel} na página de Produtos</p>
       </div>
     `;
     return;
   }
 
-  container.innerHTML = lista.map(p => `
+  container.innerHTML = lista.map(p => {
+    const qtdInfo = p.tipo === 'caixa' && p.qtdPorCaixa ? ` (${p.qtdPorCaixa} un/cx)` : '';
+    return `
     <div class="product-item">
       <div class="product-info">
-        <h4>${escapeHtml(p.nome)}</h4>
+        <h4>${tipoIcon} ${escapeHtml(p.nome)}${qtdInfo}</h4>
         <p>SKU: ${escapeHtml(p.sku || '—')} | ${formatMoney(p.preco)}</p>
       </div>
       <div class="product-actions">
         <span class="stock">${p.quantidade} ${escapeHtml(p.unidade || 'UN')}</span>
         <input type="number" id="qty-${p.id}" min="1" max="${p.quantidade}" value="1" />
-        <button class="btn btn-add btn-sm" onclick="adicionarAoCarrinho(${p.id})" ${p.quantidade <= 0 ? 'disabled' : ''}>
+        <button class="btn btn-add btn-sm" onclick="adicionarAoCarrinho('${p.id}')" ${p.quantidade <= 0 ? 'disabled' : ''}>
           ➕
         </button>
       </div>
     </div>
-  `).join('');
+  `}).join('');
 }
 
 // ============================================
 // CARRINHO
 // ============================================
 function adicionarAoCarrinho(produtoId) {
-  const produto = produtos.find(p => p.id === produtoId);
+  const produto = produtos.find(p => (p._id || p.id) === produtoId);
   if (!produto) return;
 
-  const qtyInput = document.getElementById(`qty-${produtoId}`);
+  const qtyInput = document.getElementById(`qty-${produto.id || produto._id}`);
   const quantidade = parseInt(qtyInput.value) || 1;
 
   if (quantidade <= 0) {
@@ -813,8 +870,10 @@ function adicionarAoCarrinho(produtoId) {
     return;
   }
 
+  const pid = produto._id || produto.id;
+
   // Verificar estoque
-  const noCarrinho = carrinho.find(c => c.produtoId === produtoId);
+  const noCarrinho = carrinho.find(c => c.produtoId === pid);
   const qtdAtual = noCarrinho ? noCarrinho.quantidade : 0;
 
   if (qtdAtual + quantidade > produto.quantidade) {
@@ -822,21 +881,24 @@ function adicionarAoCarrinho(produtoId) {
     return;
   }
 
+  const tipoIcon = produto.tipo === 'caixa' ? '📦' : '📄';
+
   if (noCarrinho) {
     noCarrinho.quantidade += quantidade;
   } else {
     carrinho.push({
-      produtoId: produto.id,
+      produtoId: pid,
       nome: produto.nome,
       quantidade,
       preco: produto.preco,
-      unidade: produto.unidade || 'UN'
+      unidade: produto.unidade || 'UN',
+      tipo: produto.tipo || 'unitario'
     });
   }
 
   qtyInput.value = 1;
   renderizarCarrinho();
-  showToast(`✓ ${produto.nome} adicionado!`);
+  showToast(`✓ ${tipoIcon} ${produto.nome} adicionado!`);
 }
 
 function removerDoCarrinho(index) {
@@ -885,11 +947,12 @@ function renderizarCarrinho() {
     const subtotal = item.quantidade * item.preco;
     total += subtotal;
     itens += item.quantidade;
+    const tipoIcon = item.tipo === 'caixa' ? '📦' : '📄';
 
     return `
       <div class="cart-item">
         <div class="cart-item-info">
-          <h5>${escapeHtml(item.nome)}</h5>
+          <h5>${tipoIcon} ${escapeHtml(item.nome)}</h5>
           <p>${formatMoney(item.preco)} × ${item.quantidade} = <strong>${formatMoney(subtotal)}</strong></p>
         </div>
         <div class="cart-item-actions">

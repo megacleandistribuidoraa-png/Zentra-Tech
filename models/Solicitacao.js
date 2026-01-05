@@ -28,3 +28,10 @@ solicitacaoSchema.set('toObject', { virtuals: true });
 
 module.exports = mongoose.model('Solicitacao', solicitacaoSchema);
 
+
+
+
+
+
+
+

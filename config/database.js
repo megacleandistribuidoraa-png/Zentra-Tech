@@ -15,3 +15,10 @@ const conectarDB = async () => {
 
 module.exports = { conectarDB, MONGODB_URI };
 
+
+
+
+
+
+
+

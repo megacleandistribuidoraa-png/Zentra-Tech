@@ -9,6 +9,8 @@ const produtoSchema = new mongoose.Schema({
   quantidade: { type: Number, default: 0 },
   unidade: { type: String, default: 'UN' },
   minimo: { type: Number, default: 5 },
+  tipo: { type: String, enum: ['unitario', 'caixa'], default: 'unitario' },
+  qtdPorCaixa: { type: Number, default: 1 },
   categoriaId: { type: mongoose.Schema.Types.ObjectId, ref: 'Categoria' },
   fornecedorId: { type: mongoose.Schema.Types.ObjectId, ref: 'Fornecedor' },
   descricao: { type: String, default: '' },

@@ -18,3 +18,10 @@ categoriaSchema.set('toObject', { virtuals: true });
 
 module.exports = mongoose.model('Categoria', categoriaSchema);
 
+
+
+
+
+
+
+

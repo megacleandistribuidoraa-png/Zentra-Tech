@@ -21,3 +21,10 @@ fornecedorSchema.set('toObject', { virtuals: true });
 
 module.exports = mongoose.model('Fornecedor', fornecedorSchema);
 
+
+
+
+
+
+
+

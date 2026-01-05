@@ -13,6 +13,7 @@ const Solicitacao = require('./models/Solicitacao');
 const Categoria = require('./models/Categoria');
 const Fornecedor = require('./models/Fornecedor');
 const Orcamento = require('./models/Orcamento');
+const ConfigEmpresa = require('./models/ConfigEmpresa');
 
 const app = express();
 app.use(cors());
@@ -319,6 +320,7 @@ app.get('/api/admin/pages', verificarAuth, (req, res) => {
       { id: 'relatorio', title: 'Relatório', url: '/relatorio.html', icon: '📈' },
       { id: 'solicitacoes', title: 'Solicitações', url: '/solicitacoes.html', icon: '📝' },
       { id: 'usuarios', title: 'Usuários', url: '/usuarios.html', icon: '👤' },
+      { id: 'config-empresa', title: 'Dados da Empresa', url: '/config-empresa.html', icon: '🏢' },
       { id: 'config', title: 'Configurações', url: '/config.html', icon: '⚙️' }
     ];
   }
@@ -425,6 +427,8 @@ app.post("/api/produtos", async (req, res) => {
       quantidade: Number(req.body.quantidade),
       minimo: Number(req.body.minimo),
       unidade: req.body.unidade,
+      tipo: req.body.tipo || 'unitario',
+      qtdPorCaixa: Number(req.body.qtdPorCaixa) || 1,
       sku: req.body.sku || String(count + 1).padStart(3, "0")
     });
     res.json(novo);
@@ -445,6 +449,8 @@ app.put("/api/produtos/:id", async (req, res) => {
     produto.quantidade = Number(req.body.quantidade);
     produto.minimo = Number(req.body.minimo);
     produto.unidade = req.body.unidade;
+    produto.tipo = req.body.tipo || produto.tipo;
+    produto.qtdPorCaixa = Number(req.body.qtdPorCaixa) || produto.qtdPorCaixa;
 
     await produto.save();
     res.json(produto);
@@ -1181,6 +1187,82 @@ app.get('/api/config-sistema', (req, res) => {
 app.put('/api/config-sistema', verificarAuth, verificarAdmin, (req, res) => {
   configSistema = { ...configSistema, ...req.body };
   res.json(configSistema);
+});
+
+// ---------------------------------------------
+// ------- CONFIGURAÇÃO DA EMPRESA (NF-e) ------
+// ---------------------------------------------
+app.get('/api/config-empresa', async (req, res) => {
+  try {
+    let config = await ConfigEmpresa.findOne();
+    if (!config) {
+      config = await ConfigEmpresa.create({});
+    }
+    res.json(config);
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao buscar configurações' });
+  }
+});
+
+app.put('/api/config-empresa', verificarAuth, verificarAdmin, async (req, res) => {
+  try {
+    let config = await ConfigEmpresa.findOne();
+    if (!config) {
+      config = await ConfigEmpresa.create(req.body);
+    } else {
+      Object.assign(config, req.body);
+      config.dataAtualizacao = new Date();
+      await config.save();
+    }
+    res.json(config);
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao salvar configurações' });
+  }
+});
+
+// Gerar documento fiscal (recibo/pré-nota)
+app.post('/api/pedidos/:id/documento-fiscal', verificarAuth, async (req, res) => {
+  try {
+    const pedido = await Pedido.findById(req.params.id);
+    if (!pedido) return res.status(404).json({ error: 'Pedido não encontrado' });
+    
+    const cliente = await Cliente.findById(pedido.clienteId);
+    const config = await ConfigEmpresa.findOne();
+    
+    // Por enquanto, retorna os dados para gerar um recibo
+    // Quando tiver CNPJ e certificado, aqui será a integração com a SEFAZ
+    res.json({
+      tipo: config?.cnpj ? 'nfe_pendente' : 'recibo',
+      numero: config?.proximoNumeroNfe || 1,
+      serie: config?.serieNfe || 1,
+      dataEmissao: new Date().toISOString(),
+      empresa: {
+        razaoSocial: config?.razaoSocial || 'MEGACLEAN',
+        nomeFantasia: config?.nomeFantasia || 'MegaClean',
+        cnpj: config?.cnpj || 'CNPJ não cadastrado',
+        inscricaoEstadual: config?.inscricaoEstadual || '',
+        endereco: config?.logradouro ? `${config.logradouro}, ${config.numero} - ${config.bairro}, ${config.cidade}/${config.uf}` : '',
+        telefone: config?.telefone || '',
+        email: config?.email || ''
+      },
+      cliente: {
+        nome: cliente?.nome || 'Cliente',
+        cpfCnpj: cliente?.cpfCnpj || '',
+        telefone: cliente?.telefone || '',
+        endereco: cliente?.endereco || ''
+      },
+      pedido: {
+        id: pedido._id,
+        data: pedido.dateISO,
+        items: pedido.items,
+        total: pedido.total,
+        formaPagamento: pedido.formaPagamento
+      },
+      mensagem: config?.mensagemPadrao || 'Obrigado pela preferência!'
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao gerar documento' });
+  }
 });
 
 // Iniciar servidor

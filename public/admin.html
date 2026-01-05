@@ -569,7 +569,7 @@ async function carregarMenu() {
     const mainPages = pages.filter(p => ['dashboard', 'clientes', 'pedidos', 'orcamentos'].includes(p.id));
     
     // Páginas de admin
-    const adminPages = pages.filter(p => ['produtos', 'categorias', 'estoque', 'fornecedores', 'contas', 'relatorio', 'solicitacoes', 'usuarios', 'config'].includes(p.id));
+    const adminPages = pages.filter(p => ['produtos', 'categorias', 'estoque', 'fornecedores', 'contas', 'relatorio', 'solicitacoes', 'usuarios', 'config-empresa', 'config'].includes(p.id));
     
     navMenu.innerHTML = mainPages.map(p => `
       <a href="${p.url}" class="nav-item">
@@ -627,6 +627,7 @@ function getPageDescription(id) {
     'relatorio': 'Relatórios e métricas do dia',
     'solicitacoes': 'Aprove pedidos retroativos',
     'usuarios': 'Gerencie usuários do sistema',
+    'config-empresa': 'CNPJ, endereço, NF-e',
     'config': 'Configurações da sua conta'
   };
   return descriptions[id] || '';
