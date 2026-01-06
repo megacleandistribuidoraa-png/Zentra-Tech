@@ -72,3 +72,6 @@ const configNFeSchema = new mongoose.Schema({
 
 module.exports = mongoose.model('ConfigNFe', configNFeSchema);
 
+
+
+

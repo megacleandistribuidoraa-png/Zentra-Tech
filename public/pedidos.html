@@ -726,7 +726,8 @@ async function carregarClientes() {
     const select = document.getElementById('select-cliente');
     select.innerHTML = '<option value="">-- Selecione um cliente --</option>';
     clientes.forEach(c => {
-      select.innerHTML += `<option value="${c.id}">${escapeHtml(c.nome)} ${c.cpf ? '(' + c.cpf + ')' : ''}</option>`;
+      const cid = c._id || c.id;
+      select.innerHTML += `<option value="${cid}">${escapeHtml(c.nome)} ${c.cpf ? '(' + c.cpf + ')' : ''}</option>`;
     });
   } catch (e) {
     console.error(e);
@@ -838,6 +839,7 @@ function renderizarProdutos() {
   }
 
   container.innerHTML = lista.map(p => {
+    const pid = p._id || p.id;
     const qtdInfo = p.tipo === 'caixa' && p.qtdPorCaixa ? ` (${p.qtdPorCaixa} un/cx)` : '';
     return `
     <div class="product-item">
@@ -847,8 +849,8 @@ function renderizarProdutos() {
       </div>
       <div class="product-actions">
         <span class="stock">${p.quantidade} ${escapeHtml(p.unidade || 'UN')}</span>
-        <input type="number" id="qty-${p.id}" min="1" max="${p.quantidade}" value="1" />
-        <button class="btn btn-add btn-sm" onclick="adicionarAoCarrinho('${p.id}')" ${p.quantidade <= 0 ? 'disabled' : ''}>
+        <input type="number" id="qty-${pid}" min="1" max="${p.quantidade}" value="1" />
+        <button class="btn btn-add btn-sm" onclick="adicionarAoCarrinho('${pid}')" ${p.quantidade <= 0 ? 'disabled' : ''}>
           ➕
         </button>
       </div>
@@ -863,15 +865,14 @@ function adicionarAoCarrinho(produtoId) {
   const produto = produtos.find(p => (p._id || p.id) === produtoId);
   if (!produto) return;
 
-  const qtyInput = document.getElementById(`qty-${produto.id || produto._id}`);
+  const pid = produto._id || produto.id;
+  const qtyInput = document.getElementById(`qty-${pid}`);
   const quantidade = parseInt(qtyInput.value) || 1;
 
   if (quantidade <= 0) {
     showToast('Quantidade inválida', 'error');
     return;
   }
-
-  const pid = produto._id || produto.id;
 
   // Verificar estoque
   const noCarrinho = carrinho.find(c => c.produtoId === pid);
@@ -911,7 +912,7 @@ function atualizarQuantidade(index, novaQtd) {
   const item = carrinho[index];
   if (!item) return;
 
-  const produto = produtos.find(p => p.id === item.produtoId);
+  const produto = produtos.find(p => (p._id || p.id) === item.produtoId);
   if (!produto) return;
 
   novaQtd = parseInt(novaQtd) || 1;
@@ -1012,7 +1013,7 @@ async function confirmarPedido() {
       }
 
       const payload = {
-        clienteId: parseInt(clienteId),
+        clienteId: clienteId,
         items: itemsPayload,
         dataDesejada: dataSelecionada,
         motivo: motivo.trim()
@@ -1041,7 +1042,7 @@ async function confirmarPedido() {
     } else {
       // Admin ou pedido normal: criar pedido direto
       const payload = {
-        clienteId: parseInt(clienteId),
+        clienteId: clienteId,
         items: itemsPayload
       };
 
@@ -1132,7 +1133,7 @@ function renderizarMinhasSolicitacoes() {
       'rejeitado': '✕ Rejeitado'
     }[s.status];
     
-    const cliente = clientes.find(c => c.id === s.clienteId);
+    const cliente = clientes.find(c => (c._id || c.id) === s.clienteId);
     
     return `
       <div class="solicitacao-mini ${s.status}">
@@ -1172,19 +1173,21 @@ function renderizarPedidos() {
   }
 
   container.innerHTML = lista.map(p => {
-    const cliente = clientes.find(c => c.id === p.clienteId);
+    const pid = p._id || p.id;
+    const cliente = clientes.find(c => (c._id || c.id) === p.clienteId);
     const data = p.dateISO ? new Date(p.dateISO).toLocaleString('pt-BR') : '—';
     const retroativoBadge = p.retroativo ? '<span class="badge retroativo">📅 Retroativo</span>' : '';
+    const numPedido = typeof pid === 'string' ? pid.slice(-6).toUpperCase() : pid;
 
     return `
       <div class="order-item">
         <div class="order-info">
-          <h4><span class="badge green">#${p.id}</span> ${retroativoBadge} ${escapeHtml(cliente?.nome || 'Cliente')}</h4>
+          <h4><span class="badge green">#${numPedido}</span> ${retroativoBadge} ${escapeHtml(cliente?.nome || 'Cliente')}</h4>
           <p>${data} • ${p.items?.length || 0} item(s)</p>
         </div>
         <div class="order-total">
           <h4>${formatMoney(p.total)}</h4>
-          <button class="btn btn-ghost btn-sm" onclick="verDetalhesPedido(${p.id})">Ver detalhes</button>
+          <button class="btn btn-ghost btn-sm" onclick="verDetalhesPedido('${pid}')">Ver detalhes</button>
         </div>
       </div>
     `;
@@ -1195,12 +1198,14 @@ function renderizarPedidos() {
 // DETALHES DO PEDIDO
 // ============================================
 function verDetalhesPedido(pedidoId) {
-  const pedido = pedidos.find(p => p.id === pedidoId);
+  const pedido = pedidos.find(p => (p._id || p.id) === pedidoId);
   if (!pedido) return;
 
   pedidoAtual = pedido; // Armazenar para impressão
 
-  const cliente = clientes.find(c => c.id === pedido.clienteId);
+  const pid = pedido._id || pedido.id;
+  const numPedido = typeof pid === 'string' ? pid.slice(-6).toUpperCase() : pid;
+  const cliente = clientes.find(c => (c._id || c.id) === pedido.clienteId);
   const data = pedido.dateISO ? new Date(pedido.dateISO).toLocaleString('pt-BR') : '—';
   const retroativoInfo = pedido.retroativo 
     ? '<p><span class="badge retroativo">📅 Pedido Retroativo</span></p>' 
@@ -1208,7 +1213,7 @@ function verDetalhesPedido(pedidoId) {
 
   let html = `
     <div style="margin-bottom:16px">
-      <p><strong>Pedido:</strong> #${pedido.id}</p>
+      <p><strong>Pedido:</strong> #${numPedido}</p>
       <p><strong>Cliente:</strong> ${escapeHtml(cliente?.nome || 'Cliente')}</p>
       <p><strong>Data:</strong> ${data}</p>
       ${retroativoInfo}
@@ -1390,7 +1395,9 @@ function imprimirPedido() {
   }
 
   const pedido = pedidoAtual;
-  const cliente = clientes.find(c => c.id === pedido.clienteId);
+  const pid = pedido._id || pedido.id;
+  const numPedido = typeof pid === 'string' ? pid.slice(-6).toUpperCase() : String(pid).padStart(4, '0');
+  const cliente = clientes.find(c => (c._id || c.id) === pedido.clienteId);
   const dataEmissao = new Date().toLocaleString('pt-BR');
   const dataPedido = pedido.dateISO ? new Date(pedido.dateISO).toLocaleString('pt-BR') : '—';
 
@@ -1415,7 +1422,7 @@ function imprimirPedido() {
     <div class="print-header">
       <h1>🧹 MegaClean</h1>
       <p>Sistema de Gestão de Pedidos</p>
-      <div class="order-num">PEDIDO Nº ${String(pedido.id).padStart(4, '0')} ${pedido.retroativo ? '• RETROATIVO' : ''}</div>
+      <div class="order-num">PEDIDO Nº ${numPedido} ${pedido.retroativo ? '• RETROATIVO' : ''}</div>
     </div>
 
     <div class="print-section">

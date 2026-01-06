@@ -60,3 +60,6 @@ notaFiscalSchema.set('toObject', { virtuals: true });
 
 module.exports = mongoose.model('NotaFiscal', notaFiscalSchema);
 
+
+
+
