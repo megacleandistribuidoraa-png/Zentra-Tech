@@ -9,9 +9,11 @@
   --bg:#f4f7fb;
   --card:#fff;
   --primary:#0aa04e;
+
   --primary-light:#e6f9ee;
   --primary-600:#0a8a44;
   --muted:#6b7280;
+
   --danger:#dc2626;
   --danger-light:#fef2f2;
   --warning:#f59e0b;
@@ -26,10 +28,12 @@
 *{box-sizing:border-box}
 body{
   margin:0;
+
   font-family: 'Segoe UI', Roboto, Arial, sans-serif;
   background:linear-gradient(180deg,#f7fafc 0%, var(--bg) 100%);
   color:#0f172a;
   padding:22px;
+
   min-height:100vh;
 }
 .container{max-width:1400px;margin:0 auto}
@@ -443,10 +447,12 @@ header p{margin:4px 0 0;color:var(--muted);font-size:14px}
   <div class="container">
     <header>
       <div>
+
         <a href="/admin.html" class="back-link">← Voltar ao painel</a>
         <h1><span>🛒</span> Pedidos</h1>
         <p>Crie pedidos e dê baixa automática no estoque</p>
       </div>
+
     </header>
 
     <!-- Cards de estatísticas -->
@@ -456,7 +462,8 @@ header p{margin:4px 0 0;color:var(--muted);font-size:14px}
         <div class="info">
           <h3 id="stat-total">0</h3>
           <p>Total de pedidos</p>
-        </div>
+      </div>
+
       </div>
       <div class="stat-card">
         <div class="icon green">📅</div>
@@ -483,9 +490,11 @@ header p{margin:4px 0 0;color:var(--muted);font-size:14px}
 
     <!-- Criar pedido -->
     <div class="card">
+
       <div class="card-header">
         <h2 class="card-title">➕ Novo Pedido</h2>
-      </div>
+        </div>
+
 
       <div class="cliente-select">
         <label>Selecione o cliente *</label>
@@ -493,6 +502,7 @@ header p{margin:4px 0 0;color:var(--muted);font-size:14px}
           <option value="">-- Selecione um cliente --</option>
         </select>
       </div>
+
 
       <!-- Seção de Data (Admin: data livre / Operador: cria solicitação) -->
       <div class="date-section" id="date-section">
@@ -509,20 +519,24 @@ header p{margin:4px 0 0;color:var(--muted);font-size:14px}
           <label style="font-size:13px;font-weight:600;color:#374151">Motivo da solicitação (obrigatório):</label>
           <textarea id="input-motivo" placeholder="Explique por que precisa registrar este pedido em data anterior..."></textarea>
         </div>
-      </div>
+          </div>
+
 
       <!-- Card de solicitações pendentes (só para operador) -->
       <div class="solicitacoes-card" id="solicitacoes-card" style="display:none">
         <div class="solicitacoes-header">
           <h4>📋 Minhas Solicitações</h4>
           <a href="/solicitacoes.html" class="btn btn-ghost btn-sm" style="display:none" id="link-todas-solicitacoes">Ver todas</a>
-        </div>
+          </div>
+
         <div id="lista-minhas-solicitacoes"></div>
-      </div>
+        </div>
+
 
       <div class="pedido-grid">
         <!-- Lista de produtos -->
         <div>
+
           <!-- Seletor de Tipo de Produto -->
           <div class="tipo-pedido-selector">
             <button class="tipo-pedido-btn active" data-tipo="unitario" onclick="mudarTipoProduto('unitario')">
@@ -534,7 +548,8 @@ header p{margin:4px 0 0;color:var(--muted);font-size:14px}
               <span class="badge" id="badge-caixas">0</span>
             </button>
           </div>
-          
+
+
           <div class="search-box">
             <input type="text" id="search-produto" placeholder="Buscar produto por nome ou SKU..." />
           </div>
@@ -558,11 +573,13 @@ header p{margin:4px 0 0;color:var(--muted);font-size:14px}
             </div>
           </div>
 
+
           <div class="cart-totals">
             <div class="cart-total-row">
               <span>Itens:</span>
               <span id="cart-count">0</span>
-            </div>
+          </div>
+
             <div class="cart-total-row final">
               <span>Total:</span>
               <span id="cart-total">R$ 0,00</span>
@@ -579,16 +596,20 @@ header p{margin:4px 0 0;color:var(--muted);font-size:14px}
       </div>
     </div>
 
+
     <!-- Histórico de pedidos -->
     <div class="card">
+
       <div class="card-header">
         <h2 class="card-title">📋 Histórico de Pedidos</h2>
         <div class="filter-buttons">
+
           <button class="filter-btn active" data-filter="all">Todos</button>
           <button class="filter-btn" data-filter="today">Hoje</button>
           <button class="filter-btn" data-filter="month">Este mês</button>
         </div>
       </div>
+
 
       <div class="orders-list" id="orders-list">
         <div class="empty-state">
@@ -598,6 +619,7 @@ header p{margin:4px 0 0;color:var(--muted);font-size:14px}
       </div>
     </div>
   </div>
+
 
   <!-- Modal detalhes do pedido -->
   <div id="modal-detail" class="modal-backdrop">
@@ -613,6 +635,7 @@ header p{margin:4px 0 0;color:var(--muted);font-size:14px}
     </div>
   </div>
 
+
   <!-- Toast -->
   <div id="toast" class="toast"></div>
 
@@ -622,6 +645,7 @@ header p{margin:4px 0 0;color:var(--muted);font-size:14px}
   </div>
 
 <script>
+
 // ============================================
 // VARIÁVEIS GLOBAIS
 // ============================================
@@ -720,29 +744,32 @@ function verificarData() {
 async function carregarClientes() {
   try {
     const res = await fetch('/api/clientes');
+
     if (!res.ok) throw new Error('Erro');
     clientes = await res.json();
     
     const select = document.getElementById('select-cliente');
     select.innerHTML = '<option value="">-- Selecione um cliente --</option>';
     clientes.forEach(c => {
-      const cid = c._id || c.id;
-      select.innerHTML += `<option value="${cid}">${escapeHtml(c.nome)} ${c.cpf ? '(' + c.cpf + ')' : ''}</option>`;
+      select.innerHTML += `<option value="${c.id}">${escapeHtml(c.nome)} ${c.cpf ? '(' + c.cpf + ')' : ''}</option>`;
     });
   } catch (e) {
     console.error(e);
   }
 }
 
+
 async function carregarProdutos() {
   try {
     const res = await fetch('/api/produtos');
+
     if (!res.ok) throw new Error('Erro');
     produtos = await res.json();
     atualizarContadoresTipo();
     renderizarProdutos();
   } catch (e) {
     console.error(e);
+
     document.getElementById('product-list').innerHTML = `
       <div class="empty-state">
         <div class="icon">❌</div>
@@ -755,6 +782,7 @@ async function carregarProdutos() {
 async function carregarPedidos() {
   try {
     const res = await fetch('/api/pedidos');
+
     if (!res.ok) throw new Error('Erro');
     pedidos = await res.json();
     
@@ -762,6 +790,7 @@ async function carregarPedidos() {
     renderizarPedidos();
   } catch (e) {
     console.error(e);
+
   }
 }
 
@@ -839,7 +868,6 @@ function renderizarProdutos() {
   }
 
   container.innerHTML = lista.map(p => {
-    const pid = p._id || p.id;
     const qtdInfo = p.tipo === 'caixa' && p.qtdPorCaixa ? ` (${p.qtdPorCaixa} un/cx)` : '';
     return `
     <div class="product-item">
@@ -849,8 +877,8 @@ function renderizarProdutos() {
       </div>
       <div class="product-actions">
         <span class="stock">${p.quantidade} ${escapeHtml(p.unidade || 'UN')}</span>
-        <input type="number" id="qty-${pid}" min="1" max="${p.quantidade}" value="1" />
-        <button class="btn btn-add btn-sm" onclick="adicionarAoCarrinho('${pid}')" ${p.quantidade <= 0 ? 'disabled' : ''}>
+        <input type="number" id="qty-${p.id}" min="1" max="${p.quantidade}" value="1" />
+        <button class="btn btn-add btn-sm" onclick="adicionarAoCarrinho('${p.id}')" ${p.quantidade <= 0 ? 'disabled' : ''}>
           ➕
         </button>
       </div>
@@ -865,14 +893,15 @@ function adicionarAoCarrinho(produtoId) {
   const produto = produtos.find(p => (p._id || p.id) === produtoId);
   if (!produto) return;
 
-  const pid = produto._id || produto.id;
-  const qtyInput = document.getElementById(`qty-${pid}`);
+  const qtyInput = document.getElementById(`qty-${produto.id || produto._id}`);
   const quantidade = parseInt(qtyInput.value) || 1;
 
   if (quantidade <= 0) {
     showToast('Quantidade inválida', 'error');
     return;
   }
+
+  const pid = produto._id || produto.id;
 
   // Verificar estoque
   const noCarrinho = carrinho.find(c => c.produtoId === pid);
@@ -888,6 +917,7 @@ function adicionarAoCarrinho(produtoId) {
   if (noCarrinho) {
     noCarrinho.quantidade += quantidade;
   } else {
+
     carrinho.push({
       produtoId: pid,
       nome: produto.nome,
@@ -912,7 +942,7 @@ function atualizarQuantidade(index, novaQtd) {
   const item = carrinho[index];
   if (!item) return;
 
-  const produto = produtos.find(p => (p._id || p.id) === item.produtoId);
+  const produto = produtos.find(p => p.id === item.produtoId);
   if (!produto) return;
 
   novaQtd = parseInt(novaQtd) || 1;
@@ -920,6 +950,7 @@ function atualizarQuantidade(index, novaQtd) {
     showToast('Estoque insuficiente', 'error');
     return;
   }
+
   if (novaQtd < 1) novaQtd = 1;
 
   carrinho[index].quantidade = novaQtd;
@@ -943,11 +974,13 @@ function renderizarCarrinho() {
   }
 
   let total = 0;
+
   let itens = 0;
 
   container.innerHTML = carrinho.map((item, index) => {
     const subtotal = item.quantidade * item.preco;
     total += subtotal;
+
     itens += item.quantidade;
     const tipoIcon = item.tipo === 'caixa' ? '📦' : '📄';
 
@@ -1012,7 +1045,8 @@ async function confirmarPedido() {
         throw new Error('Informe o motivo da solicitação');
       }
 
-      const payload = {
+  const payload = {
+
         clienteId: clienteId,
         items: itemsPayload,
         dataDesejada: dataSelecionada,
@@ -1028,7 +1062,8 @@ async function confirmarPedido() {
         body: JSON.stringify(payload)
       });
 
-      const json = await res.json();
+    const json = await res.json();
+
 
       if (!res.ok) {
         throw new Error(json.error || 'Erro ao criar solicitação');
@@ -1042,7 +1077,7 @@ async function confirmarPedido() {
     } else {
       // Admin ou pedido normal: criar pedido direto
       const payload = {
-        clienteId: clienteId,
+        clienteId: parseInt(clienteId),
         items: itemsPayload
       };
 
@@ -1095,6 +1130,7 @@ async function carregarMinhasSolicitacoes() {
     return;
   }
 
+
   try {
     const res = await fetch('/api/solicitacoes', {
       headers: { 'x-auth-token': getToken() }
@@ -1133,13 +1169,14 @@ function renderizarMinhasSolicitacoes() {
       'rejeitado': '✕ Rejeitado'
     }[s.status];
     
-    const cliente = clientes.find(c => (c._id || c.id) === s.clienteId);
+    const cliente = clientes.find(c => c.id === s.clienteId);
     
     return `
       <div class="solicitacao-mini ${s.status}">
         <h5>${escapeHtml(cliente?.nome || 'Cliente')} - ${formatDate(s.dataDesejada)}</h5>
         <p>${statusLabel} • ${formatMoney(s.total)}</p>
       </div>
+
     `;
   }).join('');
 }
@@ -1169,25 +1206,24 @@ function renderizarPedidos() {
         <h4>Nenhum pedido encontrado</h4>
       </div>
     `;
+
     return;
   }
 
   container.innerHTML = lista.map(p => {
-    const pid = p._id || p.id;
-    const cliente = clientes.find(c => (c._id || c.id) === p.clienteId);
+    const cliente = clientes.find(c => c.id === p.clienteId);
     const data = p.dateISO ? new Date(p.dateISO).toLocaleString('pt-BR') : '—';
     const retroativoBadge = p.retroativo ? '<span class="badge retroativo">📅 Retroativo</span>' : '';
-    const numPedido = typeof pid === 'string' ? pid.slice(-6).toUpperCase() : pid;
 
     return `
       <div class="order-item">
         <div class="order-info">
-          <h4><span class="badge green">#${numPedido}</span> ${retroativoBadge} ${escapeHtml(cliente?.nome || 'Cliente')}</h4>
+          <h4><span class="badge green">#${p.id}</span> ${retroativoBadge} ${escapeHtml(cliente?.nome || 'Cliente')}</h4>
           <p>${data} • ${p.items?.length || 0} item(s)</p>
         </div>
         <div class="order-total">
           <h4>${formatMoney(p.total)}</h4>
-          <button class="btn btn-ghost btn-sm" onclick="verDetalhesPedido('${pid}')">Ver detalhes</button>
+          <button class="btn btn-ghost btn-sm" onclick="verDetalhesPedido(${p.id})">Ver detalhes</button>
         </div>
       </div>
     `;
@@ -1198,14 +1234,12 @@ function renderizarPedidos() {
 // DETALHES DO PEDIDO
 // ============================================
 function verDetalhesPedido(pedidoId) {
-  const pedido = pedidos.find(p => (p._id || p.id) === pedidoId);
+  const pedido = pedidos.find(p => p.id === pedidoId);
   if (!pedido) return;
 
   pedidoAtual = pedido; // Armazenar para impressão
 
-  const pid = pedido._id || pedido.id;
-  const numPedido = typeof pid === 'string' ? pid.slice(-6).toUpperCase() : pid;
-  const cliente = clientes.find(c => (c._id || c.id) === pedido.clienteId);
+  const cliente = clientes.find(c => c.id === pedido.clienteId);
   const data = pedido.dateISO ? new Date(pedido.dateISO).toLocaleString('pt-BR') : '—';
   const retroativoInfo = pedido.retroativo 
     ? '<p><span class="badge retroativo">📅 Pedido Retroativo</span></p>' 
@@ -1213,7 +1247,7 @@ function verDetalhesPedido(pedidoId) {
 
   let html = `
     <div style="margin-bottom:16px">
-      <p><strong>Pedido:</strong> #${numPedido}</p>
+      <p><strong>Pedido:</strong> #${pedido.id}</p>
       <p><strong>Cliente:</strong> ${escapeHtml(cliente?.nome || 'Cliente')}</p>
       <p><strong>Data:</strong> ${data}</p>
       ${retroativoInfo}
@@ -1395,9 +1429,7 @@ function imprimirPedido() {
   }
 
   const pedido = pedidoAtual;
-  const pid = pedido._id || pedido.id;
-  const numPedido = typeof pid === 'string' ? pid.slice(-6).toUpperCase() : String(pid).padStart(4, '0');
-  const cliente = clientes.find(c => (c._id || c.id) === pedido.clienteId);
+  const cliente = clientes.find(c => c.id === pedido.clienteId);
   const dataEmissao = new Date().toLocaleString('pt-BR');
   const dataPedido = pedido.dateISO ? new Date(pedido.dateISO).toLocaleString('pt-BR') : '—';
 
@@ -1422,7 +1454,7 @@ function imprimirPedido() {
     <div class="print-header">
       <h1>🧹 MegaClean</h1>
       <p>Sistema de Gestão de Pedidos</p>
-      <div class="order-num">PEDIDO Nº ${numPedido} ${pedido.retroativo ? '• RETROATIVO' : ''}</div>
+      <div class="order-num">PEDIDO Nº ${String(pedido.id).padStart(4, '0')} ${pedido.retroativo ? '• RETROATIVO' : ''}</div>
     </div>
 
     <div class="print-section">
@@ -1588,3 +1620,4 @@ init();
 </script>
 </body>
 </html>
+

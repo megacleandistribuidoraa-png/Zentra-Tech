@@ -1,345 +1,145 @@
-// server.js - Versão com MongoDB Atlas
+// server.js - Sistema MegaClean completo com MongoDB
 const express = require("express");
 const cors = require("cors");
 const path = require('path');
-const mongoose = require('mongoose');
+require('dotenv').config();
 
-// Modelos
+// Importar configuração do banco
+const { conectarDB } = require('./config/database');
+
+// Importar modelos
 const Cliente = require('./models/Cliente');
 const Produto = require('./models/Produto');
 const Pedido = require('./models/Pedido');
-const Usuario = require('./models/Usuario');
-const Solicitacao = require('./models/Solicitacao');
-const Categoria = require('./models/Categoria');
-const Fornecedor = require('./models/Fornecedor');
 const Orcamento = require('./models/Orcamento');
+const NotaFiscal = require('./models/NotaFiscal');
+const Fornecedor = require('./models/Fornecedor');
+const Categoria = require('./models/Categoria');
+const Solicitacao = require('./models/Solicitacao');
 const ConfigEmpresa = require('./models/ConfigEmpresa');
 const ConfigNFe = require('./models/ConfigNFe');
-const NotaFiscal = require('./models/NotaFiscal');
+const Usuario = require('./models/Usuario');
 
 const app = express();
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
-// Servir arquivos estáticos da pasta "public"
+// Servir arquivos estáticos
 app.use(express.static(path.join(__dirname, 'public')));
 
-// ---------------------------------------------
-// -------------- CONEXÃO MONGODB -------------
-// ---------------------------------------------
-const MONGODB_URI = 'mongodb+srv://megacleandistribuidoraa_db_user:ian04032023@cluster0.en8yzsz.mongodb.net/megaclean?retryWrites=true&w=majority';
-
-// Armazenar tokens válidos (em memória - para produção usar Redis ou JWT)
-let tokensValidos = {};
-
-// Gerar token simples
-function gerarToken(userId, role) {
-  return `token-${userId}-${role}-${Date.now()}`;
-}
-
-// Conectar ao MongoDB e iniciar servidor
-async function iniciarServidor() {
-  try {
-    await mongoose.connect(MONGODB_URI);
-    console.log('✅ Conectado ao MongoDB Atlas!');
-    
-    // Criar usuário admin padrão se não existir
-    const adminExiste = await Usuario.findOne({ username: 'admin' });
-    if (!adminExiste) {
-      await Usuario.create({
-        username: 'admin',
-        password: 'admin123',
-        nome: 'Administrador MegaClean',
-        role: 'admin',
-        status: 'ativo'
-      });
-      console.log('👤 Usuário admin criado (admin/admin123)');
-    }
-    
-    // Criar usuário operador padrão se não existir
-    const operadorExiste = await Usuario.findOne({ username: 'operador' });
-    if (!operadorExiste) {
-      await Usuario.create({
-        username: 'operador',
-        password: 'op123',
-        nome: 'Operador Teste',
-        role: 'operador',
-        status: 'ativo'
-      });
-      console.log('👤 Usuário operador criado (operador/op123)');
-    }
-    
-    const PORT = process.env.PORT || 3000;
-    app.listen(PORT, () => console.log(`🚀 Servidor rodando na porta ${PORT}`));
-  } catch (error) {
-    console.error('❌ Erro ao conectar ao MongoDB:', error.message);
-    process.exit(1);
-  }
-}
-
-// ---------------------------------------------
-// -------------- LOGIN / USUÁRIOS -------------
-// ---------------------------------------------
-app.post('/api/login', async (req, res) => {
-  try {
-    const body = req.body || {};
-    const username = (body.username || body.usuario || '').toString().trim();
-    const password = (body.password || body.senha || '').toString().trim();
-
-    if (!username || !password) {
-      return res.status(400).json({ error: 'Usuário e senha são obrigatórios' });
-    }
-
-    const usuario = await Usuario.findOne({ username, password });
-    
-    if (!usuario) {
-      return res.status(401).json({ error: 'Credenciais inválidas' });
-    }
-
-    if (usuario.status === 'inativo') {
-      return res.status(401).json({ error: 'Usuário inativo. Contate o administrador.' });
-    }
-
-    const token = gerarToken(usuario._id, usuario.role);
-    tokensValidos[token] = { userId: usuario._id.toString(), role: usuario.role };
-
-    return res.json({ 
-      token, 
-      username: usuario.username, 
-      name: usuario.nome,
-      role: usuario.role,
-      userId: usuario._id
-    });
-  } catch (error) {
-    res.status(500).json({ error: 'Erro no servidor' });
-  }
-});
-
-// Middleware para verificar autenticação
-function verificarAuth(req, res, next) {
+// ============================================
+// MIDDLEWARE DE AUTENTICAÇÃO
+// ============================================
+const verificarToken = async (req, res, next) => {
   const token = req.header('x-auth-token') || req.query.token || '';
+  const ADMIN_TOKEN = process.env.ADMIN_TOKEN || 'admin-token';
   
-  if (!token || !tokensValidos[token]) {
-    return res.status(401).json({ error: 'Token inválido' });
+  if (token === ADMIN_TOKEN) {
+    return next();
   }
   
-  req.auth = tokensValidos[token];
-  next();
-}
-
-// Middleware para verificar se é admin
-function verificarAdmin(req, res, next) {
-  if (req.auth.role !== 'admin') {
-    return res.status(403).json({ error: 'Acesso negado. Apenas administradores.' });
-  }
-  next();
-}
-
-// Obter info do usuário logado
-app.get('/api/admin/me', async (req, res) => {
+  // Verificar se é um usuário válido
   try {
-    const token = req.header('x-auth-token') || req.query.token || '';
-    
-    if (!token || !tokensValidos[token]) {
-      return res.status(401).json({ error: 'Token inválido' });
+    const usuario = await Usuario.findOne({ username: token.split(':')[0] });
+    if (usuario && usuario.status === 'ativo') {
+      req.usuario = usuario;
+      return next();
     }
-    
-    const authInfo = tokensValidos[token];
-    const usuario = await Usuario.findById(authInfo.userId);
-    
-    if (!usuario) {
-      return res.status(401).json({ error: 'Usuário não encontrado' });
+  } catch (e) {}
+  
+  return res.status(401).json({ error: 'Token inválido' });
+};
+
+// ============================================
+// ROTAS DE LOGIN / ADMIN
+// ============================================
+app.post('/api/login', async (req, res) => {
+  const body = req.body || {};
+  const username = (body.username || body.usuario || '').toString().trim();
+  const password = (body.password || body.senha || '').toString().trim();
+
+  if (!username || !password) {
+    return res.status(400).json({ error: 'username/usuario e password/senha são obrigatórios' });
+  }
+
+  const ADMIN_USER = process.env.ADMIN_USER || 'admin';
+  const ADMIN_PASS = process.env.ADMIN_PASS || 'admin123';
+  const ADMIN_NAME = process.env.ADMIN_NAME || 'Administrador MegaClean';
+  const ADMIN_TOKEN = process.env.ADMIN_TOKEN || 'admin-token';
+
+  // Login admin padrão
+  if (username === ADMIN_USER && password === ADMIN_PASS) {
+    return res.json({ token: ADMIN_TOKEN, username: ADMIN_USER, name: ADMIN_NAME });
+  }
+
+  // Login com usuários do banco
+  try {
+    const usuario = await Usuario.findOne({ username, status: 'ativo' });
+    if (usuario && usuario.password === password) {
+      return res.json({ 
+        token: `${usuario.username}:${usuario._id}`, 
+        username: usuario.username, 
+        name: usuario.nome 
+      });
     }
-    
+  } catch (e) {
+    console.error('Erro ao buscar usuário:', e);
+  }
+
+  return res.status(401).json({ error: 'Credenciais inválidas' });
+});
+
+app.get('/api/admin/me', verificarToken, async (req, res) => {
+  const token = req.header('x-auth-token') || req.query.token || '';
+  const ADMIN_TOKEN = process.env.ADMIN_TOKEN || 'admin-token';
+  
+  if (token === ADMIN_TOKEN) {
     return res.json({ 
-      id: usuario._id,
-      username: usuario.username, 
-      name: usuario.nome,
-      role: usuario.role
+      username: process.env.ADMIN_USER || 'admin', 
+      name: process.env.ADMIN_NAME || 'Administrador MegaClean' 
     });
-  } catch (error) {
-    res.status(500).json({ error: 'Erro no servidor' });
   }
-});
-
-// Logout
-app.post('/api/logout', (req, res) => {
-  const token = req.header('x-auth-token') || '';
-  delete tokensValidos[token];
-  res.json({ success: true });
-});
-
-// ---------------------------------------------
-// -------------- GERENCIAR USUÁRIOS -----------
-// ---------------------------------------------
-app.get('/api/usuarios', verificarAuth, verificarAdmin, async (req, res) => {
-  try {
-    const usuarios = await Usuario.find().select('-password');
-    res.json(usuarios);
-  } catch (error) {
-    res.status(500).json({ error: 'Erro ao buscar usuários' });
+  
+  if (req.usuario) {
+    return res.json({ username: req.usuario.username, name: req.usuario.nome });
   }
+  
+  return res.status(401).json({ error: 'Token inválido' });
 });
 
-app.post('/api/usuarios', verificarAuth, verificarAdmin, async (req, res) => {
-  try {
-    const { username, password, nome, role } = req.body;
-
-    if (!username || !password || !nome) {
-      return res.status(400).json({ error: 'Username, senha e nome são obrigatórios' });
-    }
-
-    const existe = await Usuario.findOne({ username });
-    if (existe) {
-      return res.status(400).json({ error: 'Este nome de usuário já existe' });
-    }
-
-    const novoUsuario = await Usuario.create({
-      username,
-      password,
-      nome,
-      role: role || 'operador',
-      status: 'ativo'
-    });
-
-    res.json({
-      id: novoUsuario._id,
-      username: novoUsuario.username,
-      nome: novoUsuario.nome,
-      role: novoUsuario.role,
-      status: novoUsuario.status
-    });
-  } catch (error) {
-    res.status(500).json({ error: 'Erro ao criar usuário' });
-  }
+app.get('/api/admin/pages', (req, res) => {
+  return res.json({
+    pages: [
+      { id: 'dashboard', title: 'Dashboard', url: '/dashboard.html' },
+      { id: 'clientes', title: 'Clientes', url: '/clientes.html' },
+      { id: 'produtos', title: 'Produtos', url: '/produtos.html' },
+      { id: 'pedidos', title: 'Pedidos', url: '/pedidos.html' },
+      { id: 'orcamentos', title: 'Orçamentos', url: '/orcamentos.html' },
+      { id: 'estoque', title: 'Estoque', url: '/estoque.html' },
+      { id: 'fornecedores', title: 'Fornecedores', url: '/fornecedores.html' },
+      { id: 'categorias', title: 'Categorias', url: '/categorias.html' },
+      { id: 'solicitacoes', title: 'Solicitações', url: '/solicitacoes.html' },
+      { id: 'notas-fiscais', title: 'Notas Fiscais', url: '/notas-fiscais.html' },
+      { id: 'contas', title: 'Contas a Receber', url: '/contas.html' },
+      { id: 'relatorio', title: 'Relatórios', url: '/relatorio.html' },
+      { id: 'config', title: 'Configurações', url: '/config.html' },
+      { id: 'config-empresa', title: 'Config. Empresa', url: '/config-empresa.html' },
+      { id: 'config-nfe', title: 'Config. NF-e', url: '/config-nfe.html' },
+      { id: 'usuarios', title: 'Usuários', url: '/usuarios.html' }
+    ]
+  });
 });
 
-app.put('/api/usuarios/:id', verificarAuth, verificarAdmin, async (req, res) => {
-  try {
-    const usuario = await Usuario.findById(req.params.id);
-    if (!usuario) {
-      return res.status(404).json({ error: 'Usuário não encontrado' });
-    }
-
-    const { username, password, nome, role, status } = req.body;
-
-    if (username && username !== usuario.username) {
-      const existe = await Usuario.findOne({ username, _id: { $ne: req.params.id } });
-      if (existe) {
-        return res.status(400).json({ error: 'Este nome de usuário já existe' });
-      }
-      usuario.username = username;
-    }
-
-    if (password) usuario.password = password;
-    if (nome) usuario.nome = nome;
-    if (role) usuario.role = role;
-    if (status) usuario.status = status;
-
-    await usuario.save();
-
-    res.json({
-      id: usuario._id,
-      username: usuario.username,
-      nome: usuario.nome,
-      role: usuario.role,
-      status: usuario.status
-    });
-  } catch (error) {
-    res.status(500).json({ error: 'Erro ao atualizar usuário' });
-  }
-});
-
-app.delete('/api/usuarios/:id', verificarAuth, verificarAdmin, async (req, res) => {
-  try {
-    if (req.auth.userId === req.params.id) {
-      return res.status(400).json({ error: 'Você não pode excluir seu próprio usuário' });
-    }
-
-    const usuario = await Usuario.findById(req.params.id);
-    if (usuario && usuario.username === 'admin') {
-      return res.status(400).json({ error: 'Não é possível excluir o administrador principal' });
-    }
-
-    await Usuario.findByIdAndDelete(req.params.id);
-    res.json({ success: true });
-  } catch (error) {
-    res.status(500).json({ error: 'Erro ao excluir usuário' });
-  }
-});
-
-app.put('/api/usuarios/me', verificarAuth, async (req, res) => {
-  try {
-    const usuario = await Usuario.findById(req.auth.userId);
-    if (!usuario) {
-      return res.status(404).json({ error: 'Usuário não encontrado' });
-    }
-
-    const { nome, senhaAtual, novaSenha } = req.body;
-
-    if (nome) usuario.nome = nome;
-
-    if (novaSenha) {
-      if (!senhaAtual || senhaAtual !== usuario.password) {
-        return res.status(400).json({ error: 'Senha atual incorreta' });
-      }
-      usuario.password = novaSenha;
-    }
-
-    await usuario.save();
-
-    res.json({
-      id: usuario._id,
-      username: usuario.username,
-      nome: usuario.nome,
-      role: usuario.role
-    });
-  } catch (error) {
-    res.status(500).json({ error: 'Erro ao atualizar usuário' });
-  }
-});
-
-// Páginas disponíveis baseado no role
-app.get('/api/admin/pages', verificarAuth, (req, res) => {
-  const isAdmin = req.auth.role === 'admin';
-
-  let pages = [
-    { id: 'clientes', title: 'Clientes', url: '/clientes.html', icon: '👥' },
-    { id: 'pedidos', title: 'Pedidos', url: '/pedidos.html', icon: '🛒' }
-  ];
-
-  if (isAdmin) {
-    pages = [
-      { id: 'dashboard', title: 'Dashboard', url: '/dashboard.html', icon: '📊' },
-      { id: 'clientes', title: 'Clientes', url: '/clientes.html', icon: '👥' },
-      { id: 'produtos', title: 'Produtos', url: '/produtos.html', icon: '📦' },
-      { id: 'categorias', title: 'Categorias', url: '/categorias.html', icon: '🏷️' },
-      { id: 'pedidos', title: 'Pedidos', url: '/pedidos.html', icon: '🛒' },
-      { id: 'orcamentos', title: 'Orçamentos', url: '/orcamentos.html', icon: '📋' },
-      { id: 'contas', title: 'Contas a Receber', url: '/contas.html', icon: '💰' },
-      { id: 'estoque', title: 'Estoque', url: '/estoque.html', icon: '📦' },
-      { id: 'fornecedores', title: 'Fornecedores', url: '/fornecedores.html', icon: '🚚' },
-      { id: 'relatorio', title: 'Relatório', url: '/relatorio.html', icon: '📈' },
-      { id: 'solicitacoes', title: 'Solicitações', url: '/solicitacoes.html', icon: '📝' },
-      { id: 'usuarios', title: 'Usuários', url: '/usuarios.html', icon: '👤' },
-      { id: 'config-empresa', title: 'Dados da Empresa', url: '/config-empresa.html', icon: '🏢' },
-      { id: 'config-nfe', title: 'NF-e', url: '/config-nfe.html', icon: '📄' },
-      { id: 'config', title: 'Configurações', url: '/config.html', icon: '⚙️' }
-    ];
-  }
-
-  return res.json({ pages, role: req.auth.role });
-});
-
-// ---------------------------------------------
-// -------------- CLIENTES ---------------------
-// ---------------------------------------------
+// ============================================
+// ROTAS DE CLIENTES
+// ============================================
 app.get("/api/clientes", async (req, res) => {
   try {
-    const clientes = await Cliente.find();
+    const clientes = await Cliente.find().sort({ dataCriacao: -1 });
     res.json(clientes);
   } catch (error) {
-    res.status(500).json({ error: 'Erro ao buscar clientes' });
+    res.status(500).json({ error: error.message });
   }
 });
 
@@ -349,116 +149,79 @@ app.get("/api/clientes/:id", async (req, res) => {
     if (!cliente) return res.status(404).json({ error: "Cliente não encontrado" });
     res.json(cliente);
   } catch (error) {
-    res.status(500).json({ error: 'Erro ao buscar cliente' });
+    res.status(500).json({ error: error.message });
   }
 });
 
 app.post("/api/clientes", async (req, res) => {
   try {
-    const novo = await Cliente.create({
-      nome: req.body.nome,
-      cpf: req.body.cpf,
-      telefone: req.body.telefone,
-      email: req.body.email,
-      endereco: req.body.endereco,
-      status: req.body.status || "ativo"
-    });
-    res.json(novo);
+    const novo = new Cliente(req.body);
+    await novo.save();
+    res.status(201).json(novo);
   } catch (error) {
-    res.status(500).json({ error: 'Erro ao criar cliente' });
+    res.status(400).json({ error: error.message });
   }
 });
 
 app.put("/api/clientes/:id", async (req, res) => {
   try {
-    const cliente = await Cliente.findById(req.params.id);
+    const cliente = await Cliente.findByIdAndUpdate(req.params.id, req.body, { new: true });
     if (!cliente) return res.status(404).json({ error: "Cliente não encontrado" });
-
-    cliente.nome = req.body.nome || cliente.nome;
-    cliente.cpf = req.body.cpf || cliente.cpf;
-    cliente.telefone = req.body.telefone || cliente.telefone;
-    cliente.email = req.body.email || cliente.email;
-    cliente.endereco = req.body.endereco || cliente.endereco;
-    cliente.status = req.body.status || cliente.status;
-
-    await cliente.save();
     res.json(cliente);
   } catch (error) {
-    res.status(500).json({ error: 'Erro ao atualizar cliente' });
+    res.status(400).json({ error: error.message });
   }
 });
 
 app.delete("/api/clientes/:id", async (req, res) => {
   try {
-    await Cliente.findByIdAndDelete(req.params.id);
+    const cliente = await Cliente.findByIdAndDelete(req.params.id);
+    if (!cliente) return res.status(404).json({ error: "Cliente não encontrado" });
     res.json({ success: true });
   } catch (error) {
-    res.status(500).json({ error: 'Erro ao excluir cliente' });
+    res.status(500).json({ error: error.message });
   }
 });
 
-// ---------------------------------------------
-// -------------- PRODUTOS ---------------------
-// ---------------------------------------------
+// ============================================
+// ROTAS DE PRODUTOS
+// ============================================
 app.get("/api/produtos", async (req, res) => {
   try {
-    const produtos = await Produto.find();
+    const produtos = await Produto.find().populate('categoriaId fornecedorId').sort({ dataCriacao: -1 });
     res.json(produtos);
   } catch (error) {
-    res.status(500).json({ error: 'Erro ao buscar produtos' });
+    res.status(500).json({ error: error.message });
   }
 });
 
 app.get("/api/produtos/:id", async (req, res) => {
   try {
-    const produto = await Produto.findById(req.params.id);
+    const produto = await Produto.findById(req.params.id).populate('categoriaId fornecedorId');
     if (!produto) return res.status(404).json({ error: "Produto não encontrado" });
     res.json(produto);
   } catch (error) {
-    res.status(500).json({ error: 'Erro ao buscar produto' });
+    res.status(500).json({ error: error.message });
   }
 });
 
 app.post("/api/produtos", async (req, res) => {
   try {
-    const count = await Produto.countDocuments();
-    const novo = await Produto.create({
-      nome: req.body.nome,
-      precoCusto: Number(req.body.precoCusto) || 0,
-      preco: Number(req.body.preco),
-      codigoBarras: req.body.codigoBarras || '',
-      quantidade: Number(req.body.quantidade),
-      minimo: Number(req.body.minimo),
-      unidade: req.body.unidade,
-      tipo: req.body.tipo || 'unitario',
-      qtdPorCaixa: Number(req.body.qtdPorCaixa) || 1,
-      sku: req.body.sku || String(count + 1).padStart(3, "0")
-    });
-    res.json(novo);
+    const novo = new Produto(req.body);
+    await novo.save();
+    res.status(201).json(novo);
   } catch (error) {
-    res.status(500).json({ error: 'Erro ao criar produto' });
+    res.status(400).json({ error: error.message });
   }
 });
 
 app.put("/api/produtos/:id", async (req, res) => {
   try {
-    const produto = await Produto.findById(req.params.id);
+    const produto = await Produto.findByIdAndUpdate(req.params.id, req.body, { new: true });
     if (!produto) return res.status(404).json({ error: "Produto não encontrado" });
-
-    produto.nome = req.body.nome;
-    produto.precoCusto = Number(req.body.precoCusto) || 0;
-    produto.preco = Number(req.body.preco);
-    produto.codigoBarras = req.body.codigoBarras || '';
-    produto.quantidade = Number(req.body.quantidade);
-    produto.minimo = Number(req.body.minimo);
-    produto.unidade = req.body.unidade;
-    produto.tipo = req.body.tipo || produto.tipo;
-    produto.qtdPorCaixa = Number(req.body.qtdPorCaixa) || produto.qtdPorCaixa;
-
-    await produto.save();
     res.json(produto);
   } catch (error) {
-    res.status(500).json({ error: 'Erro ao atualizar produto' });
+    res.status(400).json({ error: error.message });
   }
 });
 
@@ -475,52 +238,59 @@ app.post("/api/produtos/:id/ajustar", async (req, res) => {
     await produto.save();
     res.json(produto);
   } catch (error) {
-    res.status(500).json({ error: 'Erro ao ajustar estoque' });
+    res.status(400).json({ error: error.message });
   }
 });
 
 app.delete("/api/produtos/:id", async (req, res) => {
   try {
-    await Produto.findByIdAndDelete(req.params.id);
+    const produto = await Produto.findByIdAndDelete(req.params.id);
+    if (!produto) return res.status(404).json({ error: "Produto não encontrado" });
     res.json({ success: true });
   } catch (error) {
-    res.status(500).json({ error: 'Erro ao excluir produto' });
+    res.status(500).json({ error: error.message });
   }
 });
 
-// ---------------------------------------------
-// -------------- PEDIDOS ----------------------
-// ---------------------------------------------
+// ============================================
+// ROTAS DE PEDIDOS
+// ============================================
 app.get("/api/pedidos", async (req, res) => {
   try {
-    const pedidos = await Pedido.find();
+    const query = {};
+    if (req.query.clienteId) query.clienteId = req.query.clienteId;
+    
+    const pedidos = await Pedido.find(query)
+      .populate('clienteId')
+      .populate('items.produtoId')
+      .sort({ dataCriacao: -1 });
     res.json(pedidos);
   } catch (error) {
-    res.status(500).json({ error: 'Erro ao buscar pedidos' });
+    res.status(500).json({ error: error.message });
   }
 });
 
 app.get("/api/pedidos/:id", async (req, res) => {
   try {
-    const pedido = await Pedido.findById(req.params.id);
+    const pedido = await Pedido.findById(req.params.id)
+      .populate('clienteId')
+      .populate('items.produtoId');
     if (!pedido) return res.status(404).json({ error: "Pedido não encontrado" });
     res.json(pedido);
   } catch (error) {
-    res.status(500).json({ error: 'Erro ao buscar pedido' });
+    res.status(500).json({ error: error.message });
   }
 });
 
 app.post("/api/pedidos", async (req, res) => {
   try {
-    const { clienteId, items, dataPersonalizada } = req.body;
+    const { clienteId, items } = req.body;
     if (!clienteId || !Array.isArray(items) || items.length === 0) {
       return res.status(400).json({ error: "clienteId e items são obrigatórios" });
     }
 
-    // Valida e calcula total
+    // Validar e calcular total; verificar estoque
     let total = 0;
-    const itemsCompletos = [];
-
     for (const it of items) {
       const prod = await Produto.findById(it.produtoId);
       if (!prod) return res.status(400).json({ error: `Produto ${it.produtoId} não encontrado` });
@@ -528,42 +298,40 @@ app.post("/api/pedidos", async (req, res) => {
       if (q <= 0) return res.status(400).json({ error: 'Quantidade inválida' });
       if (prod.quantidade < q) return res.status(400).json({ error: `Estoque insuficiente para ${prod.nome}` });
       total += (Number(prod.preco) * q);
-      
-      itemsCompletos.push({
+    }
+
+    // Descontar estoque
+    for (const it of items) {
+      const prod = await Produto.findById(it.produtoId);
+      prod.quantidade -= Number(it.quantidade);
+      if (prod.quantidade < 0) prod.quantidade = 0;
+      await prod.save();
+    }
+
+    // Criar pedido
+    const itemsCompletos = await Promise.all(items.map(async (it) => {
+      const prod = await Produto.findById(it.produtoId);
+      return {
         produtoId: prod._id,
         nome: prod.nome,
-        quantidade: q,
-        preco: prod.preco,
+        quantidade: Number(it.quantidade),
+        preco: Number(prod.preco),
         unidade: prod.unidade
-      });
-    }
+      };
+    }));
 
-    // Desconta estoque
-    for (const it of items) {
-      await Produto.findByIdAndUpdate(it.produtoId, {
-        $inc: { quantidade: -Number(it.quantidade) }
-      });
-    }
-
-    // Determinar a data do pedido
-    let dataPedido = new Date().toISOString();
-    if (dataPersonalizada) {
-      const dataBase = new Date(dataPersonalizada + 'T12:00:00');
-      dataPedido = dataBase.toISOString();
-    }
-
-    const pedido = await Pedido.create({
+    const pedido = new Pedido({
       clienteId,
       items: itemsCompletos,
       total: Number(total.toFixed(2)),
-      dateISO: dataPedido,
-      retroativo: !!dataPersonalizada
+      dateISO: new Date().toISOString(),
+      ...req.body
     });
 
-    res.status(201).json(pedido);
+    await pedido.save();
+    res.status(201).json(await Pedido.findById(pedido._id).populate('clienteId'));
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Erro ao criar pedido' });
+    res.status(400).json({ error: error.message });
   }
 });
 
@@ -573,10 +341,12 @@ app.get('/api/pedidos/stats', async (req, res) => {
     const today = now.toISOString().slice(0, 10);
     const thisMonth = now.toISOString().slice(0, 7);
 
-    const pedidos = await Pedido.find();
-    
-    const pedidosHoje = pedidos.filter(p => p.dateISO.slice(0, 10) === today);
-    const pedidosMes = pedidos.filter(p => p.dateISO.slice(0, 7) === thisMonth);
+    const pedidosHoje = await Pedido.find({
+      dateISO: { $regex: `^${today}` }
+    });
+    const pedidosMes = await Pedido.find({
+      dateISO: { $regex: `^${thisMonth}` }
+    });
 
     const totalHoje = pedidosHoje.reduce((s, p) => s + Number(p.total || 0), 0);
     const totalMes = pedidosMes.reduce((s, p) => s + Number(p.total || 0), 0);
@@ -588,1016 +358,661 @@ app.get('/api/pedidos/stats', async (req, res) => {
       totalMonth: Number(totalMes.toFixed(2))
     });
   } catch (error) {
-    res.status(500).json({ error: 'Erro ao buscar estatísticas' });
+    res.status(500).json({ error: error.message });
   }
 });
 
-// ---------------------------------------------
-// -------------- RELATÓRIO --------------------
-// ---------------------------------------------
-app.get('/api/relatorio/diario', async (req, res) => {
+// ============================================
+// ROTA DE DASHBOARD
+// ============================================
+app.get('/api/dashboard', async (req, res) => {
   try {
-    const { data, dataInicio, dataFim } = req.query;
-    
-    const pedidos = await Pedido.find();
-    const clientes = await Cliente.find();
-    
-    let pedidosDia;
-    let periodoTexto;
-    
-    if (dataInicio && dataFim) {
-      pedidosDia = pedidos.filter(p => {
-        const dataP = (p.dateISO || p.dataCriacao?.toISOString() || '').slice(0, 10);
-        return dataP >= dataInicio && dataP <= dataFim;
-      });
-      periodoTexto = `${dataInicio} a ${dataFim}`;
-    } else {
-      const dataFiltro = data || new Date().toISOString().slice(0, 10);
-      pedidosDia = pedidos.filter(p => {
-        const dataP = (p.dateISO || p.dataCriacao?.toISOString() || '').slice(0, 10);
-        return dataP === dataFiltro;
-      });
-      periodoTexto = dataFiltro;
-    }
-    
-    const totalVendas = pedidosDia.reduce((s, p) => s + (p.total || 0), 0);
-    
-    // Produtos mais vendidos
-    const produtosVendidos = {};
-    pedidosDia.forEach(p => {
-      p.items?.forEach(item => {
-        const key = item.produtoId?.toString() || item.nome;
-        if (!produtosVendidos[key]) {
-          produtosVendidos[key] = { nome: item.nome, quantidade: 0, valor: 0 };
-        }
-        produtosVendidos[key].quantidade += item.quantidade;
-        produtosVendidos[key].valor += item.quantidade * item.preco;
-      });
+    const now = new Date();
+    const today = now.toISOString().slice(0, 10);
+    const thisMonth = now.toISOString().slice(0, 7);
+
+    // Estatísticas de pedidos
+    const pedidosHoje = await Pedido.find({
+      dateISO: { $regex: `^${today}` }
     });
-    
-    const topProdutos = Object.values(produtosVendidos)
-      .sort((a, b) => b.quantidade - a.quantidade)
+    const pedidosMes = await Pedido.find({
+      dateISO: { $regex: `^${thisMonth}` }
+    });
+
+    const totalHoje = pedidosHoje.reduce((s, p) => s + Number(p.total || 0), 0);
+    const totalMes = pedidosMes.reduce((s, p) => s + Number(p.total || 0), 0);
+
+    // Estatísticas gerais
+    const totalClientes = await Cliente.countDocuments();
+    const totalProdutos = await Produto.countDocuments();
+    const produtosBaixoEstoque = await Produto.countDocuments({
+      $expr: { $lte: ['$quantidade', { $ifNull: ['$minimo', 0] }] }
+    });
+
+    // Gráfico de vendas (últimos 7 dias)
+    const graficoVendas = [];
+    for (let i = 6; i >= 0; i--) {
+      const data = new Date(now);
+      data.setDate(data.getDate() - i);
+      const dataStr = data.toISOString().slice(0, 10);
+      
+      const pedidosDia = await Pedido.find({
+        dateISO: { $regex: `^${dataStr}` }
+      });
+      
+      const vendasDia = pedidosDia.reduce((s, p) => s + Number(p.total || 0), 0);
+      
+      graficoVendas.push({
+        dia: data.toLocaleDateString('pt-BR', { weekday: 'short', day: 'numeric' }),
+        vendas: Number(vendasDia.toFixed(2))
+      });
+    }
+
+    // Top clientes do mês
+    const pedidosMesCompleto = await Pedido.find({
+      dateISO: { $regex: `^${thisMonth}` }
+    }).populate('clienteId');
+
+    const clientesMap = new Map();
+    pedidosMesCompleto.forEach(pedido => {
+      const clienteId = pedido.clienteId?._id?.toString() || pedido.clienteId?.toString();
+      const clienteNome = pedido.clienteId?.nome || 'Cliente';
+      const total = Number(pedido.total || 0);
+      
+      if (clientesMap.has(clienteId)) {
+        clientesMap.set(clienteId, {
+          nome: clienteNome,
+          total: clientesMap.get(clienteId).total + total
+        });
+      } else {
+        clientesMap.set(clienteId, { nome: clienteNome, total });
+      }
+    });
+
+    const topClientes = Array.from(clientesMap.values())
+      .sort((a, b) => b.total - a.total)
       .slice(0, 5);
-    
-    // Clientes que compraram
-    const clientesIds = [...new Set(pedidosDia.map(p => p.clienteId?.toString()))];
-    const clientesCompraram = clientesIds.map(id => {
-      const cliente = clientes.find(c => c._id.toString() === id);
-      const pedidosCliente = pedidosDia.filter(p => p.clienteId?.toString() === id);
-      return {
-        id,
-        nome: cliente?.nome || 'Cliente',
-        pedidos: pedidosCliente.length,
-        total: pedidosCliente.reduce((s, p) => s + (p.total || 0), 0)
-      };
-    }).sort((a, b) => b.total - a.total);
-    
-    // Pedidos por hora
-    const pedidosPorHora = {};
-    for (let h = 0; h < 24; h++) {
-      pedidosPorHora[h] = { hora: `${String(h).padStart(2, '0')}:00`, pedidos: 0, valor: 0 };
-    }
-    pedidosDia.forEach(p => {
-      const hora = new Date(p.dateISO).getHours();
-      pedidosPorHora[hora].pedidos++;
-      pedidosPorHora[hora].valor += p.total || 0;
-    });
 
     res.json({
-      periodo: periodoTexto,
       resumo: {
-        totalPedidos: pedidosDia.length,
-        totalVendas: Number(totalVendas.toFixed(2)),
-        ticketMedio: pedidosDia.length > 0 ? Number((totalVendas / pedidosDia.length).toFixed(2)) : 0,
-        clientesAtendidos: clientesIds.length
+        vendasHoje: Number(totalHoje.toFixed(2)),
+        pedidosHoje: pedidosHoje.length,
+        vendasMes: Number(totalMes.toFixed(2)),
+        pedidosMes: pedidosMes.length,
+        totalClientes,
+        totalProdutos,
+        produtosBaixoEstoque,
+        contasReceber: 0 // Placeholder
       },
-      pedidos: pedidosDia.map(p => {
-        const cliente = clientes.find(c => c._id.toString() === p.clienteId?.toString());
-        return {
-          ...p.toObject(),
-          clienteNome: cliente?.nome || 'Cliente'
-        };
-      }),
-      topProdutos,
-      clientesCompraram,
-      pedidosPorHora: Object.values(pedidosPorHora)
+      graficoVendas,
+      topClientes
     });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Erro ao gerar relatório' });
+    res.status(500).json({ error: error.message });
   }
 });
 
-// ---------------------------------------------
-// -------- SOLICITAÇÕES RETROATIVAS ----------
-// ---------------------------------------------
-app.get('/api/solicitacoes', verificarAuth, async (req, res) => {
+// ============================================
+// ROTAS DE ORÇAMENTOS
+// ============================================
+app.get("/api/orcamentos", async (req, res) => {
   try {
-    let query = {};
-    if (req.auth.role !== 'admin') {
-      query.usuarioId = req.auth.userId;
-    }
-    
-    const solicitacoes = await Solicitacao.find(query);
-    const clientes = await Cliente.find();
-    const usuarios = await Usuario.find();
-    
-    const listaEnriquecida = solicitacoes.map(s => {
-      const cliente = clientes.find(c => c._id.toString() === s.clienteId?.toString());
-      const usuario = usuarios.find(u => u._id.toString() === s.usuarioId?.toString());
-      return {
-        ...s.toObject(),
-        clienteNome: cliente?.nome || 'Cliente',
-        usuarioNome: usuario?.nome || 'Usuário'
-      };
-    });
-    
-    res.json(listaEnriquecida);
+    const orcamentos = await Orcamento.find()
+      .populate('clienteId')
+      .populate('items.produtoId')
+      .sort({ dataCriacao: -1 });
+    res.json(orcamentos);
   } catch (error) {
-    res.status(500).json({ error: 'Erro ao buscar solicitações' });
+    res.status(500).json({ error: error.message });
   }
 });
 
-app.get('/api/solicitacoes/pendentes/count', verificarAuth, verificarAdmin, async (req, res) => {
+app.get("/api/orcamentos/:id", async (req, res) => {
   try {
-    const count = await Solicitacao.countDocuments({ status: 'pendente' });
-    res.json({ count });
+    const orcamento = await Orcamento.findById(req.params.id)
+      .populate('clienteId')
+      .populate('items.produtoId');
+    if (!orcamento) return res.status(404).json({ error: "Orçamento não encontrado" });
+    res.json(orcamento);
   } catch (error) {
-    res.status(500).json({ error: 'Erro ao contar solicitações' });
+    res.status(500).json({ error: error.message });
   }
 });
 
-app.post('/api/solicitacoes', verificarAuth, async (req, res) => {
+app.post("/api/orcamentos", async (req, res) => {
   try {
-    const { clienteId, items, dataDesejada, motivo } = req.body;
-    
+    const { clienteId, items, desconto, validade } = req.body;
     if (!clienteId || !Array.isArray(items) || items.length === 0) {
-      return res.status(400).json({ error: 'clienteId e items são obrigatórios' });
+      return res.status(400).json({ error: "clienteId e items são obrigatórios" });
     }
-    
-    if (!dataDesejada) {
-      return res.status(400).json({ error: 'Data desejada é obrigatória' });
-    }
-    
-    const hoje = new Date().toISOString().slice(0, 10);
-    if (dataDesejada >= hoje) {
-      return res.status(400).json({ error: 'Solicitações só podem ser feitas para datas anteriores' });
-    }
-    
+
+    // Calcular total
     let total = 0;
-    const itemsCompletos = [];
-    
-    for (const it of items) {
+    const itemsCompletos = await Promise.all(items.map(async (it) => {
       const prod = await Produto.findById(it.produtoId);
-      if (!prod) return res.status(400).json({ error: `Produto ${it.produtoId} não encontrado` });
+      if (!prod) throw new Error(`Produto ${it.produtoId} não encontrado`);
       const q = Number(it.quantidade);
-      if (q <= 0) return res.status(400).json({ error: 'Quantidade inválida' });
-      total += (Number(prod.preco) * q);
-      
-      itemsCompletos.push({
+      const preco = Number(prod.preco);
+      total += (preco * q);
+      return {
         produtoId: prod._id,
         nome: prod.nome,
         quantidade: q,
-        preco: prod.preco
-      });
+        preco: preco,
+        unidade: prod.unidade
+      };
+    }));
+
+    const descontoValor = Number(desconto || 0);
+    const totalComDesconto = total - (total * descontoValor / 100);
+
+    const orcamento = new Orcamento({
+      clienteId,
+      items: itemsCompletos,
+      total: Number(total.toFixed(2)),
+      desconto: descontoValor,
+      totalComDesconto: Number(totalComDesconto.toFixed(2)),
+      validade,
+      dateISO: new Date().toISOString()
+    });
+
+    await orcamento.save();
+    res.status(201).json(await Orcamento.findById(orcamento._id).populate('clienteId'));
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+app.put("/api/orcamentos/:id", async (req, res) => {
+  try {
+    const orcamento = await Orcamento.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (!orcamento) return res.status(404).json({ error: "Orçamento não encontrado" });
+    res.json(orcamento);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+app.delete("/api/orcamentos/:id", async (req, res) => {
+  try {
+    const orcamento = await Orcamento.findByIdAndDelete(req.params.id);
+    if (!orcamento) return res.status(404).json({ error: "Orçamento não encontrado" });
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ============================================
+// ROTAS DE FORNECEDORES
+// ============================================
+app.get("/api/fornecedores", async (req, res) => {
+  try {
+    const fornecedores = await Fornecedor.find().sort({ dataCriacao: -1 });
+    res.json(fornecedores);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get("/api/fornecedores/:id", async (req, res) => {
+  try {
+    const fornecedor = await Fornecedor.findById(req.params.id);
+    if (!fornecedor) return res.status(404).json({ error: "Fornecedor não encontrado" });
+    res.json(fornecedor);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post("/api/fornecedores", async (req, res) => {
+  try {
+    const novo = new Fornecedor(req.body);
+    await novo.save();
+    res.status(201).json(novo);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+app.put("/api/fornecedores/:id", async (req, res) => {
+  try {
+    const fornecedor = await Fornecedor.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (!fornecedor) return res.status(404).json({ error: "Fornecedor não encontrado" });
+    res.json(fornecedor);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+app.delete("/api/fornecedores/:id", async (req, res) => {
+  try {
+    const fornecedor = await Fornecedor.findByIdAndDelete(req.params.id);
+    if (!fornecedor) return res.status(404).json({ error: "Fornecedor não encontrado" });
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ============================================
+// ROTAS DE CATEGORIAS
+// ============================================
+app.get("/api/categorias", async (req, res) => {
+  try {
+    const categorias = await Categoria.find().sort({ dataCriacao: -1 });
+    res.json(categorias);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get("/api/categorias/:id", async (req, res) => {
+  try {
+    const categoria = await Categoria.findById(req.params.id);
+    if (!categoria) return res.status(404).json({ error: "Categoria não encontrada" });
+    res.json(categoria);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post("/api/categorias", async (req, res) => {
+  try {
+    const novo = new Categoria(req.body);
+    await novo.save();
+    res.status(201).json(novo);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+app.put("/api/categorias/:id", async (req, res) => {
+  try {
+    const categoria = await Categoria.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (!categoria) return res.status(404).json({ error: "Categoria não encontrada" });
+    res.json(categoria);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+app.delete("/api/categorias/:id", async (req, res) => {
+  try {
+    const categoria = await Categoria.findByIdAndDelete(req.params.id);
+    if (!categoria) return res.status(404).json({ error: "Categoria não encontrada" });
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ============================================
+// ROTAS DE SOLICITAÇÕES
+// ============================================
+app.get("/api/solicitacoes", async (req, res) => {
+  try {
+    const solicitacoes = await Solicitacao.find()
+      .populate('clienteId')
+      .populate('items.produtoId')
+      .populate('usuarioId')
+      .sort({ dataCriacao: -1 });
+    res.json(solicitacoes);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get("/api/solicitacoes/:id", async (req, res) => {
+  try {
+    const solicitacao = await Solicitacao.findById(req.params.id)
+      .populate('clienteId')
+      .populate('items.produtoId')
+      .populate('usuarioId');
+    if (!solicitacao) return res.status(404).json({ error: "Solicitação não encontrada" });
+    res.json(solicitacao);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post("/api/solicitacoes", async (req, res) => {
+  try {
+    const { clienteId, items, dataDesejada, motivo } = req.body;
+    if (!clienteId || !Array.isArray(items) || items.length === 0 || !dataDesejada || !motivo) {
+      return res.status(400).json({ error: "Todos os campos são obrigatórios" });
     }
-    
-    const solicitacao = await Solicitacao.create({
+
+    let total = 0;
+    const itemsCompletos = await Promise.all(items.map(async (it) => {
+      const prod = await Produto.findById(it.produtoId);
+      if (!prod) throw new Error(`Produto ${it.produtoId} não encontrado`);
+      const q = Number(it.quantidade);
+      const preco = Number(prod.preco);
+      total += (preco * q);
+      return {
+        produtoId: prod._id,
+        nome: prod.nome,
+        quantidade: q,
+        preco: preco
+      };
+    }));
+
+    const solicitacao = new Solicitacao({
       clienteId,
       items: itemsCompletos,
       total: Number(total.toFixed(2)),
       dataDesejada,
-      motivo: motivo || '',
-      status: 'pendente',
-      usuarioId: req.auth.userId
+      motivo,
+      ...req.body
     });
-    
-    res.status(201).json(solicitacao);
+
+    await solicitacao.save();
+    res.status(201).json(await Solicitacao.findById(solicitacao._id).populate('clienteId'));
   } catch (error) {
-    res.status(500).json({ error: 'Erro ao criar solicitação' });
+    res.status(400).json({ error: error.message });
   }
 });
 
-app.post('/api/solicitacoes/:id/aprovar', verificarAuth, verificarAdmin, async (req, res) => {
+app.put("/api/solicitacoes/:id", async (req, res) => {
   try {
-    const solicitacao = await Solicitacao.findById(req.params.id);
-    
-    if (!solicitacao) {
-      return res.status(404).json({ error: 'Solicitação não encontrada' });
-    }
-    
-    if (solicitacao.status !== 'pendente') {
-      return res.status(400).json({ error: 'Esta solicitação já foi processada' });
-    }
-    
-    // Verificar estoque
-    for (const it of solicitacao.items) {
-      const prod = await Produto.findById(it.produtoId);
-      if (!prod || prod.quantidade < it.quantidade) {
-        return res.status(400).json({ error: `Estoque insuficiente para ${it.nome}` });
-      }
-    }
-    
-    // Descontar estoque
-    for (const it of solicitacao.items) {
-      await Produto.findByIdAndUpdate(it.produtoId, {
-        $inc: { quantidade: -it.quantidade }
-      });
-    }
-    
-    // Criar o pedido
-    const pedido = await Pedido.create({
-      clienteId: solicitacao.clienteId,
-      items: solicitacao.items,
-      total: solicitacao.total,
-      dateISO: new Date(solicitacao.dataDesejada + 'T12:00:00').toISOString(),
-      retroativo: true
-    });
-    
-    // Atualizar solicitação
-    solicitacao.status = 'aprovado';
-    await solicitacao.save();
-    
-    res.json({ solicitacao, pedido });
-  } catch (error) {
-    res.status(500).json({ error: 'Erro ao aprovar solicitação' });
-  }
-});
-
-app.post('/api/solicitacoes/:id/rejeitar', verificarAuth, verificarAdmin, async (req, res) => {
-  try {
-    const { motivo } = req.body;
-    const solicitacao = await Solicitacao.findById(req.params.id);
-    
-    if (!solicitacao) {
-      return res.status(404).json({ error: 'Solicitação não encontrada' });
-    }
-    
-    if (solicitacao.status !== 'pendente') {
-      return res.status(400).json({ error: 'Esta solicitação já foi processada' });
-    }
-    
-    solicitacao.status = 'rejeitado';
-    solicitacao.motivoRejeicao = motivo || 'Não informado';
-    await solicitacao.save();
-    
+    const solicitacao = await Solicitacao.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (!solicitacao) return res.status(404).json({ error: "Solicitação não encontrada" });
     res.json(solicitacao);
   } catch (error) {
-    res.status(500).json({ error: 'Erro ao rejeitar solicitação' });
+    res.status(400).json({ error: error.message });
   }
 });
 
-// ---------------------------------------------
-// -------------- CATEGORIAS -------------------
-// ---------------------------------------------
-app.get('/api/categorias', async (req, res) => {
+app.delete("/api/solicitacoes/:id", async (req, res) => {
   try {
-    const categorias = await Categoria.find();
-    res.json(categorias);
-  } catch (error) {
-    res.status(500).json({ error: 'Erro ao buscar categorias' });
-  }
-});
-
-app.post('/api/categorias', verificarAuth, verificarAdmin, async (req, res) => {
-  try {
-    const categoria = await Categoria.create(req.body);
-    res.json(categoria);
-  } catch (error) {
-    res.status(500).json({ error: 'Erro ao criar categoria' });
-  }
-});
-
-app.put('/api/categorias/:id', verificarAuth, verificarAdmin, async (req, res) => {
-  try {
-    const categoria = await Categoria.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    res.json(categoria);
-  } catch (error) {
-    res.status(500).json({ error: 'Erro ao atualizar categoria' });
-  }
-});
-
-app.delete('/api/categorias/:id', verificarAuth, verificarAdmin, async (req, res) => {
-  try {
-    await Categoria.findByIdAndDelete(req.params.id);
+    const solicitacao = await Solicitacao.findByIdAndDelete(req.params.id);
+    if (!solicitacao) return res.status(404).json({ error: "Solicitação não encontrada" });
     res.json({ success: true });
   } catch (error) {
-    res.status(500).json({ error: 'Erro ao excluir categoria' });
+    res.status(500).json({ error: error.message });
   }
 });
 
-// ---------------------------------------------
-// -------------- FORNECEDORES -----------------
-// ---------------------------------------------
-app.get('/api/fornecedores', async (req, res) => {
+// ============================================
+// ROTAS DE NOTAS FISCAIS
+// ============================================
+app.get("/api/notas-fiscais", async (req, res) => {
   try {
-    const fornecedores = await Fornecedor.find();
-    res.json(fornecedores);
+    const notas = await NotaFiscal.find()
+      .populate('pedidoId')
+      .sort({ dataEmissao: -1 });
+    res.json(notas);
   } catch (error) {
-    res.status(500).json({ error: 'Erro ao buscar fornecedores' });
+    res.status(500).json({ error: error.message });
   }
 });
 
-app.post('/api/fornecedores', verificarAuth, verificarAdmin, async (req, res) => {
+app.get("/api/notas-fiscais/:id", async (req, res) => {
   try {
-    const fornecedor = await Fornecedor.create(req.body);
-    res.json(fornecedor);
+    const nota = await NotaFiscal.findById(req.params.id).populate('pedidoId');
+    if (!nota) return res.status(404).json({ error: "Nota fiscal não encontrada" });
+    res.json(nota);
   } catch (error) {
-    res.status(500).json({ error: 'Erro ao criar fornecedor' });
+    res.status(500).json({ error: error.message });
   }
 });
 
-app.put('/api/fornecedores/:id', verificarAuth, verificarAdmin, async (req, res) => {
+app.post("/api/notas-fiscais", async (req, res) => {
   try {
-    const fornecedor = await Fornecedor.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    res.json(fornecedor);
+    const novo = new NotaFiscal(req.body);
+    await novo.save();
+    res.status(201).json(await NotaFiscal.findById(novo._id).populate('pedidoId'));
   } catch (error) {
-    res.status(500).json({ error: 'Erro ao atualizar fornecedor' });
+    res.status(400).json({ error: error.message });
   }
 });
 
-app.delete('/api/fornecedores/:id', verificarAuth, verificarAdmin, async (req, res) => {
+app.put("/api/notas-fiscais/:id", async (req, res) => {
   try {
-    await Fornecedor.findByIdAndDelete(req.params.id);
+    const nota = await NotaFiscal.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (!nota) return res.status(404).json({ error: "Nota fiscal não encontrada" });
+    res.json(nota);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+app.delete("/api/notas-fiscais/:id", async (req, res) => {
+  try {
+    const nota = await NotaFiscal.findByIdAndDelete(req.params.id);
+    if (!nota) return res.status(404).json({ error: "Nota fiscal não encontrada" });
     res.json({ success: true });
   } catch (error) {
-    res.status(500).json({ error: 'Erro ao excluir fornecedor' });
+    res.status(500).json({ error: error.message });
   }
 });
 
-// ---------------------------------------------
-// -------------- ORÇAMENTOS -------------------
-// ---------------------------------------------
-app.get('/api/orcamentos', async (req, res) => {
+// ============================================
+// ROTAS DE CONFIGURAÇÕES
+// ============================================
+app.get("/api/config/empresa", async (req, res) => {
   try {
-    const orcamentos = await Orcamento.find();
-    const clientes = await Cliente.find();
-    
-    const lista = orcamentos.map(o => {
-      const cliente = clientes.find(c => c._id.toString() === o.clienteId?.toString());
-      return { ...o.toObject(), clienteNome: cliente?.nome || 'Cliente' };
-    });
-    
-    res.json(lista);
-  } catch (error) {
-    res.status(500).json({ error: 'Erro ao buscar orçamentos' });
-  }
-});
-
-app.post('/api/orcamentos', async (req, res) => {
-  try {
-    const { clienteId, items, desconto, validade, observacoes } = req.body;
-    
-    let total = 0;
-    const itemsCompletos = [];
-    
-    for (const it of items) {
-      const prod = await Produto.findById(it.produtoId);
-      if (!prod) continue;
-      const q = Number(it.quantidade);
-      total += (Number(prod.preco) * q);
-      
-      itemsCompletos.push({
-        produtoId: prod._id,
-        nome: prod.nome,
-        quantidade: q,
-        preco: prod.preco,
-        unidade: prod.unidade
-      });
+    let config = await ConfigEmpresa.findOne();
+    if (!config) {
+      config = new ConfigEmpresa();
+      await config.save();
     }
-    
-    const descontoVal = Number(desconto) || 0;
-    const totalComDesconto = total - (total * descontoVal / 100);
-    
-    const orcamento = await Orcamento.create({
-      clienteId,
-      items: itemsCompletos,
-      total: Number(total.toFixed(2)),
-      desconto: descontoVal,
-      totalComDesconto: Number(totalComDesconto.toFixed(2)),
-      validade,
-      observacoes
-    });
-    
-    res.json(orcamento);
+    res.json(config);
   } catch (error) {
-    res.status(500).json({ error: 'Erro ao criar orçamento' });
+    res.status(500).json({ error: error.message });
   }
 });
 
-app.post('/api/orcamentos/:id/converter', async (req, res) => {
+app.put("/api/config/empresa", async (req, res) => {
   try {
-    const orcamento = await Orcamento.findById(req.params.id);
-    if (!orcamento) return res.status(404).json({ error: 'Orçamento não encontrado' });
-    
-    if (orcamento.status === 'convertido') {
-      return res.status(400).json({ error: 'Orçamento já foi convertido' });
-    }
-    
-    // Verificar estoque
-    for (const it of orcamento.items) {
-      const prod = await Produto.findById(it.produtoId);
-      if (!prod || prod.quantidade < it.quantidade) {
-        return res.status(400).json({ error: `Estoque insuficiente para ${it.nome}` });
-      }
-    }
-    
-    // Descontar estoque
-    for (const it of orcamento.items) {
-      await Produto.findByIdAndUpdate(it.produtoId, {
-        $inc: { quantidade: -it.quantidade }
-      });
-    }
-    
-    // Criar pedido
-    const pedido = await Pedido.create({
-      clienteId: orcamento.clienteId,
-      items: orcamento.items,
-      total: orcamento.totalComDesconto,
-      formaPagamento: req.body.formaPagamento || 'dinheiro',
-      statusPagamento: req.body.statusPagamento || 'pendente'
-    });
-    
-    // Atualizar orçamento
-    orcamento.status = 'convertido';
-    orcamento.pedidoId = pedido._id;
-    await orcamento.save();
-    
-    res.json({ orcamento, pedido });
-  } catch (error) {
-    res.status(500).json({ error: 'Erro ao converter orçamento' });
-  }
-});
-
-app.delete('/api/orcamentos/:id', async (req, res) => {
-  try {
-    await Orcamento.findByIdAndDelete(req.params.id);
-    res.json({ success: true });
-  } catch (error) {
-    res.status(500).json({ error: 'Erro ao excluir orçamento' });
-  }
-});
-
-// ---------------------------------------------
-// -------------- CONTAS A RECEBER -------------
-// ---------------------------------------------
-app.get('/api/contas-receber', async (req, res) => {
-  try {
-    const pedidos = await Pedido.find({ 
-      statusPagamento: { $in: ['pendente', 'parcial'] }
-    });
-    const clientes = await Cliente.find();
-    
-    const contas = pedidos.map(p => {
-      const cliente = clientes.find(c => c._id.toString() === p.clienteId?.toString());
-      return {
-        ...p.toObject(),
-        clienteNome: cliente?.nome || 'Cliente',
-        clienteTelefone: cliente?.telefone || '',
-        valorDevido: p.total - (p.valorPago || 0)
-      };
-    });
-    
-    res.json(contas);
-  } catch (error) {
-    res.status(500).json({ error: 'Erro ao buscar contas a receber' });
-  }
-});
-
-app.post('/api/pedidos/:id/pagamento', async (req, res) => {
-  try {
-    const { valor, formaPagamento } = req.body;
-    const pedido = await Pedido.findById(req.params.id);
-    
-    if (!pedido) return res.status(404).json({ error: 'Pedido não encontrado' });
-    
-    const novoValorPago = (pedido.valorPago || 0) + Number(valor);
-    
-    pedido.valorPago = novoValorPago;
-    if (formaPagamento) pedido.formaPagamento = formaPagamento;
-    
-    if (novoValorPago >= pedido.total) {
-      pedido.statusPagamento = 'pago';
-      pedido.dataPagamento = new Date().toISOString();
+    let config = await ConfigEmpresa.findOne();
+    if (!config) {
+      config = new ConfigEmpresa(req.body);
     } else {
-      pedido.statusPagamento = 'parcial';
+      Object.assign(config, req.body);
+      config.dataAtualizacao = new Date();
     }
-    
-    await pedido.save();
-    
-    // Atualizar pontos de fidelidade do cliente (1 ponto a cada R$ 10)
-    const pontosGanhos = Math.floor(Number(valor) / 10);
-    if (pontosGanhos > 0) {
-      await Cliente.findByIdAndUpdate(pedido.clienteId, {
-        $inc: { pontosFidelidade: pontosGanhos, totalCompras: Number(valor) }
-      });
-    }
-    
-    res.json(pedido);
+    await config.save();
+    res.json(config);
   } catch (error) {
-    res.status(500).json({ error: 'Erro ao registrar pagamento' });
+    res.status(400).json({ error: error.message });
   }
 });
 
-// ---------------------------------------------
-// -------------- DASHBOARD/ESTATÍSTICAS -------
-// ---------------------------------------------
+app.get("/api/config/nfe", async (req, res) => {
+  try {
+    let config = await ConfigNFe.findOne();
+    if (!config) {
+      config = new ConfigNFe();
+      await config.save();
+    }
+    res.json(config);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.put("/api/config/nfe", async (req, res) => {
+  try {
+    let config = await ConfigNFe.findOne();
+    if (!config) {
+      config = new ConfigNFe(req.body);
+    } else {
+      Object.assign(config, req.body);
+      config.dataAtualizacao = new Date();
+    }
+    await config.save();
+    res.json(config);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// ============================================
+// ROTAS DE USUÁRIOS
+// ============================================
+app.get("/api/usuarios", verificarToken, async (req, res) => {
+  try {
+    const usuarios = await Usuario.find().select('-password').sort({ dataCriacao: -1 });
+    res.json(usuarios);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get("/api/usuarios/:id", verificarToken, async (req, res) => {
+  try {
+    const usuario = await Usuario.findById(req.params.id).select('-password');
+    if (!usuario) return res.status(404).json({ error: "Usuário não encontrado" });
+    res.json(usuario);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post("/api/usuarios", verificarToken, async (req, res) => {
+  try {
+    const novo = new Usuario(req.body);
+    await novo.save();
+    const usuario = await Usuario.findById(novo._id).select('-password');
+    res.status(201).json(usuario);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+app.put("/api/usuarios/:id", verificarToken, async (req, res) => {
+  try {
+    const usuario = await Usuario.findByIdAndUpdate(req.params.id, req.body, { new: true }).select('-password');
+    if (!usuario) return res.status(404).json({ error: "Usuário não encontrado" });
+    res.json(usuario);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+app.delete("/api/usuarios/:id", verificarToken, async (req, res) => {
+  try {
+    const usuario = await Usuario.findByIdAndDelete(req.params.id);
+    if (!usuario) return res.status(404).json({ error: "Usuário não encontrado" });
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ============================================
+// ROTA DE DASHBOARD
+// ============================================
 app.get('/api/dashboard', async (req, res) => {
   try {
-    const hoje = new Date().toISOString().slice(0, 10);
-    const mesAtual = new Date().toISOString().slice(0, 7);
-    
-    const pedidos = await Pedido.find();
-    const clientes = await Cliente.find();
-    const produtos = await Produto.find();
-    
-    const pedidosHoje = pedidos.filter(p => p.dateISO?.slice(0, 10) === hoje);
-    const pedidosMes = pedidos.filter(p => p.dateISO?.slice(0, 7) === mesAtual);
-    
-    const vendasHoje = pedidosHoje.reduce((s, p) => s + (p.total || 0), 0);
-    const vendasMes = pedidosMes.reduce((s, p) => s + (p.total || 0), 0);
-    
-    const contasReceber = pedidos
-      .filter(p => p.statusPagamento === 'pendente' || p.statusPagamento === 'parcial')
-      .reduce((s, p) => s + (p.total - (p.valorPago || 0)), 0);
-    
-    const produtosBaixoEstoque = produtos.filter(p => p.quantidade <= p.minimo).length;
-    
-    // Vendas últimos 7 dias
-    const ultimos7Dias = [];
+    const now = new Date();
+    const today = now.toISOString().slice(0, 10);
+    const thisMonth = now.toISOString().slice(0, 7);
+
+    // Estatísticas de pedidos
+    const pedidosHoje = await Pedido.find({
+      dateISO: { $regex: `^${today}` }
+    });
+    const pedidosMes = await Pedido.find({
+      dateISO: { $regex: `^${thisMonth}` }
+    });
+
+    const totalHoje = pedidosHoje.reduce((s, p) => s + Number(p.total || 0), 0);
+    const totalMes = pedidosMes.reduce((s, p) => s + Number(p.total || 0), 0);
+
+    // Estatísticas gerais
+    const totalClientes = await Cliente.countDocuments();
+    const totalProdutos = await Produto.countDocuments();
+    const produtosBaixoEstoque = await Produto.countDocuments({
+      $expr: { $lte: ['$quantidade', { $ifNull: ['$minimo', 0] }] }
+    });
+
+    // Gráfico de vendas (últimos 7 dias)
+    const graficoVendas = [];
     for (let i = 6; i >= 0; i--) {
-      const data = new Date();
+      const data = new Date(now);
       data.setDate(data.getDate() - i);
       const dataStr = data.toISOString().slice(0, 10);
-      const vendas = pedidos
-        .filter(p => p.dateISO?.slice(0, 10) === dataStr)
-        .reduce((s, p) => s + (p.total || 0), 0);
-      ultimos7Dias.push({
-        data: dataStr,
-        dia: data.toLocaleDateString('pt-BR', { weekday: 'short' }),
-        vendas
+      
+      const pedidosDia = await Pedido.find({
+        dateISO: { $regex: `^${dataStr}` }
+      });
+      
+      const vendasDia = pedidosDia.reduce((s, p) => s + Number(p.total || 0), 0);
+      
+      graficoVendas.push({
+        dia: data.toLocaleDateString('pt-BR', { weekday: 'short', day: 'numeric' }),
+        vendas: Number(vendasDia.toFixed(2))
       });
     }
-    
-    // Top 5 clientes do mês
-    const clientesVendas = {};
-    pedidosMes.forEach(p => {
-      const id = p.clienteId?.toString();
-      if (!clientesVendas[id]) clientesVendas[id] = 0;
-      clientesVendas[id] += p.total || 0;
+
+    // Top clientes do mês
+    const pedidosMesCompleto = await Pedido.find({
+      dateISO: { $regex: `^${thisMonth}` }
+    }).populate('clienteId');
+
+    const clientesMap = new Map();
+    pedidosMesCompleto.forEach(pedido => {
+      const clienteId = pedido.clienteId?._id?.toString() || pedido.clienteId?.toString();
+      const clienteNome = pedido.clienteId?.nome || 'Cliente';
+      const total = Number(pedido.total || 0);
+      
+      if (clientesMap.has(clienteId)) {
+        clientesMap.set(clienteId, {
+          nome: clienteNome,
+          total: clientesMap.get(clienteId).total + total
+        });
+      } else {
+        clientesMap.set(clienteId, { nome: clienteNome, total });
+      }
     });
-    
-    const topClientes = Object.entries(clientesVendas)
-      .map(([id, total]) => {
-        const cliente = clientes.find(c => c._id.toString() === id);
-        return { nome: cliente?.nome || 'Cliente', total };
-      })
+
+    const topClientes = Array.from(clientesMap.values())
       .sort((a, b) => b.total - a.total)
       .slice(0, 5);
-    
+
     res.json({
       resumo: {
-        vendasHoje,
-        vendasMes,
+        vendasHoje: Number(totalHoje.toFixed(2)),
         pedidosHoje: pedidosHoje.length,
+        vendasMes: Number(totalMes.toFixed(2)),
         pedidosMes: pedidosMes.length,
-        contasReceber,
-        totalClientes: clientes.length,
-        totalProdutos: produtos.length,
-        produtosBaixoEstoque
+        totalClientes,
+        totalProdutos,
+        produtosBaixoEstoque,
+        contasReceber: 0 // Placeholder
       },
-      graficoVendas: ultimos7Dias,
+      graficoVendas,
       topClientes
     });
   } catch (error) {
-    res.status(500).json({ error: 'Erro ao carregar dashboard' });
+    res.status(500).json({ error: error.message });
   }
 });
 
-// ---------------------------------------------
-// ----------- CONFIGURAÇÕES DO SISTEMA --------
-// ---------------------------------------------
-let configSistema = {
-  modoEscuro: false,
-  pontosPorReal: 0.1, // 1 ponto a cada R$ 10
-  diasValidadeOrcamento: 7
-};
+// ============================================
+// INICIAR SERVIDOR
+// ============================================
+// Render.com usa porta dinâmica via variável PORT
+// Em desenvolvimento local, usa 3000 como padrão
+const PORT = process.env.PORT || 3000;
+const HOST = process.env.HOST || '0.0.0.0'; // Render precisa escutar em 0.0.0.0
 
-app.get('/api/config-sistema', (req, res) => {
-  res.json(configSistema);
-});
-
-app.put('/api/config-sistema', verificarAuth, verificarAdmin, (req, res) => {
-  configSistema = { ...configSistema, ...req.body };
-  res.json(configSistema);
-});
-
-// ---------------------------------------------
-// ------- CONFIGURAÇÃO DA EMPRESA (NF-e) ------
-// ---------------------------------------------
-app.get('/api/config-empresa', async (req, res) => {
-  try {
-    let config = await ConfigEmpresa.findOne();
-    if (!config) {
-      config = await ConfigEmpresa.create({});
-    }
-    res.json(config);
-  } catch (error) {
-    res.status(500).json({ error: 'Erro ao buscar configurações' });
+(async () => {
+  const conectado = await conectarDB();
+  if (!conectado) {
+    console.log('⚠️  Aviso: Não foi possível conectar ao MongoDB. O sistema continuará funcionando com limitações.');
   }
-});
-
-app.put('/api/config-empresa', verificarAuth, verificarAdmin, async (req, res) => {
-  try {
-    let config = await ConfigEmpresa.findOne();
-    if (!config) {
-      config = await ConfigEmpresa.create(req.body);
+  
+  app.listen(PORT, HOST, () => {
+    console.log(`🚀 Servidor MegaClean rodando na porta ${PORT}`);
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`📱 Acesse: http://localhost:${PORT}`);
+      console.log(`✨ Sistema moderno disponível em: http://localhost:${PORT}/app.html`);
     } else {
-      Object.assign(config, req.body);
-      config.dataAtualizacao = new Date();
-      await config.save();
+      console.log(`✨ Sistema em produção - Acesse via URL do Render`);
     }
-    res.json(config);
-  } catch (error) {
-    res.status(500).json({ error: 'Erro ao salvar configurações' });
-  }
-});
-
-// Gerar documento fiscal (recibo/pré-nota)
-app.post('/api/pedidos/:id/documento-fiscal', verificarAuth, async (req, res) => {
-  try {
-    const pedido = await Pedido.findById(req.params.id);
-    if (!pedido) return res.status(404).json({ error: 'Pedido não encontrado' });
-    
-    const cliente = await Cliente.findById(pedido.clienteId);
-    const config = await ConfigEmpresa.findOne();
-    
-    // Por enquanto, retorna os dados para gerar um recibo
-    // Quando tiver CNPJ e certificado, aqui será a integração com a SEFAZ
-    res.json({
-      tipo: config?.cnpj ? 'nfe_pendente' : 'recibo',
-      numero: config?.proximoNumeroNfe || 1,
-      serie: config?.serieNfe || 1,
-      dataEmissao: new Date().toISOString(),
-      empresa: {
-        razaoSocial: config?.razaoSocial || 'MEGACLEAN',
-        nomeFantasia: config?.nomeFantasia || 'MegaClean',
-        cnpj: config?.cnpj || 'CNPJ não cadastrado',
-        inscricaoEstadual: config?.inscricaoEstadual || '',
-        endereco: config?.logradouro ? `${config.logradouro}, ${config.numero} - ${config.bairro}, ${config.cidade}/${config.uf}` : '',
-        telefone: config?.telefone || '',
-        email: config?.email || ''
-      },
-      cliente: {
-        nome: cliente?.nome || 'Cliente',
-        cpfCnpj: cliente?.cpfCnpj || '',
-        telefone: cliente?.telefone || '',
-        endereco: cliente?.endereco || ''
-      },
-      pedido: {
-        id: pedido._id,
-        data: pedido.dateISO,
-        items: pedido.items,
-        total: pedido.total,
-        formaPagamento: pedido.formaPagamento
-      },
-      mensagem: config?.mensagemPadrao || 'Obrigado pela preferência!'
-    });
-  } catch (error) {
-    res.status(500).json({ error: 'Erro ao gerar documento' });
-  }
-});
-
-// ---------------------------------------------
-// -------------- CONFIG NF-e -----------------
-// ---------------------------------------------
-
-// GET - Buscar configuração NF-e
-app.get('/api/config-nfe', async (req, res) => {
-  try {
-    let config = await ConfigNFe.findOne();
-    if (!config) {
-      config = await ConfigNFe.create({});
-    }
-    res.json(config);
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
-});
-
-// POST - Salvar configuração NF-e
-app.post('/api/config-nfe', async (req, res) => {
-  try {
-    let config = await ConfigNFe.findOne();
-    if (config) {
-      Object.assign(config, req.body);
-      config.dataAtualizacao = new Date();
-      await config.save();
-    } else {
-      config = await ConfigNFe.create(req.body);
-    }
-    res.json(config);
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
-});
-
-// POST - Testar conexão com provedor NF-e
-app.post('/api/config-nfe/testar', async (req, res) => {
-  try {
-    const config = await ConfigNFe.findOne();
-    if (!config) {
-      return res.json({ sucesso: false, erro: 'Configuração não encontrada' });
-    }
-    
-    const { provedor } = req.body;
-    
-    // Testar conexão baseado no provedor
-    if (provedor === 'focus_nfe' && config.focusToken) {
-      // Testar Focus NFe
-      const ambiente = config.ambiente === 'producao' ? 'api' : 'homologacao';
-      const url = `https://${ambiente}.focusnfe.com.br/v2/nfe`;
-      
-      try {
-        const response = await fetch(url, {
-          method: 'GET',
-          headers: {
-            'Authorization': 'Basic ' + Buffer.from(config.focusToken + ':').toString('base64')
-          }
-        });
-        
-        if (response.status === 401) {
-          return res.json({ sucesso: false, erro: 'Token inválido' });
-        }
-        
-        return res.json({ sucesso: true, mensagem: 'Conexão OK com Focus NFe!' });
-      } catch (e) {
-        return res.json({ sucesso: false, erro: 'Erro de conexão: ' + e.message });
-      }
-    }
-    
-    if (provedor === 'manual') {
-      return res.json({ sucesso: true, mensagem: 'Modo manual não requer teste de conexão' });
-    }
-    
-    res.json({ sucesso: false, erro: 'Configure as credenciais do provedor primeiro' });
-  } catch (e) {
-    res.status(500).json({ sucesso: false, erro: e.message });
-  }
-});
-
-// ---------------------------------------------
-// -------------- EMISSÃO NF-e ----------------
-// ---------------------------------------------
-
-// POST - Emitir NF-e para um pedido
-app.post('/api/nfe/emitir/:pedidoId', async (req, res) => {
-  try {
-    const { pedidoId } = req.params;
-    
-    // Buscar pedido
-    const pedido = await Pedido.findById(pedidoId);
-    if (!pedido) {
-      return res.status(404).json({ error: 'Pedido não encontrado' });
-    }
-    
-    // Buscar configuração NF-e
-    const config = await ConfigNFe.findOne();
-    if (!config || !config.configurado) {
-      return res.status(400).json({ error: 'NF-e não configurada. Acesse Configurações > NF-e' });
-    }
-    
-    // Verificar se já existe NF para este pedido
-    const nfeExistente = await NotaFiscal.findOne({ pedidoId, status: 'autorizada' });
-    if (nfeExistente) {
-      return res.status(400).json({ error: 'Já existe NF-e emitida para este pedido', nfe: nfeExistente });
-    }
-    
-    // Buscar cliente
-    const cliente = await Cliente.findById(pedido.clienteId);
-    
-    // Criar registro da NF
-    const numeroNfe = config.proximoNumeroNfe;
-    const notaFiscal = await NotaFiscal.create({
-      pedidoId: pedido._id,
-      numero: numeroNfe,
-      serie: config.serieNfe,
-      status: 'processando',
-      clienteNome: pedido.clienteNome || cliente?.nome || 'Consumidor',
-      clienteCpfCnpj: cliente?.cpfCnpj || '',
-      valorTotal: pedido.total,
-      valorProdutos: pedido.total,
-      ambiente: config.ambiente,
-      provedor: config.provedor
-    });
-    
-    // Se modo manual, retornar dados formatados
-    if (config.provedor === 'manual') {
-      notaFiscal.status = 'pendente';
-      await notaFiscal.save();
-      
-      // Incrementar número
-      config.proximoNumeroNfe = numeroNfe + 1;
-      await config.save();
-      
-      // Gerar dados formatados para copiar
-      const dadosNfe = {
-        numero: numeroNfe,
-        serie: config.serieNfe,
-        cliente: {
-          nome: notaFiscal.clienteNome,
-          cpfCnpj: notaFiscal.clienteCpfCnpj
-        },
-        itens: pedido.itens.map((item, idx) => ({
-          numero: idx + 1,
-          produto: item.nome,
-          quantidade: item.quantidade,
-          valorUnitario: item.preco,
-          valorTotal: item.quantidade * item.preco
-        })),
-        valorTotal: pedido.total,
-        dataEmissao: new Date().toISOString()
-      };
-      
-      return res.json({ 
-        sucesso: true, 
-        modo: 'manual',
-        mensagem: 'Dados gerados para emissão manual',
-        nfe: notaFiscal,
-        dados: dadosNfe
-      });
-    }
-    
-    // Emitir via Focus NFe
-    if (config.provedor === 'focus_nfe') {
-      const ambiente = config.ambiente === 'producao' ? 'api' : 'homologacao';
-      const url = `https://${ambiente}.focusnfe.com.br/v2/nfe`;
-      
-      // Montar payload da NFe
-      const nfePayload = {
-        natureza_operacao: 'VENDA DE MERCADORIA',
-        forma_pagamento: '0', // À vista
-        tipo_documento: '1', // Saída
-        finalidade_emissao: '1', // Normal
-        consumidor_final: '1',
-        presenca_comprador: '1', // Presencial
-        
-        cnpj_emitente: config.cnpj.replace(/\D/g, ''),
-        
-        nome_destinatario: notaFiscal.clienteNome,
-        cpf_destinatario: (cliente?.cpfCnpj || '').replace(/\D/g, ''),
-        
-        itens: pedido.itens.map((item, idx) => ({
-          numero_item: idx + 1,
-          codigo_produto: item.sku || item.id || String(idx + 1),
-          descricao: item.nome,
-          cfop: config.cfopPadrao,
-          unidade_comercial: 'UN',
-          quantidade_comercial: item.quantidade,
-          valor_unitario_comercial: item.preco,
-          valor_bruto: item.quantidade * item.preco,
-          unidade_tributavel: 'UN',
-          quantidade_tributavel: item.quantidade,
-          valor_unitario_tributavel: item.preco,
-          icms_origem: '0',
-          icms_situacao_tributaria: '102' // Simples Nacional
-        }))
-      };
-      
-      try {
-        const response = await fetch(url, {
-          method: 'POST',
-          headers: {
-            'Authorization': 'Basic ' + Buffer.from(config.focusToken + ':').toString('base64'),
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(nfePayload)
-        });
-        
-        const data = await response.json();
-        
-        if (data.status === 'autorizado' || data.status_sefaz === '100') {
-          notaFiscal.status = 'autorizada';
-          notaFiscal.chaveAcesso = data.chave_nfe;
-          notaFiscal.protocolo = data.protocolo;
-          notaFiscal.dataAutorizacao = new Date();
-          notaFiscal.referenciaExterna = data.ref;
-          
-          if (data.caminho_danfe) {
-            notaFiscal.urlPdf = data.caminho_danfe;
-          }
-          
-          // Incrementar número
-          config.proximoNumeroNfe = numeroNfe + 1;
-          await config.save();
-          
-        } else if (data.status === 'processando_autorizacao') {
-          notaFiscal.status = 'processando';
-          notaFiscal.referenciaExterna = data.ref;
-        } else {
-          notaFiscal.status = 'erro';
-          notaFiscal.mensagemErro = data.mensagem || data.status_sefaz_mensagem || 'Erro desconhecido';
-          notaFiscal.codigoErro = data.status_sefaz || '';
-        }
-        
-        await notaFiscal.save();
-        
-        return res.json({
-          sucesso: notaFiscal.status === 'autorizada',
-          nfe: notaFiscal,
-          dados: data
-        });
-        
-      } catch (e) {
-        notaFiscal.status = 'erro';
-        notaFiscal.mensagemErro = 'Erro de conexão: ' + e.message;
-        await notaFiscal.save();
-        
-        return res.status(500).json({ error: e.message, nfe: notaFiscal });
-      }
-    }
-    
-    res.status(400).json({ error: 'Provedor não suportado' });
-    
-  } catch (e) {
-    console.error('Erro ao emitir NF-e:', e);
-    res.status(500).json({ error: e.message });
-  }
-});
-
-// GET - Listar notas fiscais
-app.get('/api/nfe', async (req, res) => {
-  try {
-    const notas = await NotaFiscal.find().sort({ dataEmissao: -1 }).limit(100);
-    res.json(notas);
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
-});
-
-// GET - Buscar NF por pedido
-app.get('/api/nfe/pedido/:pedidoId', async (req, res) => {
-  try {
-    const nota = await NotaFiscal.findOne({ pedidoId: req.params.pedidoId });
-    if (!nota) {
-      return res.status(404).json({ error: 'NF não encontrada para este pedido' });
-    }
-    res.json(nota);
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
-});
-
-// GET - Gerar dados para NF manual
-app.get('/api/nfe/dados-manual/:pedidoId', async (req, res) => {
-  try {
-    const pedido = await Pedido.findById(req.params.pedidoId);
-    if (!pedido) {
-      return res.status(404).json({ error: 'Pedido não encontrado' });
-    }
-    
-    const cliente = await Cliente.findById(pedido.clienteId);
-    const config = await ConfigNFe.findOne();
-    
-    const dados = {
-      // Dados da empresa
-      empresa: {
-        cnpj: config?.cnpj || '',
-        razaoSocial: config?.razaoSocial || '',
-        nomeFantasia: config?.nomeFantasia || ''
-      },
-      // Dados do cliente
-      cliente: {
-        nome: pedido.clienteNome || cliente?.nome || 'Consumidor',
-        cpfCnpj: cliente?.cpfCnpj || '',
-        endereco: cliente?.endereco || '',
-        telefone: cliente?.telefone || ''
-      },
-      // Itens
-      itens: pedido.itens.map((item, idx) => ({
-        numero: idx + 1,
-        codigo: item.sku || item.id || '',
-        descricao: item.nome,
-        ncm: item.ncm || '39249000', // NCM genérico para plásticos
-        cfop: config?.cfopPadrao || '5102',
-        unidade: 'UN',
-        quantidade: item.quantidade,
-        valorUnitario: item.preco.toFixed(2),
-        valorTotal: (item.quantidade * item.preco).toFixed(2)
-      })),
-      // Totais
-      valorProdutos: pedido.total.toFixed(2),
-      valorTotal: pedido.total.toFixed(2),
-      // Data
-      data: new Date().toLocaleDateString('pt-BR'),
-      hora: new Date().toLocaleTimeString('pt-BR')
-    };
-    
-    res.json(dados);
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
-});
-
-// Iniciar servidor
-iniciarServidor();
+  });
+})();

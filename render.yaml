@@ -1,0 +1,26 @@
+# Render.com - Configuração de Deploy Automático
+# Este arquivo configura o deploy automático no Render
+# Quando você fizer push no GitHub, o Render atualiza automaticamente
+
+services:
+  - type: web
+    name: megaclean-system
+    env: node
+    plan: free  # ou starter/standard para produção
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000  # Render usa porta dinâmica, mas você pode definir
+      - key: MONGODB_URI
+        sync: false  # Configure manualmente no painel do Render
+      - key: ADMIN_USER
+        sync: false  # Configure manualmente
+      - key: ADMIN_PASS
+        sync: false  # Configure manualmente
+      - key: ADMIN_NAME
+        value: Administrador MegaClean
+      - key: ADMIN_TOKEN
+        sync: false  # Configure manualmente (use um token forte!)

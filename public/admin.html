@@ -3,25 +3,26 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<meta name="theme-color" content="#0aa04e" />
+<meta name="theme-color" content="#0d9488" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <link rel="manifest" href="/manifest.json" />
 <link rel="icon" type="image/svg+xml" href="/icon.svg" />
 <title>Painel Admin - MegaClean</title>
 <style>
 :root{
-  --bg:#f4f7fb;
+  --bg:#f0f4f8;
   --card:#fff;
-  --primary:#0aa04e;
-  --primary-light:#e6f9ee;
-  --primary-600:#0a8a44;
+  --primary:#0d9488;
+  --primary-light:#ccfbf1;
+  --primary-600:#0f766e;
+  --primary-dark:#134e4a;
   --muted:#6b7280;
   --danger:#dc2626;
   --danger-light:#fef2f2;
   --warning:#f59e0b;
   --warning-light:#fffbeb;
-  --info:#3b82f6;
-  --info-light:#eff6ff;
+  --info:#0891b2;
+  --info-light:#cffafe;
   --purple:#8b5cf6;
   --purple-light:#f5f3ff;
   --radius:12px;
@@ -31,16 +32,17 @@
 [data-theme="dark"]{
   --bg:#0f172a;
   --card:#1e293b;
-  --primary:#10b981;
-  --primary-light:#064e3b;
-  --primary-600:#059669;
+  --primary:#14b8a6;
+  --primary-light:#042f2e;
+  --primary-600:#0f766e;
+  --primary-dark:#134e4a;
   --muted:#94a3b8;
   --danger:#f87171;
   --danger-light:#450a0a;
   --warning:#fbbf24;
   --warning-light:#422006;
-  --info:#60a5fa;
-  --info-light:#1e3a5f;
+  --info:#22d3ee;
+  --info-light:#083344;
   --purple:#a78bfa;
   --purple-light:#2e1065;
   --shadow: 0 8px 24px rgba(0,0,0,0.3);
@@ -58,7 +60,7 @@ body{
 
 /* Header */
 .header{
-  background:linear-gradient(135deg, #0aa04e 0%, #059669 100%);
+  background:linear-gradient(135deg, #0d9488 0%, #0f766e 100%);
   padding:20px 30px;
   color:#fff;
   display:flex;
@@ -73,17 +75,39 @@ body{
   gap:16px;
 }
 .logo{
-  font-size:32px;
+  width:56px;
+  height:64px;
+  position:relative;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.logo svg{
+  width:56px;
+  height:64px;
+}
+  font-weight:800;
+  color:#0d9488;
+  z-index:2;
+  top:8px;
+  box-shadow:0 2px 4px rgba(0,0,0,0.1);
 }
 .brand h1{
   margin:0;
-  font-size:22px;
-  font-weight:700;
+  font-size:20px;
+  font-weight:800;
+  color:#67e8f9;
+  letter-spacing:1px;
+  font-family:'Segoe UI', Arial, sans-serif;
 }
 .brand p{
-  margin:4px 0 0;
-  font-size:13px;
-  opacity:0.9;
+  margin:2px 0 0;
+  font-size:11px;
+  opacity:0.95;
+  color:#67e8f9;
+  letter-spacing:4px;
+  font-weight:300;
+  font-family:'Segoe UI', Arial, sans-serif;
 }
 .header-right{
   display:flex;
@@ -165,10 +189,10 @@ body{
   justify-content:center;
   font-size:26px;
 }
-.stat-icon.green{background:var(--primary-light);color:var(--primary)}
-.stat-icon.blue{background:var(--info-light);color:var(--info)}
-.stat-icon.purple{background:var(--purple-light);color:var(--purple)}
-.stat-icon.yellow{background:var(--warning-light);color:var(--warning)}
+.stat-icon.green{background:#ccfbf1;color:#0d9488}
+.stat-icon.blue{background:#cffafe;color:#0891b2}
+.stat-icon.purple{background:#e9d5ff;color:#8b5cf6}
+.stat-icon.yellow{background:#fef3c7;color:#f59e0b}
 .stat-info h3{
   margin:0;
   font-size:28px;
@@ -234,15 +258,17 @@ body{
   transform:translateX(4px);
 }
 .nav-item .icon{
-  width:44px;
-  height:44px;
-  border-radius:10px;
+  width:48px;
+  height:48px;
+  border-radius:12px;
   display:flex;
   align-items:center;
   justify-content:center;
-  font-size:20px;
   background:#fff;
-  box-shadow:0 2px 8px rgba(0,0,0,0.06);
+  box-shadow:0 2px 8px rgba(0,0,0,0.08);
+  flex-shrink:0;
+  font-size:28px;
+  line-height:1;
 }
 .nav-item .text h4{
   margin:0;
@@ -363,12 +389,23 @@ body{
 </head>
 <body>
   <!-- Header -->
-  <div class="header">
+    <div class="header">
     <div class="header-left">
-      <div class="logo">🧹</div>
+      <div class="logo">
+        <svg viewBox="0 0 120 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Gota de água azul claro -->
+          <path d="M60 10C60 10 60 20 60 30C60 35 58 42 56 50C54 58 52 66 52 74C52 82 54 90 56 98C58 106 60 114 60 130L20 130C20 114 20 106 20 98C20 90 22 82 24 74C26 66 28 58 30 50C32 42 34 35 34 30C34 20 34 10 34 10C34 10 47 10 60 10Z" fill="#67e8f9"/>
+          <!-- Círculo branco dentro da gota -->
+          <circle cx="60" cy="50" r="28" fill="#ffffff"/>
+          <!-- Letra M com efeito 3D/sombra -->
+          <text x="60" y="62" font-family="Arial, sans-serif" font-size="36" font-weight="800" fill="#0d9488" text-anchor="middle" dominant-baseline="middle">
+            <tspan style="filter: drop-shadow(2px 2px 3px rgba(0,0,0,0.2));">M</tspan>
+          </text>
+        </svg>
+      </div>
       <div class="brand">
-        <h1>MegaClean</h1>
-        <p>Painel Administrativo</p>
+        <h1>MEGACLEAN</h1>
+        <p>DISTRIBUIDORA</p>
       </div>
     </div>
     <div class="header-right">
@@ -377,7 +414,7 @@ body{
         <div class="role">
           <span id="admin-role-badge">👑</span>
           <span id="admin-role">Admin</span>
-        </div>
+      </div>
       </div>
       <div class="header-buttons">
         <button class="btn-header" id="btn-notif" onclick="mostrarNotificacoes()" style="position:relative">
@@ -404,28 +441,44 @@ body{
     <!-- Cards de estatísticas -->
     <div class="stats-grid">
       <a href="/clientes.html" class="stat-card">
-        <div class="stat-icon green">👥</div>
+        <div class="stat-icon green">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:28px;height:28px">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+        </div>
         <div class="stat-info">
           <h3 id="count-clients">—</h3>
           <p>Clientes cadastrados</p>
         </div>
       </a>
       <a href="/produtos.html" class="stat-card" id="card-produtos">
-        <div class="stat-icon blue">📦</div>
+        <div class="stat-icon blue">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:28px;height:28px">
+            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>
+          </svg>
+        </div>
         <div class="stat-info">
           <h3 id="count-products">—</h3>
           <p>Produtos no catálogo</p>
         </div>
       </a>
       <a href="/pedidos.html" class="stat-card">
-        <div class="stat-icon purple">🛒</div>
+        <div class="stat-icon purple">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:28px;height:28px">
+            <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+          </svg>
+        </div>
         <div class="stat-info">
           <h3 id="count-orders">—</h3>
           <p>Pedidos realizados</p>
         </div>
       </a>
       <a href="/estoque.html" class="stat-card" id="card-estoque">
-        <div class="stat-icon yellow">⚠️</div>
+        <div class="stat-icon yellow">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:28px;height:28px">
+            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="12" y1="14" x2="12" y2="18"/><line x1="9" y1="16" x2="15" y2="16"/>
+          </svg>
+        </div>
         <div class="stat-info">
           <h3 id="count-lowstock">—</h3>
           <p>Produtos em baixa</p>
@@ -508,12 +561,12 @@ if (localStorage.getItem('theme') === 'dark') {
 }
 
 // Verificar autenticação
-const token = localStorage.getItem('admin_token');
+  const token = localStorage.getItem('admin_token');
 const adminName = localStorage.getItem('admin_name') || 'Usuário';
 const adminRole = localStorage.getItem('admin_role') || 'admin';
 
 if (!token) {
-  window.location.href = '/index.html';
+    window.location.href = '/index.html';
 }
 
 // Atualizar header
@@ -569,11 +622,11 @@ async function carregarMenu() {
     const mainPages = pages.filter(p => ['dashboard', 'clientes', 'pedidos', 'orcamentos'].includes(p.id));
     
     // Páginas de admin
-    const adminPages = pages.filter(p => ['produtos', 'categorias', 'estoque', 'fornecedores', 'contas', 'relatorio', 'solicitacoes', 'usuarios', 'config-empresa', 'config'].includes(p.id));
+    const adminPages = pages.filter(p => ['produtos', 'categorias', 'estoque', 'fornecedores', 'contas', 'relatorio', 'solicitacoes', 'notas-fiscais', 'config-empresa', 'usuarios', 'config'].includes(p.id));
     
     navMenu.innerHTML = mainPages.map(p => `
       <a href="${p.url}" class="nav-item">
-        <div class="icon">${p.icon || '📄'}</div>
+        <div class="icon">${getIconSVG(p.id)}</div>
         <div class="text">
           <h4>${p.title}</h4>
           <p>${getPageDescription(p.id)}</p>
@@ -586,7 +639,7 @@ async function carregarMenu() {
       adminSection.style.display = 'block';
       adminMenu.innerHTML = adminPages.map(p => `
         <a href="${p.url}" class="nav-item">
-          <div class="icon">${p.icon || '📄'}</div>
+          <div class="icon">${getIconSVG(p.id)}</div>
           <div class="text">
             <h4>${p.title}</h4>
             <p>${getPageDescription(p.id)}</p>
@@ -600,12 +653,12 @@ async function carregarMenu() {
     // Fallback menu
     document.getElementById('nav-menu').innerHTML = `
       <a href="/clientes.html" class="nav-item">
-        <div class="icon">👥</div>
+        <div class="icon">${getIconSVG('clientes')}</div>
         <div class="text"><h4>Clientes</h4><p>Cadastre e gerencie clientes</p></div>
         <span class="arrow">→</span>
       </a>
       <a href="/pedidos.html" class="nav-item">
-        <div class="icon">🛒</div>
+        <div class="icon">${getIconSVG('pedidos')}</div>
         <div class="text"><h4>Pedidos</h4><p>Crie e acompanhe pedidos</p></div>
         <span class="arrow">→</span>
       </a>
@@ -626,11 +679,33 @@ function getPageDescription(id) {
     'fornecedores': 'Cadastre seus fornecedores',
     'relatorio': 'Relatórios e métricas do dia',
     'solicitacoes': 'Aprove pedidos retroativos',
+    'notas-fiscais': 'Gerencie notas fiscais emitidas',
+    'config-empresa': 'Configure dados da empresa',
     'usuarios': 'Gerencie usuários do sistema',
-    'config-empresa': 'CNPJ, endereço, NF-e',
     'config': 'Configurações da sua conta'
   };
   return descriptions[id] || '';
+}
+
+function getIconSVG(id) {
+  const icons = {
+    'dashboard': '📊',
+    'clientes': '👥',
+    'produtos': '📦',
+    'categorias': '📁',
+    'pedidos': '🛒',
+    'orcamentos': '📋',
+    'contas': '💰',
+    'estoque': '📦',
+    'fornecedores': '🚚',
+    'relatorio': '📈',
+    'solicitacoes': '📝',
+    'notas-fiscais': '📄',
+    'config-empresa': '🏢',
+    'usuarios': '👤',
+    'config': '⚙️'
+  };
+  return icons[id] || '📄';
 }
 
 // Carregar estatísticas
@@ -768,7 +843,7 @@ let deferredPrompt;
 const installBtn = document.createElement('button');
 installBtn.id = 'install-btn';
 installBtn.innerHTML = '📱 Instalar App';
-installBtn.style.cssText = 'display:none;position:fixed;bottom:20px;right:20px;background:var(--primary);color:#fff;border:none;padding:14px 20px;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;box-shadow:0 4px 20px rgba(10,160,78,0.4);z-index:1000;animation:bounce 2s infinite';
+installBtn.style.cssText = 'display:none;position:fixed;bottom:20px;right:20px;background:var(--primary);color:#fff;border:none;padding:14px 20px;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;box-shadow:0 4px 20px rgba(13,148,136,0.4);z-index:1000;animation:bounce 2s infinite';
 document.body.appendChild(installBtn);
 
 const pwaStyle = document.createElement('style');

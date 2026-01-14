@@ -1,17 +1,21 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect fill="#0aa04e" width="512" height="512" rx="100"/>
-  <text x="256" y="350" font-size="280" text-anchor="middle" fill="white">🧹</text>
+<svg viewBox="0 0 400 500" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Fundo teal escuro -->
+  <rect width="400" height="500" fill="#0f766e"/>
+  
+  <!-- Gota de água azul claro -->
+  <defs>
+    <linearGradient id="dropletGradient" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" style="stop-color:#67e8f9;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#22d3ee;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Gota de água -->
+  <path d="M200 50C200 50 200 80 200 110C200 125 195 145 190 165C185 185 180 205 175 225C170 245 165 265 160 285C155 305 150 325 145 345C140 365 135 385 130 405C125 425 120 445 115 465L85 465C85 445 85 425 85 405C85 385 90 365 95 345C100 325 105 305 110 285C115 265 120 245 125 225C130 205 135 185 140 165C145 145 150 125 150 110C150 80 150 50 150 50C150 50 175 50 200 50Z" fill="url(#dropletGradient)"/>
+  
+  <!-- Círculo branco dentro da gota -->
+  <circle cx="200" cy="200" r="70" fill="#ffffff"/>
+  
+  <!-- Letra M azul claro dentro do círculo -->
+  <text x="200" y="220" font-family="Arial, sans-serif" font-size="80" font-weight="800" fill="#67e8f9" text-anchor="middle" dominant-baseline="middle">M</text>
 </svg>
-
-
-
-
-
-
-
-
-
-
-
-
-

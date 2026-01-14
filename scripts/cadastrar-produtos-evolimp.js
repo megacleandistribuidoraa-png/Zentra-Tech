@@ -3,7 +3,8 @@
 
 const mongoose = require('mongoose');
 
-const MONGODB_URI = 'mongodb+srv://megacleandistribuidoraa_db_user:ian04032023@cluster0.en8yzsz.mongodb.net/megaclean?retryWrites=true&w=majority';
+require('dotenv').config();
+const MONGODB_URI = process.env.MONGODB_URI || '';
 
 const produtoSchema = new mongoose.Schema({
   nome: { type: String, required: true },
@@ -111,6 +112,9 @@ const produtosEvolimp = [
 
 async function cadastrarProdutos() {
   try {
+    if (!MONGODB_URI) {
+      throw new Error('MONGODB_URI não definido. Configure a variável de ambiente (ou crie um .env) antes de rodar este script.');
+    }
     await mongoose.connect(MONGODB_URI);
     console.log('✅ Conectado ao MongoDB');
     

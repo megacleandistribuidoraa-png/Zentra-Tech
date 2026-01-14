@@ -1,0 +1,36 @@
+<svg viewBox="0 0 200 250" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Fundo teal escuro -->
+  <rect width="200" height="250" fill="#0f766e"/>
+  
+  <!-- Gota de água azul claro com gradiente -->
+  <defs>
+    <linearGradient id="dropletGradient" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" style="stop-color:#67e8f9;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#22d3ee;stop-opacity:1" />
+    </linearGradient>
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity="0.2"/>
+    </filter>
+  </defs>
+  
+  <!-- Gota de água -->
+  <path d="M100 25C100 25 100 40 100 55C100 62.5 97.5 72.5 95 82.5C92.5 92.5 90 102.5 87.5 112.5C85 122.5 82.5 132.5 80 142.5C77.5 152.5 75 162.5 72.5 172.5C70 182.5 67.5 192.5 65 202.5C62.5 212.5 60 222.5 57.5 232.5L42.5 232.5C42.5 222.5 42.5 212.5 42.5 202.5C42.5 192.5 45 182.5 47.5 172.5C50 162.5 52.5 152.5 55 142.5C57.5 132.5 60 122.5 62.5 112.5C65 102.5 67.5 92.5 70 82.5C72.5 72.5 75 62.5 75 55C75 40 75 25 75 25C75 25 87.5 25 100 25Z" fill="url(#dropletGradient)" filter="url(#shadow)"/>
+  
+  <!-- Círculo branco dentro da gota -->
+  <circle cx="100" cy="100" r="35" fill="#ffffff" filter="url(#shadow)"/>
+  
+  <!-- Letra M azul claro dentro do círculo -->
+  <text x="100" y="110" font-family="Arial, sans-serif" font-size="40" font-weight="800" fill="#67e8f9" text-anchor="middle" dominant-baseline="middle">
+    <tspan style="filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.15));">M</tspan>
+  </text>
+  
+  <!-- Texto MEGACLEAN (visível apenas em tamanhos maiores) -->
+  <text x="100" y="160" font-family="Arial, sans-serif" font-size="21" font-weight="700" fill="#67e8f9" text-anchor="middle" letter-spacing="1">
+    MEGACLEAN
+  </text>
+  
+  <!-- Texto DISTRIBUIDORA -->
+  <text x="100" y="180" font-family="Arial, sans-serif" font-size="12" font-weight="400" fill="#67e8f9" text-anchor="middle" letter-spacing="2">
+    DISTRIBUIDORA
+  </text>
+</svg>

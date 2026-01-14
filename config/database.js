@@ -1,9 +1,16 @@
 const mongoose = require('mongoose');
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://megacleandistribuidoraa_db_user:ian04032023@cluster0.en8yzsz.mongodb.net/megaclean?retryWrites=true&w=majority';
+// IMPORTANT:
+// - Nunca deixe credenciais hardcoded no código.
+// - Configure via variável de ambiente (ou arquivo .env em DEV).
+const MONGODB_URI = process.env.MONGODB_URI || '';
 
 const conectarDB = async () => {
   try {
+    if (!MONGODB_URI) {
+      console.warn('⚠️  MONGODB_URI não definido. Configure a variável de ambiente MONGODB_URI para conectar ao MongoDB.');
+      return false;
+    }
     await mongoose.connect(MONGODB_URI);
     console.log('✅ Conectado ao MongoDB Atlas!');
     return true;

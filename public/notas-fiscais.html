@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Notas Fiscais - MegaClean</title>
+<style>
+:root{--bg:#f4f7fb;--card:#fff;--primary:#0d9488;--primary-light:#ccfbf1;--muted:#6b7280;--danger:#dc2626;--warning:#f59e0b;--info:#0891b2;--radius:12px;--shadow:0 8px 24px rgba(12,20,30,0.06)}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Segoe UI',Roboto,Arial,sans-serif;background:var(--bg);padding:20px;min-height:100vh}
+.container{max-width:1400px;margin:0 auto}
+header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:16px}
+header h1{margin:0;color:var(--primary);font-size:28px;display:flex;align-items:center;gap:10px}
+.back-link{color:var(--primary);text-decoration:none;font-weight:600}
+
+.card{background:var(--card);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);margin-bottom:20px}
+.card-title{font-size:18px;font-weight:700;margin:0 0 16px}
+
+table{width:100%;border-collapse:collapse}
+th,td{padding:14px;text-align:left;border-bottom:1px solid #e5e7eb}
+th{font-size:12px;text-transform:uppercase;color:var(--muted);font-weight:600}
+tr:hover{background:#f8fafc}
+
+.badge{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;display:inline-block}
+.badge.autorizada{background:#ccfbf1;color:#0d9488}
+.badge.pendente{background:#fef3c7;color:#f59e0b}
+.badge.processando{background:#dbeafe;color:#0891b2}
+.badge.cancelada,.badge.rejeitada,.badge.erro{background:#fee2e2;color:#dc2626}
+
+.btn{padding:10px 18px;border-radius:8px;border:none;cursor:pointer;font-weight:600;font-size:14px;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-ghost{background:#f0f3f7;color:var(--muted)}
+.btn-sm{padding:6px 12px;font-size:12px}
+
+.empty-state{text-align:center;padding:60px 20px;color:var(--muted)}
+.empty-state p{margin:8px 0 0;font-size:14px}
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div>
+      <a href="/admin.html" class="back-link">← Voltar ao painel</a>
+      <h1>📄 Notas Fiscais</h1>
+    </div>
+  </header>
+
+  <div class="card">
+    <h3 class="card-title">📋 Notas Fiscais Emitidas</h3>
+    <div id="lista-notas"></div>
+  </div>
+</div>
+
+<script>
+let notas = [];
+
+async function carregarNotas() {
+  try {
+    const res = await fetch('/api/notas-fiscais');
+    if (!res.ok) throw new Error('Erro ao carregar');
+    notas = await res.json();
+    renderizarNotas();
+  } catch (e) {
+    document.getElementById('lista-notas').innerHTML = '<div class="empty-state"><p>❌ Erro ao carregar notas fiscais</p></div>';
+  }
+}
+
+function renderizarNotas() {
+  const container = document.getElementById('lista-notas');
+  
+  if (notas.length === 0) {
+    container.innerHTML = '<div class="empty-state"><p>📄 Nenhuma nota fiscal emitida</p></div>';
+    return;
+  }
+
+  const statusLabels = {
+    pendente: 'Pendente',
+    processando: 'Processando',
+    autorizada: 'Autorizada',
+    cancelada: 'Cancelada',
+    rejeitada: 'Rejeitada',
+    erro: 'Erro'
+  };
+
+  container.innerHTML = `
+    <table>
+      <thead>
+        <tr>
+          <th>Número</th>
+          <th>Cliente</th>
+          <th>Valor</th>
+          <th>Data Emissão</th>
+          <th>Status</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${notas.map(n => {
+          const data = n.dataEmissao ? new Date(n.dataEmissao).toLocaleDateString('pt-BR') : '—';
+          const statusLabel = statusLabels[n.status] || n.status;
+          return `
+            <tr>
+              <td><strong>#${n.numero || n._id?.slice(-6)}</strong></td>
+              <td>${n.clienteNome || '—'}</td>
+              <td>R$ ${Number(n.valorTotal || 0).toFixed(2)}</td>
+              <td>${data}</td>
+              <td><span class="badge ${n.status}">${statusLabel}</span></td>
+              <td>
+                ${n.urlPdf ? `<a href="${n.urlPdf}" target="_blank" class="btn btn-ghost btn-sm">📄 PDF</a>` : ''}
+                ${n.status === 'autorizada' ? `<button class="btn btn-ghost btn-sm" onclick="cancelarNFe('${n._id}')">❌ Cancelar</button>` : ''}
+              </td>
+            </tr>
+          `;
+        }).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+async function cancelarNFe(id) {
+  if (!confirm('Deseja cancelar esta nota fiscal?')) return;
+  
+  try {
+    const res = await fetch(`/api/notas-fiscais/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'cancelada', dataCancelamento: new Date() })
+    });
+    
+    if (res.ok) {
+      alert('✅ Nota fiscal cancelada');
+      carregarNotas();
+    } else {
+      alert('❌ Erro ao cancelar');
+    }
+  } catch (e) {
+    alert('❌ Erro: ' + e.message);
+  }
+}
+
+carregarNotas();
+</script>
+</body>
+</html>
+

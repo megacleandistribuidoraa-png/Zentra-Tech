@@ -1,0 +1,24 @@
+# 📝 Comandos Git - Copiar e Colar
+
+## Primeira vez (se ainda não enviou para GitHub):
+
+git init
+git add .
+git commit -m "Initial commit - Sistema MegaClean"
+git remote add origin https://github.com/SEU-USUARIO/megaclean-system.git
+git branch -M main
+git push -u origin main
+
+## Sempre que atualizar (use estes 3 comandos):
+
+git add .
+git commit -m "Atualização do sistema"
+git push origin main
+
+## Verificar status:
+
+git status
+
+## Ver mudanças:
+
+git diff
