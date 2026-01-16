@@ -212,6 +212,14 @@ export default {
   },
 
   async onLoad() {
+    // Verificar se estamos realmente na página do dashboard
+    // Verificar se pelo menos um elemento do dashboard existe
+    const statClientes = document.getElementById('stat-total-clientes');
+    if (!statClientes) {
+      console.warn('Elementos do dashboard não encontrados, pulando carregamento');
+      return;
+    }
+    
     await this.loadMenu();
     await this.loadStats();
     await this.loadChart();
@@ -286,7 +294,8 @@ export default {
       if (clientesRes.ok) {
         const clientes = await clientesRes.json();
         const totalClientes = Array.isArray(clientes) ? clientes.length : 0;
-        document.getElementById('stat-total-clientes').textContent = totalClientes;
+        const elClientes = document.getElementById('stat-total-clientes');
+        if (elClientes) elClientes.textContent = totalClientes;
       }
 
       // Produtos (apenas admin)
@@ -302,8 +311,10 @@ export default {
             ? produtos.filter(p => p.quantidade <= (p.minimo || 0)).length 
             : 0;
           
-          document.getElementById('stat-total-produtos').textContent = totalProdutos;
-          document.getElementById('stat-estoque-baixo').textContent = estoqueBaixo;
+          const elProdutos = document.getElementById('stat-total-produtos');
+          const elEstoque = document.getElementById('stat-estoque-baixo');
+          if (elProdutos) elProdutos.textContent = totalProdutos;
+          if (elEstoque) elEstoque.textContent = estoqueBaixo;
         }
       }
 
@@ -315,7 +326,8 @@ export default {
       if (pedidosRes.ok) {
         const pedidos = await pedidosRes.json();
         const totalPedidos = Array.isArray(pedidos) ? pedidos.length : 0;
-        document.getElementById('stat-total-pedidos').textContent = totalPedidos;
+        const elPedidos = document.getElementById('stat-total-pedidos');
+        if (elPedidos) elPedidos.textContent = totalPedidos;
       }
 
       // Estatísticas de pedidos (hoje/mês)
@@ -325,10 +337,15 @@ export default {
       
       if (statsRes.ok) {
         const stats = await statsRes.json();
-        document.getElementById('stat-vendas-hoje').textContent = (window.Utils || Utils).formatMoney(stats.totalToday || 0);
-        document.getElementById('stat-pedidos-hoje').textContent = stats.countToday || 0;
-        document.getElementById('stat-vendas-mes').textContent = (window.Utils || Utils).formatMoney(stats.totalMonth || 0);
-        document.getElementById('stat-pedidos-mes').textContent = stats.countMonth || 0;
+        const elVendasHoje = document.getElementById('stat-vendas-hoje');
+        const elPedidosHoje = document.getElementById('stat-pedidos-hoje');
+        const elVendasMes = document.getElementById('stat-vendas-mes');
+        const elPedidosMes = document.getElementById('stat-pedidos-mes');
+        
+        if (elVendasHoje) elVendasHoje.textContent = (window.Utils || Utils).formatMoney(stats.totalToday || 0);
+        if (elPedidosHoje) elPedidosHoje.textContent = stats.countToday || 0;
+        if (elVendasMes) elVendasMes.textContent = (window.Utils || Utils).formatMoney(stats.totalMonth || 0);
+        if (elPedidosMes) elPedidosMes.textContent = stats.countMonth || 0;
       }
     } catch (error) {
       console.error('Erro ao carregar estatísticas:', error);
@@ -454,6 +471,11 @@ export default {
         .slice(0, 5);
 
       const container = document.getElementById('top-clientes');
+      
+      if (!container) {
+        console.warn('Elemento top-clientes não encontrado no DOM');
+        return;
+      }
       
       if (topClientes.length === 0) {
         container.innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:20px">Nenhuma venda este mês</p>';
