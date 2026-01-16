@@ -337,6 +337,7 @@ export default {
 
   async loadChart() {
     try {
+      const apiBase = window.API_BASE_URL || '/api';
       const pedidosRes = await fetch(`${apiBase}/pedidos`, {
         headers: (window.Utils || Utils).getAuthHeaders()
       });
@@ -409,6 +410,7 @@ export default {
 
   async loadTopClientes() {
     try {
+      const apiBase = window.API_BASE_URL || '/api';
       const pedidosRes = await fetch(`${apiBase}/pedidos`, {
         headers: (window.Utils || Utils).getAuthHeaders()
       });
