@@ -93,7 +93,7 @@ export default {
 
   async carregarContas() {
     try {
-      const res = await fetch('/api/contas-receber');
+      const res = await fetch(`${window.API_BASE_URL || '/api'}/contas-receber`);
       this.contas = await res.json();
       
       const total = this.contas.reduce((s, c) => s + c.valorDevido, 0);

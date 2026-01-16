@@ -101,7 +101,7 @@ export default {
 
   async carregarFornecedores() {
     try {
-      const res = await fetch('/api/fornecedores');
+      const res = await fetch(`${window.API_BASE_URL || '/api'}/fornecedores`);
       this.fornecedores = await res.json();
       this.renderizar();
     } catch (e) {

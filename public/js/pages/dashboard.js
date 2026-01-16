@@ -221,7 +221,8 @@ export default {
 
   async loadMenu() {
     try {
-      const res = await fetch('/api/admin/pages', {
+      const apiBase = window.API_BASE_URL || '/api';
+      const res = await fetch(`${apiBase}/admin/pages`, {
         headers: (window.Utils || Utils).getAuthHeaders()
       });
       
@@ -277,7 +278,8 @@ export default {
   async loadStats() {
     try {
       // Clientes
-      const clientesRes = await fetch('/api/clientes', {
+      const apiBase = window.API_BASE_URL || '/api';
+      const clientesRes = await fetch(`${apiBase}/clientes`, {
         headers: (window.Utils || Utils).getAuthHeaders()
       });
       
@@ -289,7 +291,7 @@ export default {
 
       // Produtos (apenas admin)
       if ((window.Utils || Utils).isAdmin()) {
-        const produtosRes = await fetch('/api/produtos', {
+        const produtosRes = await fetch(`${apiBase}/produtos`, {
           headers: (window.Utils || Utils).getAuthHeaders()
         });
         
@@ -306,7 +308,7 @@ export default {
       }
 
       // Pedidos
-      const pedidosRes = await fetch('/api/pedidos', {
+      const pedidosRes = await fetch(`${apiBase}/pedidos`, {
         headers: (window.Utils || Utils).getAuthHeaders()
       });
       
@@ -317,7 +319,7 @@ export default {
       }
 
       // Estatísticas de pedidos (hoje/mês)
-      const statsRes = await fetch('/api/pedidos/stats', {
+      const statsRes = await fetch(`${apiBase}/pedidos/stats`, {
         headers: (window.Utils || Utils).getAuthHeaders()
       });
       
@@ -335,7 +337,7 @@ export default {
 
   async loadChart() {
     try {
-      const pedidosRes = await fetch('/api/pedidos', {
+      const pedidosRes = await fetch(`${apiBase}/pedidos`, {
         headers: (window.Utils || Utils).getAuthHeaders()
       });
       
@@ -407,7 +409,7 @@ export default {
 
   async loadTopClientes() {
     try {
-      const pedidosRes = await fetch('/api/pedidos', {
+      const pedidosRes = await fetch(`${apiBase}/pedidos`, {
         headers: (window.Utils || Utils).getAuthHeaders()
       });
       

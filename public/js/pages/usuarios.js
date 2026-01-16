@@ -186,7 +186,7 @@ export default {
 
   async carregarUsuarios() {
     try {
-      const res = await fetch('/api/usuarios', {
+      const res = await fetch(`${window.API_BASE_URL || '/api'}/usuarios`, {
         headers: { 'x-auth-token': this.getToken() }
       });
       

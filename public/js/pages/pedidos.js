@@ -266,7 +266,7 @@ export default {
 
   async carregarClientes() {
     try {
-      const res = await fetch('/api/clientes');
+      const res = await fetch(`${window.API_BASE_URL || '/api'}/clientes`);
       if (!res.ok) throw new Error('Erro');
       this.clientes = await res.json();
       
@@ -282,7 +282,7 @@ export default {
 
   async carregarProdutos() {
     try {
-      const res = await fetch('/api/produtos');
+      const res = await fetch(`${window.API_BASE_URL || '/api'}/produtos`);
       if (!res.ok) throw new Error('Erro');
       this.produtos = await res.json();
       this.atualizarContadoresTipo();
@@ -300,7 +300,7 @@ export default {
 
   async carregarPedidos() {
     try {
-      const res = await fetch('/api/pedidos');
+      const res = await fetch(`${window.API_BASE_URL || '/api'}/pedidos`);
       if (!res.ok) throw new Error('Erro');
       this.pedidos = await res.json();
       
@@ -562,7 +562,7 @@ export default {
           motivo: motivo.trim()
         };
 
-        const res = await fetch('/api/solicitacoes', {
+        const res = await fetch(`${window.API_BASE_URL || '/api'}/solicitacoes`, {
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json',
@@ -592,7 +592,7 @@ export default {
           payload.dataPersonalizada = dataSelecionada;
         }
 
-        const res = await fetch('/api/pedidos', {
+        const res = await fetch(`${window.API_BASE_URL || '/api'}/pedidos`, {
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json',
@@ -633,7 +633,7 @@ export default {
     }
 
     try {
-      const res = await fetch('/api/solicitacoes', {
+      const res = await fetch(`${window.API_BASE_URL || '/api'}/solicitacoes`, {
         headers: { 'x-auth-token': this.getToken() }
       });
       

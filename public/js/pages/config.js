@@ -142,7 +142,7 @@ export default {
 
   async carregarUsuario() {
     try {
-      const res = await fetch('/api/admin/me', {
+      const res = await fetch(`${window.API_BASE_URL || '/api'}/admin/me`, {
         headers: { 'x-auth-token': this.getToken() }
       });
 
@@ -192,7 +192,7 @@ export default {
       }
 
       try {
-        const res = await fetch('/api/usuarios/me', {
+        const res = await fetch(`${window.API_BASE_URL || '/api'}/usuarios/me`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -239,7 +239,7 @@ export default {
       }
 
       try {
-        const res = await fetch('/api/usuarios/me', {
+        const res = await fetch(`${window.API_BASE_URL || '/api'}/usuarios/me`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',

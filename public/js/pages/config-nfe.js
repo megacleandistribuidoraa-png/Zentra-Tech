@@ -279,7 +279,7 @@ export default {
 
   async carregarConfig() {
     try {
-      const res = await fetch('/api/config/nfe', {
+      const res = await fetch(`${window.API_BASE_URL || '/api'}/config/nfe`, {
         headers: { 'x-auth-token': this.getToken() }
       });
       
@@ -384,7 +384,7 @@ export default {
     }
     
     try {
-      const res = await fetch('/api/config/nfe', {
+      const res = await fetch(`${window.API_BASE_URL || '/api'}/config/nfe`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

@@ -128,9 +128,9 @@ export default {
 
   async carregarDados() {
     const [cRes, pRes, oRes] = await Promise.all([
-      fetch('/api/clientes'),
-      fetch('/api/produtos'),
-      fetch('/api/orcamentos')
+      fetch(`${window.API_BASE_URL || '/api'}/clientes`),
+      fetch(`${window.API_BASE_URL || '/api'}/produtos`),
+      fetch(`${window.API_BASE_URL || '/api'}/orcamentos`)
     ]);
     this.clientes = await cRes.json();
     this.produtos = await pRes.json();
@@ -245,7 +245,7 @@ export default {
     };
     
     try {
-      const res = await fetch('/api/orcamentos', {
+      const res = await fetch(`${window.API_BASE_URL || '/api'}/orcamentos`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)

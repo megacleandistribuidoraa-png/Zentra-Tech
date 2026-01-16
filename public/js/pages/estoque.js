@@ -179,7 +179,7 @@ export default {
 
   async carregarProdutos() {
     try {
-      const res = await fetch('/api/produtos');
+      const res = await fetch(`${window.API_BASE_URL || '/api'}/produtos`);
       if (!res.ok) throw new Error('Erro ao carregar');
       this.produtos = await res.json();
       

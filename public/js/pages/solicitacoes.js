@@ -117,7 +117,7 @@ export default {
 
   async carregarSolicitacoes() {
     try {
-      const res = await fetch('/api/solicitacoes', {
+      const res = await fetch(`${window.API_BASE_URL || '/api'}/solicitacoes`, {
         headers: { 'x-auth-token': this.getToken() }
       });
       
