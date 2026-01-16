@@ -360,41 +360,53 @@ app.post("/api/pedidos", async (req, res) => {
 });
 
 app.get('/api/pedidos/stats', async (req, res) => {
+  // Sempre retornar uma resposta válida, mesmo em caso de erro
+  const defaultResponse = {
+    countToday: 0,
+    totalToday: 0,
+    countMonth: 0,
+    totalMonth: 0
+  };
+
   try {
     // Verificar se o modelo Pedido está disponível
     if (!Pedido) {
       console.error('Modelo Pedido não está disponível');
-      return res.json({
-        countToday: 0,
-        totalToday: 0,
-        countMonth: 0,
-        totalMonth: 0
-      });
+      return res.json(defaultResponse);
+    }
+
+    // Verificar se o mongoose está conectado
+    const mongoose = require('mongoose');
+    if (mongoose.connection.readyState !== 1) {
+      console.error('MongoDB não está conectado');
+      return res.json(defaultResponse);
     }
 
     const now = new Date();
     const today = now.toISOString().slice(0, 10);
     const thisMonth = now.toISOString().slice(0, 7);
 
-    // Buscar pedidos com tratamento de erro
+    // Buscar pedidos com tratamento de erro robusto
     let pedidosHoje = [];
     let pedidosMes = [];
     
     try {
-      pedidosHoje = await Pedido.find({
+      const resultHoje = await Pedido.find({
         dateISO: { $regex: `^${today}` }
-      }).lean().catch(() => []);
+      }).lean();
+      pedidosHoje = Array.isArray(resultHoje) ? resultHoje : [];
     } catch (err) {
-      console.error('Erro ao buscar pedidos de hoje:', err);
+      console.error('Erro ao buscar pedidos de hoje:', err.message);
       pedidosHoje = [];
     }
 
     try {
-      pedidosMes = await Pedido.find({
+      const resultMes = await Pedido.find({
         dateISO: { $regex: `^${thisMonth}` }
-      }).lean().catch(() => []);
+      }).lean();
+      pedidosMes = Array.isArray(resultMes) ? resultMes : [];
     } catch (err) {
-      console.error('Erro ao buscar pedidos do mês:', err);
+      console.error('Erro ao buscar pedidos do mês:', err.message);
       pedidosMes = [];
     }
 
@@ -413,14 +425,9 @@ app.get('/api/pedidos/stats', async (req, res) => {
       totalMonth: Number(totalMes.toFixed(2))
     });
   } catch (error) {
-    console.error('Erro em /api/pedidos/stats:', error);
+    console.error('Erro em /api/pedidos/stats:', error.message || error);
     // Sempre retornar uma resposta válida, mesmo em caso de erro
-    res.json({
-      countToday: 0,
-      totalToday: 0,
-      countMonth: 0,
-      totalMonth: 0
-    });
+    res.json(defaultResponse);
   }
 });
 
