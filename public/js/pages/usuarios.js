@@ -219,9 +219,13 @@ export default {
     const admins = this.usuarios.filter(u => u.role === 'admin').length;
     const operadores = this.usuarios.filter(u => u.role === 'operador').length;
     
-    document.getElementById('stat-total').textContent = this.usuarios.length;
-    document.getElementById('stat-admins').textContent = admins;
-    document.getElementById('stat-operadores').textContent = operadores;
+    const elStatTotal = document.getElementById('stat-total');
+    const elStatAdmins = document.getElementById('stat-admins');
+    const elStatOperadores = document.getElementById('stat-operadores');
+    
+    if (elStatTotal) elStatTotal.textContent = this.usuarios.length;
+    if (elStatAdmins) elStatAdmins.textContent = admins;
+    if (elStatOperadores) elStatOperadores.textContent = operadores;
   },
 
   renderizarTabela() {
@@ -262,12 +266,19 @@ export default {
   },
 
   limparFormulario() {
-    document.getElementById('form-usuario').reset();
-    document.getElementById('usuario-id').value = '';
-    document.getElementById('form-title').innerHTML = '➕ Novo Usuário';
-    document.getElementById('btn-salvar').innerHTML = '💾 Salvar Usuário';
-    document.getElementById('password').placeholder = 'Mínimo 6 caracteres';
-    document.getElementById('feedback').textContent = '';
+    const formUsuario = document.getElementById('form-usuario');
+    const usuarioId = document.getElementById('usuario-id');
+    const formTitle = document.getElementById('form-title');
+    const btnSalvar = document.getElementById('btn-salvar');
+    const password = document.getElementById('password');
+    const feedback = document.getElementById('feedback');
+    
+    if (formUsuario) formUsuario.reset();
+    if (usuarioId) usuarioId.value = '';
+    if (formTitle) formTitle.innerHTML = '➕ Novo Usuário';
+    if (btnSalvar) btnSalvar.innerHTML = '💾 Salvar Usuário';
+    if (password) password.placeholder = 'Mínimo 6 caracteres';
+    if (feedback) feedback.textContent = '';
     this.editandoId = null;
   },
 
@@ -276,16 +287,26 @@ export default {
     if (!usuario) return;
 
     this.editandoId = id;
-    document.getElementById('usuario-id').value = id;
-    document.getElementById('nome').value = usuario.nome;
-    document.getElementById('username').value = usuario.username;
-    document.getElementById('password').value = '';
-    document.getElementById('password').placeholder = 'Deixe em branco para manter';
-    document.getElementById('role').value = usuario.role;
-    document.getElementById('status').value = usuario.status;
-
-    document.getElementById('form-title').innerHTML = '✏️ Editar Usuário';
-    document.getElementById('btn-salvar').innerHTML = '💾 Atualizar Usuário';
+    const usuarioId = document.getElementById('usuario-id');
+    const nome = document.getElementById('nome');
+    const username = document.getElementById('username');
+    const password = document.getElementById('password');
+    const role = document.getElementById('role');
+    const status = document.getElementById('status');
+    const formTitle = document.getElementById('form-title');
+    const btnSalvar = document.getElementById('btn-salvar');
+    
+    if (usuarioId) usuarioId.value = id;
+    if (nome) nome.value = usuario.nome;
+    if (username) username.value = usuario.username;
+    if (password) {
+      password.value = '';
+      password.placeholder = 'Deixe em branco para manter';
+    }
+    if (role) role.value = usuario.role;
+    if (status) status.value = usuario.status;
+    if (formTitle) formTitle.innerHTML = '✏️ Editar Usuário';
+    if (btnSalvar) btnSalvar.innerHTML = '💾 Atualizar Usuário';
     
     document.getElementById('nome').focus();
   },

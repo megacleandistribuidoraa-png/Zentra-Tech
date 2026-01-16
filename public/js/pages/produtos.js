@@ -314,14 +314,21 @@ export default {
       else unitarios++;
     });
 
-    document.getElementById('stat-unitarios').textContent = unitarios;
-    document.getElementById('stat-caixas').textContent = caixas;
-    document.getElementById('stat-valor').textContent = (window.Utils || Utils).formatMoney(valorTotal);
-    document.getElementById('stat-baixo').textContent = baixo;
-    document.getElementById('stat-lucro').textContent = (window.Utils || Utils).formatMoney(lucroEstimado);
+    const elStatUnitarios = document.getElementById('stat-unitarios');
+    const elStatCaixas = document.getElementById('stat-caixas');
+    const elStatValor = document.getElementById('stat-valor');
+    const elStatBaixo = document.getElementById('stat-baixo');
+    const elStatLucro = document.getElementById('stat-lucro');
+    const elCountUnitarios = document.getElementById('count-unitarios');
+    const elCountCaixas = document.getElementById('count-caixas');
     
-    document.getElementById('count-unitarios').textContent = unitarios;
-    document.getElementById('count-caixas').textContent = caixas;
+    if (elStatUnitarios) elStatUnitarios.textContent = unitarios;
+    if (elStatCaixas) elStatCaixas.textContent = caixas;
+    if (elStatValor) elStatValor.textContent = (window.Utils || Utils).formatMoney(valorTotal);
+    if (elStatBaixo) elStatBaixo.textContent = baixo;
+    if (elStatLucro) elStatLucro.textContent = (window.Utils || Utils).formatMoney(lucroEstimado);
+    if (elCountUnitarios) elCountUnitarios.textContent = unitarios;
+    if (elCountCaixas) elCountCaixas.textContent = caixas;
   },
 
   renderizarTabela() {
@@ -509,17 +516,29 @@ export default {
     this.editandoId = null;
     this.tipoSelecionado = tipo;
     
-    document.getElementById('modal-title').innerHTML = tipo === 'caixa' ? '📦 Nova Caixa Fechada' : '📄 Novo Produto Unitário';
-    document.getElementById('tipo-selector').style.display = 'grid';
-    document.getElementById('m-nome').value = '';
-    document.getElementById('m-sku').value = this.gerarSku(tipo);
-    document.getElementById('m-codigoBarras').value = '';
-    document.getElementById('m-precoCusto').value = '';
-    document.getElementById('m-preco').value = '';
-    document.getElementById('m-margem').value = '—';
-    document.getElementById('m-quantidade').value = '';
-    document.getElementById('m-qtdPorCaixa').value = '12';
-    document.getElementById('m-minimo').value = '5';
+    const modalTitle = document.getElementById('modal-title');
+    const tipoSelector = document.getElementById('tipo-selector');
+    const mNome = document.getElementById('m-nome');
+    const mSku = document.getElementById('m-sku');
+    const mCodigoBarras = document.getElementById('m-codigoBarras');
+    const mPrecoCusto = document.getElementById('m-precoCusto');
+    const mPreco = document.getElementById('m-preco');
+    const mMargem = document.getElementById('m-margem');
+    const mQuantidade = document.getElementById('m-quantidade');
+    const mQtdPorCaixa = document.getElementById('m-qtdPorCaixa');
+    const mMinimo = document.getElementById('m-minimo');
+    
+    if (modalTitle) modalTitle.innerHTML = tipo === 'caixa' ? '📦 Nova Caixa Fechada' : '📄 Novo Produto Unitário';
+    if (tipoSelector) tipoSelector.style.display = 'grid';
+    if (mNome) mNome.value = '';
+    if (mSku) mSku.value = this.gerarSku(tipo);
+    if (mCodigoBarras) mCodigoBarras.value = '';
+    if (mPrecoCusto) mPrecoCusto.value = '';
+    if (mPreco) mPreco.value = '';
+    if (mMargem) mMargem.value = '—';
+    if (mQuantidade) mQuantidade.value = '';
+    if (mQtdPorCaixa) mQtdPorCaixa.value = '12';
+    if (mMinimo) mMinimo.value = '5';
     
     this.selecionarTipo(tipo);
     document.getElementById('modal-produto').classList.add('show');
@@ -532,17 +551,29 @@ export default {
     this.editandoId = produto._id || produto.id;
     this.tipoSelecionado = produto.tipo || 'unitario';
     
-    document.getElementById('modal-title').innerHTML = '✏️ Editar Produto';
-    document.getElementById('tipo-selector').style.display = 'none';
-    document.getElementById('m-nome').value = produto.nome || '';
-    document.getElementById('m-sku').value = produto.sku || '';
-    document.getElementById('m-codigoBarras').value = produto.codigoBarras || '';
-    document.getElementById('m-precoCusto').value = produto.precoCusto || 0;
-    document.getElementById('m-preco').value = produto.preco || 0;
-    document.getElementById('m-quantidade').value = produto.quantidade || 0;
-    document.getElementById('m-unidade').value = produto.unidade || 'UN';
-    document.getElementById('m-minimo').value = produto.minimo || 0;
-    document.getElementById('m-qtdPorCaixa').value = produto.qtdPorCaixa || 12;
+    const modalTitle = document.getElementById('modal-title');
+    const tipoSelector = document.getElementById('tipo-selector');
+    const mNome = document.getElementById('m-nome');
+    const mSku = document.getElementById('m-sku');
+    const mCodigoBarras = document.getElementById('m-codigoBarras');
+    const mPrecoCusto = document.getElementById('m-precoCusto');
+    const mPreco = document.getElementById('m-preco');
+    const mQuantidade = document.getElementById('m-quantidade');
+    const mUnidade = document.getElementById('m-unidade');
+    const mMinimo = document.getElementById('m-minimo');
+    const mQtdPorCaixa = document.getElementById('m-qtdPorCaixa');
+    
+    if (modalTitle) modalTitle.innerHTML = '✏️ Editar Produto';
+    if (tipoSelector) tipoSelector.style.display = 'none';
+    if (mNome) mNome.value = produto.nome || '';
+    if (mSku) mSku.value = produto.sku || '';
+    if (mCodigoBarras) mCodigoBarras.value = produto.codigoBarras || '';
+    if (mPrecoCusto) mPrecoCusto.value = produto.precoCusto || 0;
+    if (mPreco) mPreco.value = produto.preco || 0;
+    if (mQuantidade) mQuantidade.value = produto.quantidade || 0;
+    if (mUnidade) mUnidade.value = produto.unidade || 'UN';
+    if (mMinimo) mMinimo.value = produto.minimo || 0;
+    if (mQtdPorCaixa) mQtdPorCaixa.value = produto.qtdPorCaixa || 12;
     
     this.selecionarTipo(this.tipoSelecionado);
     this.calcularMargem();
@@ -554,10 +585,15 @@ export default {
     if (!produto) return;
 
     this.ajustandoId = produto._id || produto.id;
-    document.getElementById('ajuste-produto').textContent = produto.nome;
-    document.getElementById('aj-tipo').value = 'entrada';
-    document.getElementById('aj-quantidade').value = 1;
-    document.getElementById('aj-motivo').value = '';
+    const ajusteProduto = document.getElementById('ajuste-produto');
+    const ajTipo = document.getElementById('aj-tipo');
+    const ajQuantidade = document.getElementById('aj-quantidade');
+    const ajMotivo = document.getElementById('aj-motivo');
+    
+    if (ajusteProduto) ajusteProduto.textContent = produto.nome;
+    if (ajTipo) ajTipo.value = 'entrada';
+    if (ajQuantidade) ajQuantidade.value = 1;
+    if (ajMotivo) ajMotivo.value = '';
     document.getElementById('modal-ajuste').classList.add('show');
   },
 

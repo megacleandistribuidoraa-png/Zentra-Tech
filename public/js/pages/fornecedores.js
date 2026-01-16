@@ -131,33 +131,57 @@ export default {
   },
 
   abrirModal() {
-    document.getElementById('modal-titulo').textContent = 'Novo Fornecedor';
-    document.getElementById('forn-id').value = '';
-    document.getElementById('forn-nome').value = '';
-    document.getElementById('forn-cnpj').value = '';
-    document.getElementById('forn-telefone').value = '';
-    document.getElementById('forn-email').value = '';
-    document.getElementById('forn-contato').value = '';
-    document.getElementById('forn-endereco').value = '';
-    document.getElementById('forn-obs').value = '';
-    document.getElementById('forn-status').value = 'ativo';
-    document.getElementById('modal-fornecedor').classList.add('show');
+    const modalTitulo = document.getElementById('modal-titulo');
+    const fornId = document.getElementById('forn-id');
+    const fornNome = document.getElementById('forn-nome');
+    const fornCnpj = document.getElementById('forn-cnpj');
+    const fornTelefone = document.getElementById('forn-telefone');
+    const fornEmail = document.getElementById('forn-email');
+    const fornContato = document.getElementById('forn-contato');
+    const fornEndereco = document.getElementById('forn-endereco');
+    const fornObs = document.getElementById('forn-obs');
+    const fornStatus = document.getElementById('forn-status');
+    const modalFornecedor = document.getElementById('modal-fornecedor');
+    
+    if (modalTitulo) modalTitulo.textContent = 'Novo Fornecedor';
+    if (fornId) fornId.value = '';
+    if (fornNome) fornNome.value = '';
+    if (fornCnpj) fornCnpj.value = '';
+    if (fornTelefone) fornTelefone.value = '';
+    if (fornEmail) fornEmail.value = '';
+    if (fornContato) fornContato.value = '';
+    if (fornEndereco) fornEndereco.value = '';
+    if (fornObs) fornObs.value = '';
+    if (fornStatus) fornStatus.value = 'ativo';
+    if (modalFornecedor) modalFornecedor.classList.add('show');
   },
 
   editar(id) {
     const f = this.fornecedores.find(x => x._id === id);
     if (!f) return;
-    document.getElementById('modal-titulo').textContent = 'Editar Fornecedor';
-    document.getElementById('forn-id').value = f._id;
-    document.getElementById('forn-nome').value = f.nome;
-    document.getElementById('forn-cnpj').value = f.cnpj || '';
-    document.getElementById('forn-telefone').value = f.telefone || '';
-    document.getElementById('forn-email').value = f.email || '';
-    document.getElementById('forn-contato').value = f.contato || '';
-    document.getElementById('forn-endereco').value = f.endereco || '';
-    document.getElementById('forn-obs').value = f.observacoes || '';
-    document.getElementById('forn-status').value = f.status || 'ativo';
-    document.getElementById('modal-fornecedor').classList.add('show');
+    const modalTitulo = document.getElementById('modal-titulo');
+    const fornId = document.getElementById('forn-id');
+    const fornNome = document.getElementById('forn-nome');
+    const fornCnpj = document.getElementById('forn-cnpj');
+    const fornTelefone = document.getElementById('forn-telefone');
+    const fornEmail = document.getElementById('forn-email');
+    const fornContato = document.getElementById('forn-contato');
+    const fornEndereco = document.getElementById('forn-endereco');
+    const fornObs = document.getElementById('forn-obs');
+    const fornStatus = document.getElementById('forn-status');
+    const modalFornecedor = document.getElementById('modal-fornecedor');
+    
+    if (modalTitulo) modalTitulo.textContent = 'Editar Fornecedor';
+    if (fornId) fornId.value = f._id;
+    if (fornNome) fornNome.value = f.nome;
+    if (fornCnpj) fornCnpj.value = f.cnpj || '';
+    if (fornTelefone) fornTelefone.value = f.telefone || '';
+    if (fornEmail) fornEmail.value = f.email || '';
+    if (fornContato) fornContato.value = f.contato || '';
+    if (fornEndereco) fornEndereco.value = f.endereco || '';
+    if (fornObs) fornObs.value = f.observacoes || '';
+    if (fornStatus) fornStatus.value = f.status || 'ativo';
+    if (modalFornecedor) modalFornecedor.classList.add('show');
   },
 
   async salvar() {

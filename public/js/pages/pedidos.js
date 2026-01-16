@@ -525,8 +525,10 @@ export default {
       `;
     }).join('');
 
-    document.getElementById('cart-count').textContent = itens;
-    document.getElementById('cart-total').textContent = (window.Utils || Utils).formatMoney(total);
+    const cartCount = document.getElementById('cart-count');
+    const cartTotal = document.getElementById('cart-total');
+    if (cartCount) cartCount.textContent = itens;
+    if (cartTotal) cartTotal.textContent = (window.Utils || Utils).formatMoney(total);
   },
 
   limparCarrinho() {

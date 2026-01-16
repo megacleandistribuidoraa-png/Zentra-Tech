@@ -321,21 +321,29 @@ export default {
     this.produtoSelecionado = this.produtos.find(p => (p.id || p._id) === produtoId);
     if (!this.produtoSelecionado) return;
 
-    document.getElementById('modal-title').innerHTML = tipo === 'entrada' 
+    const modalTitle = document.getElementById('modal-title');
+    const modalSubtitle = document.getElementById('modal-subtitle');
+    const ajusteTipo = document.getElementById('ajuste-tipo');
+    const ajusteQuantidade = document.getElementById('ajuste-quantidade');
+    const ajusteMotivo = document.getElementById('ajuste-motivo');
+    
+    if (modalTitle) modalTitle.innerHTML = tipo === 'entrada' 
       ? '➕ Entrada de Estoque' 
       : '➖ Saída de Estoque';
-    document.getElementById('modal-subtitle').textContent = this.produtoSelecionado.nome;
-    document.getElementById('ajuste-tipo').value = tipo;
-    document.getElementById('ajuste-quantidade').value = 1;
-    document.getElementById('ajuste-motivo').value = '';
+    if (modalSubtitle) modalSubtitle.textContent = this.produtoSelecionado.nome;
+    if (ajusteTipo) ajusteTipo.value = tipo;
+    if (ajusteQuantidade) ajusteQuantidade.value = 1;
+    if (ajusteMotivo) ajusteMotivo.value = '';
     document.getElementById('modal-ajuste').classList.add('show');
   },
 
   async confirmarAjuste() {
     if (!this.produtoSelecionado) return;
 
-    const tipo = document.getElementById('ajuste-tipo').value;
-    const quantidade = parseInt(document.getElementById('ajuste-quantidade').value) || 0;
+    const ajusteTipo = document.getElementById('ajuste-tipo');
+    const ajusteQuantidade = document.getElementById('ajuste-quantidade');
+    const tipo = ajusteTipo ? ajusteTipo.value : 'entrada';
+    const quantidade = parseInt(ajusteQuantidade ? ajusteQuantidade.value : 0) || 0;
 
     if (quantidade <= 0) {
       if (window.toastManager) window.toastManager.error('Digite uma quantidade válida');
@@ -375,7 +383,8 @@ export default {
 
   atualizarHorario() {
     const now = new Date();
-    document.getElementById('last-update').textContent = now.toLocaleTimeString('pt-BR');
+    const lastUpdate = document.getElementById('last-update');
+    if (lastUpdate) lastUpdate.textContent = now.toLocaleTimeString('pt-BR');
   },
 
   setupEventListeners() {
