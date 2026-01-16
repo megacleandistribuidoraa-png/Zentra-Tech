@@ -365,24 +365,48 @@ app.get('/api/pedidos/stats', async (req, res) => {
     const today = now.toISOString().slice(0, 10);
     const thisMonth = now.toISOString().slice(0, 7);
 
-    const pedidosHoje = await Pedido.find({
-      dateISO: { $regex: `^${today}` }
-    });
-    const pedidosMes = await Pedido.find({
-      dateISO: { $regex: `^${thisMonth}` }
-    });
+    // Buscar pedidos com tratamento de erro
+    let pedidosHoje = [];
+    let pedidosMes = [];
+    
+    try {
+      pedidosHoje = await Pedido.find({
+        dateISO: { $regex: `^${today}` }
+      }).lean();
+    } catch (err) {
+      console.error('Erro ao buscar pedidos de hoje:', err);
+      pedidosHoje = [];
+    }
 
-    const totalHoje = pedidosHoje.reduce((s, p) => s + Number(p.total || 0), 0);
-    const totalMes = pedidosMes.reduce((s, p) => s + Number(p.total || 0), 0);
+    try {
+      pedidosMes = await Pedido.find({
+        dateISO: { $regex: `^${thisMonth}` }
+      }).lean();
+    } catch (err) {
+      console.error('Erro ao buscar pedidos do mês:', err);
+      pedidosMes = [];
+    }
+
+    // Calcular totais com segurança
+    const totalHoje = Array.isArray(pedidosHoje) 
+      ? pedidosHoje.reduce((s, p) => s + (Number(p?.total) || 0), 0)
+      : 0;
+    const totalMes = Array.isArray(pedidosMes)
+      ? pedidosMes.reduce((s, p) => s + (Number(p?.total) || 0), 0)
+      : 0;
 
     res.json({
-      countToday: pedidosHoje.length,
+      countToday: Array.isArray(pedidosHoje) ? pedidosHoje.length : 0,
       totalToday: Number(totalHoje.toFixed(2)),
-      countMonth: pedidosMes.length,
+      countMonth: Array.isArray(pedidosMes) ? pedidosMes.length : 0,
       totalMonth: Number(totalMes.toFixed(2))
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Erro em /api/pedidos/stats:', error);
+    res.status(500).json({ 
+      error: error.message || 'Erro ao buscar estatísticas de pedidos',
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 });
 
