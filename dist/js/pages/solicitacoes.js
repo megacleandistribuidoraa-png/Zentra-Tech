@@ -117,7 +117,7 @@ export default {
 
   async carregarSolicitacoes() {
     try {
-      const res = await fetch(`${API_BASE}/solicitacoes', {
+      const res = await fetch(`${window.API_BASE_URL || '/api'}/solicitacoes`, {
         headers: { 'x-auth-token': this.getToken() }
       });
       
@@ -269,14 +269,16 @@ export default {
 
   abrirModalRejeitar(id) {
     this.rejeitandoId = id;
-    document.getElementById('motivo-rejeicao').value = '';
+    const motivoRejeicao = document.getElementById('motivo-rejeicao');
+    if (motivoRejeicao) motivoRejeicao.value = '';
     document.getElementById('modal-rejeitar').classList.add('show');
   },
 
   async confirmarRejeicao() {
     if (!this.rejeitandoId) return;
     
-    const motivo = document.getElementById('motivo-rejeicao').value.trim();
+    const motivoRejeicao = document.getElementById('motivo-rejeicao');
+    const motivo = motivoRejeicao ? motivoRejeicao.value.trim() : '';
     
     try {
       const res = await fetch(`/api/solicitacoes/${this.rejeitandoId}/rejeitar`, {

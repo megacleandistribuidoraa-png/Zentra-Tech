@@ -32,11 +32,16 @@ self.addEventListener('activate', event => {
 
 // Estratégia Network First com fallback para cache
 self.addEventListener('fetch', event => {
+  // Não fazer cache de requisições POST, PUT, DELETE ou para APIs
+  if (event.request.method !== 'GET' || event.request.url.includes('/api/')) {
+    return; // Deixa a requisição passar normalmente sem interceptar
+  }
+  
   event.respondWith(
     fetch(event.request)
       .then(response => {
-        // Se a resposta for válida, armazena no cache
-        if (response.status === 200) {
+        // Se a resposta for válida e for GET, armazena no cache
+        if (response.status === 200 && event.request.method === 'GET') {
           const responseClone = response.clone();
           caches.open(CACHE_NAME).then(cache => {
             cache.put(event.request, responseClone);

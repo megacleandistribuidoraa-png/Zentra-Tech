@@ -86,7 +86,7 @@ export default {
 
   async loadNotas() {
     try {
-      const res = await fetch(`${API_BASE}/notas-fiscais', {
+      const res = await fetch(`${window.API_BASE_URL || '/api'}/notas-fiscais`, {
         headers: (window.Utils || Utils).getAuthHeaders()
       });
 

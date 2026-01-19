@@ -4,6 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <meta name="theme-color" content="#0d9488" />
+<meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <link rel="manifest" href="/manifest.json" />
@@ -394,6 +395,10 @@ form.addEventListener('submit', async (e) => {
     localStorage.setItem('admin_token', json.token);
     localStorage.setItem('admin_name', json.name || json.username || 'Admin');
     localStorage.setItem('admin_role', json.role || 'admin');
+    
+    // Marcar token como validado (para cache offline)
+    sessionStorage.setItem('token_validated', 'true');
+    sessionStorage.setItem('token_validated_time', Date.now().toString());
     
     btnLogin.innerHTML = '<span>✓ Sucesso!</span>';
     

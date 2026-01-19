@@ -128,21 +128,27 @@ export default {
 
   async carregarDados() {
     const [cRes, pRes, oRes] = await Promise.all([
-      fetch(`${API_BASE}/clientes'),
-      fetch(`${API_BASE}/produtos'),
-      fetch(`${API_BASE}/orcamentos')
+      fetch(`${window.API_BASE_URL || '/api'}/clientes`),
+      fetch(`${window.API_BASE_URL || '/api'}/produtos`),
+      fetch(`${window.API_BASE_URL || '/api'}/orcamentos`)
     ]);
     this.clientes = await cRes.json();
     this.produtos = await pRes.json();
     this.orcamentos = await oRes.json();
     
-    document.getElementById('select-cliente').innerHTML = 
-      '<option value="">Selecione...</option>' + 
-      this.clientes.map(c => `<option value="${c._id || c.id}">${(window.Utils || Utils).escapeHtml(c.nome)}</option>`).join('');
+    const selectCliente = document.getElementById('select-cliente');
+    if (selectCliente) {
+      selectCliente.innerHTML = 
+        '<option value="">Selecione...</option>' + 
+        this.clientes.map(c => `<option value="${c._id || c.id}">${(window.Utils || Utils).escapeHtml(c.nome)}</option>`).join('');
+    }
     
     const validade = new Date();
     validade.setDate(validade.getDate() + 7);
-    document.getElementById('input-validade').value = validade.toISOString().slice(0,10);
+    const inputValidade = document.getElementById('input-validade');
+    if (inputValidade) {
+      inputValidade.value = validade.toISOString().slice(0,10);
+    }
     
     this.renderizarProdutos();
     this.renderizarOrcamentos();
@@ -206,28 +212,36 @@ export default {
     }
     
     const subtotal = this.carrinho.reduce((s, c) => s + (c.quantidade * c.preco), 0);
-    const desconto = Number(document.getElementById('input-desconto').value) || 0;
+    const inputDesconto = document.getElementById('input-desconto');
+    const desconto = Number(inputDesconto ? inputDesconto.value : 0) || 0;
     const descontoValor = subtotal * desconto / 100;
     const total = subtotal - descontoValor;
     
-    document.getElementById('subtotal').textContent = this.formatMoney(subtotal);
-    document.getElementById('desconto-valor').textContent = '- ' + this.formatMoney(descontoValor);
-    document.getElementById('total').textContent = this.formatMoney(total);
+    const elSubtotal = document.getElementById('subtotal');
+    const elDescontoValor = document.getElementById('desconto-valor');
+    const elTotal = document.getElementById('total');
+    
+    if (elSubtotal) elSubtotal.textContent = this.formatMoney(subtotal);
+    if (elDescontoValor) elDescontoValor.textContent = '- ' + this.formatMoney(descontoValor);
+    if (elTotal) elTotal.textContent = this.formatMoney(total);
   },
 
   mostrarNovoOrcamento() {
-    document.getElementById('form-orcamento').style.display = 'block';
+    const formOrcamento = document.getElementById('form-orcamento');
+    if (formOrcamento) formOrcamento.style.display = 'block';
     this.carrinho = [];
     this.atualizarCarrinho();
   },
 
   cancelarOrcamento() {
-    document.getElementById('form-orcamento').style.display = 'none';
+    const formOrcamento = document.getElementById('form-orcamento');
+    if (formOrcamento) formOrcamento.style.display = 'none';
     this.carrinho = [];
   },
 
   async salvarOrcamento() {
-    const clienteId = document.getElementById('select-cliente').value;
+    const selectCliente = document.getElementById('select-cliente');
+    const clienteId = selectCliente ? selectCliente.value : '';
     if (!clienteId) { 
       if (window.toastManager) window.toastManager.error('Selecione um cliente');
       return; 
@@ -237,15 +251,17 @@ export default {
       return; 
     }
     
+    const inputDesconto = document.getElementById('input-desconto');
+    const inputValidade = document.getElementById('input-validade');
     const data = {
       clienteId,
       items: this.carrinho.map(c => ({ produtoId: c.produtoId, quantidade: c.quantidade })),
-      desconto: Number(document.getElementById('input-desconto').value) || 0,
-      validade: document.getElementById('input-validade').value
+      desconto: Number(inputDesconto ? inputDesconto.value : 0) || 0,
+      validade: inputValidade ? inputValidade.value : ''
     };
     
     try {
-      const res = await fetch(`${API_BASE}/orcamentos', {
+      const res = await fetch(`${window.API_BASE_URL || '/api'}/orcamentos`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)

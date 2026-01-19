@@ -224,12 +224,16 @@ export default {
   },
 
   definirDataHoje() {
-    document.getElementById('input-data').value = this.getHoje();
+    const inputData = document.getElementById('input-data');
+    if (inputData) {
+      inputData.value = this.getHoje();
+    }
     this.verificarData();
   },
 
   verificarData() {
-    const data = document.getElementById('input-data').value;
+    const inputData = document.getElementById('input-data');
+    const data = inputData ? inputData.value : '';
     const dateSection = document.getElementById('date-section');
     const dateInfo = document.getElementById('date-info');
     const motivoSection = document.getElementById('motivo-section');
@@ -266,7 +270,7 @@ export default {
 
   async carregarClientes() {
     try {
-      const res = await fetch(`${API_BASE}/clientes');
+      const res = await fetch(`${window.API_BASE_URL || '/api'}/clientes`);
       if (!res.ok) throw new Error('Erro');
       this.clientes = await res.json();
       
@@ -282,7 +286,7 @@ export default {
 
   async carregarProdutos() {
     try {
-      const res = await fetch(`${API_BASE}/produtos');
+      const res = await fetch(`${window.API_BASE_URL || '/api'}/produtos`);
       if (!res.ok) throw new Error('Erro');
       this.produtos = await res.json();
       this.atualizarContadoresTipo();
@@ -300,7 +304,7 @@ export default {
 
   async carregarPedidos() {
     try {
-      const res = await fetch(`${API_BASE}/pedidos');
+      const res = await fetch(`${window.API_BASE_URL || '/api'}/pedidos`);
       if (!res.ok) throw new Error('Erro');
       this.pedidos = await res.json();
       
@@ -321,10 +325,15 @@ export default {
     const valorHoje = pedidosHoje.reduce((s, p) => s + (p.total || 0), 0);
     const valorMes = pedidosMes.reduce((s, p) => s + (p.total || 0), 0);
 
-    document.getElementById('stat-total').textContent = this.pedidos.length;
-    document.getElementById('stat-hoje').textContent = pedidosHoje.length;
-    document.getElementById('stat-valor-hoje').textContent = (window.Utils || Utils).formatMoney(valorHoje);
-    document.getElementById('stat-valor-mes').textContent = (window.Utils || Utils).formatMoney(valorMes);
+    const elTotal = document.getElementById('stat-total');
+    const elHoje = document.getElementById('stat-hoje');
+    const elValorHoje = document.getElementById('stat-valor-hoje');
+    const elValorMes = document.getElementById('stat-valor-mes');
+    
+    if (elTotal) elTotal.textContent = this.pedidos.length;
+    if (elHoje) elHoje.textContent = pedidosHoje.length;
+    if (elValorHoje) elValorHoje.textContent = (window.Utils || Utils).formatMoney(valorHoje);
+    if (elValorMes) elValorMes.textContent = (window.Utils || Utils).formatMoney(valorMes);
   },
 
   mudarTipoProduto(tipo) {
@@ -357,8 +366,10 @@ export default {
     const unitarios = this.produtos.filter(p => (p.tipo || 'unitario') === 'unitario').length;
     const caixas = this.produtos.filter(p => p.tipo === 'caixa').length;
     
-    document.getElementById('badge-unitarios').textContent = unitarios;
-    document.getElementById('badge-caixas').textContent = caixas;
+    const badgeUnitarios = document.getElementById('badge-unitarios');
+    const badgeCaixas = document.getElementById('badge-caixas');
+    if (badgeUnitarios) badgeUnitarios.textContent = unitarios;
+    if (badgeCaixas) badgeCaixas.textContent = caixas;
   },
 
   renderizarProdutos() {
@@ -484,8 +495,10 @@ export default {
           <p style="font-size:12px">Adicione produtos ao carrinho</p>
         </div>
       `;
-      document.getElementById('cart-count').textContent = '0';
-      document.getElementById('cart-total').textContent = 'R$ 0,00';
+      const cartCount = document.getElementById('cart-count');
+      const cartTotal = document.getElementById('cart-total');
+      if (cartCount) cartCount.textContent = '0';
+      if (cartTotal) cartTotal.textContent = 'R$ 0,00';
       return;
     }
 
@@ -512,8 +525,10 @@ export default {
       `;
     }).join('');
 
-    document.getElementById('cart-count').textContent = itens;
-    document.getElementById('cart-total').textContent = (window.Utils || Utils).formatMoney(total);
+    const cartCount = document.getElementById('cart-count');
+    const cartTotal = document.getElementById('cart-total');
+    if (cartCount) cartCount.textContent = itens;
+    if (cartTotal) cartTotal.textContent = (window.Utils || Utils).formatMoney(total);
   },
 
   limparCarrinho() {
@@ -562,7 +577,7 @@ export default {
           motivo: motivo.trim()
         };
 
-        const res = await fetch(`${API_BASE}/solicitacoes', {
+        const res = await fetch(`${window.API_BASE_URL || '/api'}/solicitacoes`, {
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json',
@@ -592,7 +607,7 @@ export default {
           payload.dataPersonalizada = dataSelecionada;
         }
 
-        const res = await fetch(`${API_BASE}/pedidos', {
+        const res = await fetch(`${window.API_BASE_URL || '/api'}/pedidos`, {
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json',
@@ -628,12 +643,15 @@ export default {
 
   async carregarMinhasSolicitacoes() {
     if (this.userRole === 'admin') {
-      document.getElementById('solicitacoes-card').style.display = 'none';
+      const solicitacoesCard = document.getElementById('solicitacoes-card');
+      if (solicitacoesCard) {
+        solicitacoesCard.style.display = 'none';
+      }
       return;
     }
 
     try {
-      const res = await fetch(`${API_BASE}/solicitacoes', {
+      const res = await fetch(`${window.API_BASE_URL || '/api'}/solicitacoes`, {
         headers: { 'x-auth-token': this.getToken() }
       });
       
@@ -991,13 +1009,16 @@ Data: ${new Date(dados.dataEmissao).toLocaleString('pt-BR')}
       </div>
     `;
 
-    document.getElementById('print-content').innerHTML = printContent;
-    document.getElementById('print-area').style.display = 'block';
+    const printContentEl = document.getElementById('print-content');
+    const printArea = document.getElementById('print-area');
+    
+    if (printContentEl) printContentEl.innerHTML = printContent;
+    if (printArea) printArea.style.display = 'block';
 
     setTimeout(() => {
       window.print();
       setTimeout(() => {
-        document.getElementById('print-area').style.display = 'none';
+        if (printArea) printArea.style.display = 'none';
       }, 500);
     }, 300);
   },

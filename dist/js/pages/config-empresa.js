@@ -182,7 +182,7 @@ export default {
 
   async loadConfig() {
     try {
-      const res = await fetch(`${API_BASE}/config/empresa', {
+      const res = await fetch(`${window.API_BASE_URL || '/api'}/config/empresa`, {
         headers: (window.Utils || Utils).getAuthHeaders()
       });
 
@@ -249,7 +249,7 @@ export default {
     }
 
     try {
-      const res = await fetch(`${API_BASE}/config/empresa', {
+      const res = await fetch(`${window.API_BASE_URL || '/api'}/config/empresa`, {
         method: 'PUT',
         headers: {
           ...(window.Utils || Utils).getAuthHeaders(),

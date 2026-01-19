@@ -78,7 +78,7 @@ export default {
 
   async carregarCategorias() {
     try {
-      const res = await fetch(`${API_BASE}/categorias');
+      const res = await fetch(`${window.API_BASE_URL || '/api'}/categorias`);
       this.categorias = await res.json();
       this.renderizar();
     } catch (e) {

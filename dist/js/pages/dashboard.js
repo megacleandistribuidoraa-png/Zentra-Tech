@@ -212,6 +212,14 @@ export default {
   },
 
   async onLoad() {
+    // Verificar se estamos realmente na página do dashboard
+    // Verificar se pelo menos um elemento do dashboard existe
+    const statClientes = document.getElementById('stat-total-clientes');
+    if (!statClientes) {
+      console.warn('Elementos do dashboard não encontrados, pulando carregamento');
+      return;
+    }
+    
     await this.loadMenu();
     await this.loadStats();
     await this.loadChart();
@@ -221,7 +229,8 @@ export default {
 
   async loadMenu() {
     try {
-      const res = await fetch(`${API_BASE}/admin/pages', {
+      const apiBase = window.API_BASE_URL || '/api';
+      const res = await fetch(`${apiBase}/admin/pages`, {
         headers: (window.Utils || Utils).getAuthHeaders()
       });
       
@@ -277,19 +286,21 @@ export default {
   async loadStats() {
     try {
       // Clientes
-      const clientesRes = await fetch(`${API_BASE}/clientes', {
+      const apiBase = window.API_BASE_URL || '/api';
+      const clientesRes = await fetch(`${apiBase}/clientes`, {
         headers: (window.Utils || Utils).getAuthHeaders()
       });
       
       if (clientesRes.ok) {
         const clientes = await clientesRes.json();
         const totalClientes = Array.isArray(clientes) ? clientes.length : 0;
-        document.getElementById('stat-total-clientes').textContent = totalClientes;
+        const elClientes = document.getElementById('stat-total-clientes');
+        if (elClientes) elClientes.textContent = totalClientes;
       }
 
       // Produtos (apenas admin)
       if ((window.Utils || Utils).isAdmin()) {
-        const produtosRes = await fetch(`${API_BASE}/produtos', {
+        const produtosRes = await fetch(`${apiBase}/produtos`, {
           headers: (window.Utils || Utils).getAuthHeaders()
         });
         
@@ -300,42 +311,97 @@ export default {
             ? produtos.filter(p => p.quantidade <= (p.minimo || 0)).length 
             : 0;
           
-          document.getElementById('stat-total-produtos').textContent = totalProdutos;
-          document.getElementById('stat-estoque-baixo').textContent = estoqueBaixo;
+          const elProdutos = document.getElementById('stat-total-produtos');
+          const elEstoque = document.getElementById('stat-estoque-baixo');
+          if (elProdutos) elProdutos.textContent = totalProdutos;
+          if (elEstoque) elEstoque.textContent = estoqueBaixo;
         }
       }
 
       // Pedidos
-      const pedidosRes = await fetch(`${API_BASE}/pedidos', {
+      const pedidosRes = await fetch(`${apiBase}/pedidos`, {
         headers: (window.Utils || Utils).getAuthHeaders()
       });
       
       if (pedidosRes.ok) {
         const pedidos = await pedidosRes.json();
         const totalPedidos = Array.isArray(pedidos) ? pedidos.length : 0;
-        document.getElementById('stat-total-pedidos').textContent = totalPedidos;
+        const elPedidos = document.getElementById('stat-total-pedidos');
+        if (elPedidos) elPedidos.textContent = totalPedidos;
       }
 
       // Estatísticas de pedidos (hoje/mês)
-      const statsRes = await fetch(`${API_BASE}/pedidos/stats', {
+      const statsRes = await fetch(`${apiBase}/pedidos/stats`, {
         headers: (window.Utils || Utils).getAuthHeaders()
       });
       
       if (statsRes.ok) {
-        const stats = await statsRes.json();
-        document.getElementById('stat-vendas-hoje').textContent = (window.Utils || Utils).formatMoney(stats.totalToday || 0);
-        document.getElementById('stat-pedidos-hoje').textContent = stats.countToday || 0;
-        document.getElementById('stat-vendas-mes').textContent = (window.Utils || Utils).formatMoney(stats.totalMonth || 0);
-        document.getElementById('stat-pedidos-mes').textContent = stats.countMonth || 0;
+        try {
+          const stats = await statsRes.json();
+          const elVendasHoje = document.getElementById('stat-vendas-hoje');
+          const elPedidosHoje = document.getElementById('stat-pedidos-hoje');
+          const elVendasMes = document.getElementById('stat-vendas-mes');
+          const elPedidosMes = document.getElementById('stat-pedidos-mes');
+          
+          if (elVendasHoje) elVendasHoje.textContent = (window.Utils || Utils).formatMoney(stats.totalToday || 0);
+          if (elPedidosHoje) elPedidosHoje.textContent = stats.countToday || 0;
+          if (elVendasMes) elVendasMes.textContent = (window.Utils || Utils).formatMoney(stats.totalMonth || 0);
+          if (elPedidosMes) elPedidosMes.textContent = stats.countMonth || 0;
+        } catch (e) {
+          console.warn('Erro ao processar resposta de stats:', e);
+          this.setDefaultStats();
+        }
+      } else {
+        // Se a API retornar erro, usar valores padrão
+        console.warn('API /pedidos/stats retornou erro:', statsRes.status);
+        this.setDefaultStats();
       }
     } catch (error) {
       console.error('Erro ao carregar estatísticas:', error);
+      this.setDefaultStats();
     }
+  },
+
+  setDefaultStats() {
+    // Função auxiliar para definir valores padrão quando há erro
+    const elVendasHoje = document.getElementById('stat-vendas-hoje');
+    const elPedidosHoje = document.getElementById('stat-pedidos-hoje');
+    const elVendasMes = document.getElementById('stat-vendas-mes');
+    const elPedidosMes = document.getElementById('stat-pedidos-mes');
+    
+    if (elVendasHoje) elVendasHoje.textContent = 'R$ 0,00';
+    if (elPedidosHoje) elPedidosHoje.textContent = '0';
+    if (elVendasMes) elVendasMes.textContent = 'R$ 0,00';
+    if (elPedidosMes) elPedidosMes.textContent = '0';
   },
 
   async loadChart() {
     try {
-      const pedidosRes = await fetch(`${API_BASE}/pedidos', {
+      const ctx = document.getElementById('chart-vendas');
+      if (!ctx) return;
+
+      // Destruir TODOS os gráficos existentes no canvas
+      const existingChart = Chart.getChart(ctx);
+      if (existingChart) {
+        try {
+          existingChart.destroy();
+        } catch (e) {
+          console.warn('Erro ao destruir gráfico existente:', e);
+        }
+      }
+
+      // Destruir referência global se existir
+      if (window.chartVendas) {
+        try {
+          window.chartVendas.destroy();
+        } catch (e) {
+          // Ignorar erro se já foi destruído
+        }
+        window.chartVendas = null;
+      }
+
+      const apiBase = window.API_BASE_URL || '/api';
+      const pedidosRes = await fetch(`${apiBase}/pedidos`, {
         headers: (window.Utils || Utils).getAuthHeaders()
       });
       
@@ -362,44 +428,54 @@ export default {
         vendas.push(totalDia);
       }
 
-      const ctx = document.getElementById('chart-vendas');
-      if (!ctx) return;
-
       const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
       
-      new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: dias,
-          datasets: [{
-            label: 'Vendas (R$)',
-            data: vendas,
-            backgroundColor: '#0d9488',
-            borderRadius: 8
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { display: false }
+      try {
+        window.chartVendas = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: dias,
+            datasets: [{
+              label: 'Vendas (R$)',
+              data: vendas,
+              backgroundColor: '#0d9488',
+              borderRadius: 8
+            }]
           },
-          scales: {
-            y: {
-              beginAtZero: true,
-              grid: { color: isDark ? '#334155' : '#f0f0f0' },
-              ticks: {
-                callback: function(value) {
-                  return 'R$ ' + value.toFixed(0);
-                }
-              }
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false }
             },
-            x: {
-              grid: { display: false }
+            scales: {
+              y: {
+                beginAtZero: true,
+                grid: { color: isDark ? '#334155' : '#f0f0f0' },
+                ticks: {
+                  callback: function(value) {
+                    return 'R$ ' + value.toFixed(0);
+                  }
+                }
+              },
+              x: {
+                grid: { display: false }
+              }
             }
           }
+        });
+      } catch (chartError) {
+        console.error('Erro ao criar gráfico:', chartError);
+        // Se ainda houver gráfico antigo, tentar destruir novamente
+        const existingChart = Chart.getChart(ctx);
+        if (existingChart) {
+          try {
+            existingChart.destroy();
+          } catch (e) {
+            // Ignorar
+          }
         }
-      });
+      }
     } catch (error) {
       console.error('Erro ao carregar gráfico:', error);
     }
@@ -407,7 +483,8 @@ export default {
 
   async loadTopClientes() {
     try {
-      const pedidosRes = await fetch(`${API_BASE}/pedidos', {
+      const apiBase = window.API_BASE_URL || '/api';
+      const pedidosRes = await fetch(`${apiBase}/pedidos`, {
         headers: (window.Utils || Utils).getAuthHeaders()
       });
       
@@ -444,6 +521,11 @@ export default {
         .slice(0, 5);
 
       const container = document.getElementById('top-clientes');
+      
+      if (!container) {
+        console.warn('Elemento top-clientes não encontrado no DOM');
+        return;
+      }
       
       if (topClientes.length === 0) {
         container.innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:20px">Nenhuma venda este mês</p>';

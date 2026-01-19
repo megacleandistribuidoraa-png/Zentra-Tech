@@ -185,7 +185,7 @@ export default {
 
   async loadClientes() {
     try {
-      const res = await fetch(`${API_BASE}/clientes', {
+      const res = await fetch(`${window.API_BASE_URL || '/api'}/clientes`, {
         headers: (window.Utils || Utils).getAuthHeaders()
       });
 

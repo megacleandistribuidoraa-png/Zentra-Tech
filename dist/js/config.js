@@ -8,4 +8,4 @@
 // URL base da API - será substituída no build
 // Para desenvolvimento local: '/api'
 // Para produção: 'https://seu-backend.onrender.com/api' ou similar
-window.API_BASE_URL = 'https://megaclean-backend.onrender.com/api';
+window.API_BASE_URL = '/api';
