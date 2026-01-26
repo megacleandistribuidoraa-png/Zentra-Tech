@@ -189,10 +189,22 @@ export default {
         headers: (window.Utils || Utils).getAuthHeaders()
       });
 
-      if (!res.ok) throw new Error('Erro ao carregar clientes');
+      if (!res.ok) {
+        throw new Error(`Erro ao carregar clientes: ${res.status} ${res.statusText}`);
+      }
 
-      this.clientes = await res.json();
-      this.clientes = Array.isArray(this.clientes) ? this.clientes : [];
+      const data = await res.json();
+      this.clientes = Array.isArray(data) ? data : [];
+      
+      // Garantir que a lista está ordenada (mais recentes primeiro)
+      this.clientes.sort((a, b) => {
+        const dateA = new Date(a.dataCriacao || a.createdAt || 0);
+        const dateB = new Date(b.dataCriacao || b.createdAt || 0);
+        return dateB - dateA;
+      });
+      
+      console.log(`✅ Clientes carregados: ${this.clientes.length} total`);
+      
       this.updateStats();
       this.renderTable();
     } catch (error) {
