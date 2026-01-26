@@ -225,7 +225,7 @@ app.post("/api/clientes", async (req, res) => {
       return res.status(503).json({ error: 'Banco de dados não está conectado. Tente novamente em alguns instantes.' });
     }
     
-    console.log('📥 Dados recebidos no POST /api/clientes:', req.body);
+    console.log('📥 Dados recebidos no POST /api/clientes:', JSON.stringify(req.body, null, 2));
     
     // Garantir que cpfCnpj seja salvo corretamente
     const dadosCliente = { ...req.body };
@@ -233,12 +233,18 @@ app.post("/api/clientes", async (req, res) => {
       dadosCliente.cpf = dadosCliente.cpfCnpj; // Compatibilidade
     }
     
-    console.log('📝 Dados do cliente após processamento:', dadosCliente);
+    // Garantir que dataCriacao existe
+    if (!dadosCliente.dataCriacao) {
+      dadosCliente.dataCriacao = new Date();
+    }
+    
+    console.log('📝 Dados do cliente após processamento:', JSON.stringify(dadosCliente, null, 2));
     const novo = new Cliente(dadosCliente);
-    console.log('📝 Cliente criado (antes de salvar):', novo);
+    console.log('📝 Cliente criado (antes de salvar):', novo.toObject());
+    
     const clienteSalvo = await novo.save();
     console.log(`✅ Cliente salvo no banco: ${clienteSalvo.nome} (ID: ${clienteSalvo._id})`);
-    console.log('📋 Cliente completo salvo:', JSON.stringify(clienteSalvo, null, 2));
+    console.log('📋 Cliente completo salvo:', JSON.stringify(clienteSalvo.toObject(), null, 2));
     
     // Verificar se o cliente realmente foi salvo fazendo uma busca
     const clienteVerificado = await Cliente.findById(clienteSalvo._id);
@@ -247,6 +253,10 @@ app.post("/api/clientes", async (req, res) => {
     } else {
       console.error('❌ ERRO: Cliente não encontrado no banco após salvar!');
     }
+    
+    // Contar total de clientes no banco agora
+    const totalClientes = await Cliente.countDocuments();
+    console.log(`📊 Total de clientes no banco agora: ${totalClientes}`);
     
     res.status(201).json(clienteSalvo);
   } catch (error) {
