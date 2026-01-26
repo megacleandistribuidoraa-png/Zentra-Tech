@@ -296,84 +296,106 @@ export default {
   preencherFormulario() {
     if (!this.config) return;
     
-    document.getElementById('provedor').value = this.config.provedor || 'focus_nfe';
-    document.getElementById('focusToken').value = this.config.focusToken || '';
-    document.getElementById('nfeioApiKey').value = this.config.nfeioApiKey || '';
-    document.getElementById('nfeioCompanyId').value = this.config.nfeioCompanyId || '';
-    document.getElementById('enotasApiKey').value = this.config.enotasApiKey || '';
-    document.getElementById('enotasEmpresaId').value = this.config.enotasEmpresaId || '';
-    document.getElementById('ambiente').value = this.config.ambiente || 'homologacao';
+    const setValue = (id, value) => {
+      const el = document.getElementById(id);
+      if (el) el.value = value;
+    };
     
-    document.getElementById('cnpj').value = this.config.cnpj || '';
-    document.getElementById('inscricaoEstadual').value = this.config.inscricaoEstadual || '';
-    document.getElementById('razaoSocial').value = this.config.razaoSocial || '';
-    document.getElementById('nomeFantasia').value = this.config.nomeFantasia || '';
+    setValue('provedor', this.config.provedor || 'focus_nfe');
+    setValue('focusToken', this.config.focusToken || '');
+    setValue('nfeioApiKey', this.config.nfeioApiKey || '');
+    setValue('nfeioCompanyId', this.config.nfeioCompanyId || '');
+    setValue('enotasApiKey', this.config.enotasApiKey || '');
+    setValue('enotasEmpresaId', this.config.enotasEmpresaId || '');
+    setValue('ambiente', this.config.ambiente || 'homologacao');
     
-    document.getElementById('logradouro').value = this.config.logradouro || '';
-    document.getElementById('numero').value = this.config.numero || '';
-    document.getElementById('complemento').value = this.config.complemento || '';
-    document.getElementById('bairro').value = this.config.bairro || '';
-    document.getElementById('cidade').value = this.config.cidade || '';
-    document.getElementById('uf').value = this.config.uf || 'SP';
-    document.getElementById('cep').value = this.config.cep || '';
-    document.getElementById('codigoMunicipio').value = this.config.codigoMunicipio || '';
+    setValue('cnpj', this.config.cnpj || '');
+    setValue('inscricaoEstadual', this.config.inscricaoEstadual || '');
+    setValue('razaoSocial', this.config.razaoSocial || '');
+    setValue('nomeFantasia', this.config.nomeFantasia || '');
     
-    document.getElementById('serieNfe').value = this.config.serieNfe || 1;
-    document.getElementById('proximoNumeroNfe').value = this.config.proximoNumeroNfe || 1;
+    setValue('logradouro', this.config.logradouro || '');
+    setValue('numero', this.config.numero || '');
+    setValue('complemento', this.config.complemento || '');
+    setValue('bairro', this.config.bairro || '');
+    setValue('cidade', this.config.cidade || '');
+    setValue('uf', this.config.uf || 'SP');
+    setValue('cep', this.config.cep || '');
+    setValue('codigoMunicipio', this.config.codigoMunicipio || '');
     
-    document.getElementById('regimeTributario').value = this.config.regimeTributario || 1;
-    document.getElementById('crt').value = this.config.crt || 1;
-    document.getElementById('cfopPadrao').value = this.config.cfopPadrao || '5102';
+    setValue('serieNfe', this.config.serieNfe || 1);
+    setValue('proximoNumeroNfe', this.config.proximoNumeroNfe || 1);
     
-    document.getElementById('certificadoBase64').value = this.config.certificadoBase64 || '';
-    document.getElementById('senhaCertificado').value = '';
+    setValue('regimeTributario', this.config.regimeTributario || 1);
+    setValue('crt', this.config.crt || 1);
+    setValue('cfopPadrao', this.config.cfopPadrao || '5102');
     
-    document.getElementById('telefone').value = this.config.telefone || '';
-    document.getElementById('email').value = this.config.email || '';
+    setValue('certificadoBase64', this.config.certificadoBase64 || '');
+    setValue('senhaCertificado', '');
+    
+    setValue('telefone', this.config.telefone || '');
+    setValue('email', this.config.email || '');
     
     this.mostrarConfigProvedor();
   },
 
   mostrarConfigProvedor() {
-    const provedor = document.getElementById('provedor').value;
+    const provedorEl = document.getElementById('provedor');
+    if (!provedorEl) return;
     
-    document.getElementById('config-focus').style.display = provedor === 'focus_nfe' ? 'block' : 'none';
-    document.getElementById('config-nfeio').style.display = provedor === 'nfe_io' ? 'block' : 'none';
-    document.getElementById('config-enotas').style.display = provedor === 'enotas' ? 'block' : 'none';
+    const provedor = provedorEl.value;
+    
+    const configFocus = document.getElementById('config-focus');
+    const configNfeio = document.getElementById('config-nfeio');
+    const configEnotas = document.getElementById('config-enotas');
+    
+    if (configFocus) configFocus.style.display = provedor === 'focus_nfe' ? 'block' : 'none';
+    if (configNfeio) configNfeio.style.display = provedor === 'nfe_io' ? 'block' : 'none';
+    if (configEnotas) configEnotas.style.display = provedor === 'enotas' ? 'block' : 'none';
   },
 
   async salvarConfig() {
-    const data = {
-      provedor: document.getElementById('provedor').value,
-      focusToken: document.getElementById('focusToken').value,
-      nfeioApiKey: document.getElementById('nfeioApiKey').value,
-      nfeioCompanyId: document.getElementById('nfeioCompanyId').value,
-      enotasApiKey: document.getElementById('enotasApiKey').value,
-      enotasEmpresaId: document.getElementById('enotasEmpresaId').value,
-      ambiente: document.getElementById('ambiente').value,
-      cnpj: document.getElementById('cnpj').value,
-      inscricaoEstadual: document.getElementById('inscricaoEstadual').value,
-      razaoSocial: document.getElementById('razaoSocial').value,
-      nomeFantasia: document.getElementById('nomeFantasia').value,
-      logradouro: document.getElementById('logradouro').value,
-      numero: document.getElementById('numero').value,
-      complemento: document.getElementById('complemento').value,
-      bairro: document.getElementById('bairro').value,
-      cidade: document.getElementById('cidade').value,
-      uf: document.getElementById('uf').value,
-      cep: document.getElementById('cep').value,
-      codigoMunicipio: document.getElementById('codigoMunicipio').value,
-      serieNfe: parseInt(document.getElementById('serieNfe').value) || 1,
-      proximoNumeroNfe: parseInt(document.getElementById('proximoNumeroNfe').value) || 1,
-      regimeTributario: parseInt(document.getElementById('regimeTributario').value) || 1,
-      crt: parseInt(document.getElementById('crt').value) || 1,
-      cfopPadrao: document.getElementById('cfopPadrao').value || '5102',
-      telefone: document.getElementById('telefone').value,
-      email: document.getElementById('email').value
+    const getValue = (id, defaultValue = '') => {
+      const el = document.getElementById(id);
+      return el ? el.value : defaultValue;
     };
     
-    const certificado = document.getElementById('certificadoBase64').value;
-    const senhaCertificado = document.getElementById('senhaCertificado').value;
+    const getIntValue = (id, defaultValue = 0) => {
+      const el = document.getElementById(id);
+      return el ? (parseInt(el.value) || defaultValue) : defaultValue;
+    };
+    
+    const data = {
+      provedor: getValue('provedor'),
+      focusToken: getValue('focusToken'),
+      nfeioApiKey: getValue('nfeioApiKey'),
+      nfeioCompanyId: getValue('nfeioCompanyId'),
+      enotasApiKey: getValue('enotasApiKey'),
+      enotasEmpresaId: getValue('enotasEmpresaId'),
+      ambiente: getValue('ambiente'),
+      cnpj: getValue('cnpj'),
+      inscricaoEstadual: getValue('inscricaoEstadual'),
+      razaoSocial: getValue('razaoSocial'),
+      nomeFantasia: getValue('nomeFantasia'),
+      logradouro: getValue('logradouro'),
+      numero: getValue('numero'),
+      complemento: getValue('complemento'),
+      bairro: getValue('bairro'),
+      cidade: getValue('cidade'),
+      uf: getValue('uf'),
+      cep: getValue('cep'),
+      codigoMunicipio: getValue('codigoMunicipio'),
+      serieNfe: getIntValue('serieNfe', 1),
+      proximoNumeroNfe: getIntValue('proximoNumeroNfe', 1),
+      regimeTributario: getIntValue('regimeTributario', 1),
+      crt: getIntValue('crt', 1),
+      cfopPadrao: getValue('cfopPadrao', '5102'),
+      telefone: getValue('telefone'),
+      email: getValue('email')
+    };
+    
+    const certificado = getValue('certificadoBase64');
+    const senhaCertificado = getValue('senhaCertificado');
     
     if (certificado) {
       data.certificadoBase64 = certificado;

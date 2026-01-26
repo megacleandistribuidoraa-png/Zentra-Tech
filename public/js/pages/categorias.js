@@ -55,9 +55,12 @@ export default {
     this.iconeSelected = '📦';
     this.categorias = [];
     
-    document.getElementById('icon-picker').innerHTML = this.icones.map(i => 
-      `<button type="button" data-icon="${i}" class="icon-btn ${i===this.iconeSelected?'selected':''}" style="font-size:24px;padding:8px;border:2px solid ${i===this.iconeSelected?'var(--primary)':'#e5e7eb'};border-radius:8px;background:${i===this.iconeSelected?'var(--primary-light)':'none'};cursor:pointer">${i}</button>`
-    ).join('');
+    const iconPicker = document.getElementById('icon-picker');
+    if (iconPicker) {
+      iconPicker.innerHTML = this.icones.map(i => 
+        `<button type="button" data-icon="${i}" class="icon-btn ${i===this.iconeSelected?'selected':''}" style="font-size:24px;padding:8px;border:2px solid ${i===this.iconeSelected?'var(--primary)':'#e5e7eb'};border-radius:8px;background:${i===this.iconeSelected?'var(--primary-light)':'none'};cursor:pointer">${i}</button>`
+      ).join('');
+    }
     
     await this.carregarCategorias();
     this.setupEventListeners();
