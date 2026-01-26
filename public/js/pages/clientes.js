@@ -367,17 +367,42 @@ export default {
         body: JSON.stringify(data)
       });
 
-      if (!res.ok) throw new Error('Erro ao salvar cliente');
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Erro ao salvar cliente');
+      }
 
+      const clienteSalvo = await res.json();
+      
       (window.toastManager || toastManager).success(
         this.editandoId ? '✅ Cliente atualizado!' : '✅ Cliente cadastrado!'
       );
 
       form.reset();
-      document.getElementById('opt-ativo').classList.add('active');
-      document.getElementById('opt-inativo').classList.remove('active');
+      const optAtivo = document.getElementById('opt-ativo');
+      const optInativo = document.getElementById('opt-inativo');
+      if (optAtivo) optAtivo.classList.add('active');
+      if (optInativo) optInativo.classList.remove('active');
       this.editandoId = null;
-      document.querySelector('.card-title').textContent = '➕ Novo Cliente';
+      const cardTitle = document.querySelector('.card-title');
+      if (cardTitle) cardTitle.textContent = '➕ Novo Cliente';
+      
+      // Resetar filtro para "todos" para garantir que o novo cliente apareça
+      this.filtroStatus = 'todos';
+      const filterBtns = document.querySelectorAll('.filter-btn');
+      filterBtns.forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.getAttribute('data-filter') === 'todos') {
+          btn.classList.add('active');
+        }
+      });
+      
+      // Limpar campo de busca para garantir que o cliente apareça
+      const searchInput = document.getElementById('search');
+      if (searchInput) searchInput.value = '';
+      
+      // Recarregar lista de clientes (aguardar um pouco para garantir que o banco salvou)
+      await new Promise(resolve => setTimeout(resolve, 300));
       await this.loadClientes();
     } catch (error) {
       (window.toastManager || toastManager).error('❌ Erro ao salvar cliente');
