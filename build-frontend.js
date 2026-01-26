@@ -42,6 +42,13 @@ function copyRecursive(src, dest) {
 console.log('📁 Copiando arquivos...');
 copyRecursive(SOURCE_DIR, BUILD_DIR);
 
+// REMOVER app.html do build (não deve ser usado)
+const appHtmlPath = path.join(BUILD_DIR, 'app.html');
+if (fs.existsSync(appHtmlPath)) {
+  fs.unlinkSync(appHtmlPath);
+  console.log('✅ app.html removido do build (usando apenas dashboard.html)');
+}
+
 // Substituir URL da API no config.js
 const configPath = path.join(BUILD_DIR, 'js', 'config.js');
 if (fs.existsSync(configPath)) {

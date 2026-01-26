@@ -11,6 +11,11 @@ const API_CONFIG = {
 };
 
 // ============================================
+// SISTEMA PRINCIPAL (APENAS APÓS LOGIN)
+// ============================================
+// auth.js deve ser carregado antes deste arquivo
+
+// ============================================
 // UTILITÁRIOS
 // ============================================
 const Utils = {
@@ -81,6 +86,31 @@ const Utils = {
   // Verificar se é admin
   isAdmin() {
     return localStorage.getItem('admin_role') === 'admin';
+  },
+
+  // Verificar autenticação (usa auth.isAuthenticated)
+  isAuthenticated() {
+    return auth.isAuthenticated();
+  },
+
+  // Validar token com API (usa auth.validateToken)
+  async validateToken() {
+    return await auth.validateToken();
+  },
+
+  // Limpar dados de autenticação (usa auth.logout)
+  clearAuth() {
+    auth.logout();
+  },
+
+  // Redirecionar para login (usa auth.redirectToLogin)
+  redirectToLogin() {
+    auth.redirectToLogin();
+  },
+
+  // Função centralizada de logout (usa auth.logout)
+  logout() {
+    auth.logout();
   }
 };
 
@@ -92,6 +122,8 @@ class Router {
     this.routes = new Map();
     this.currentRoute = null;
     this.isNavigating = false;
+    // Rotas públicas (não requerem autenticação)
+    this.publicRoutes = new Set(['login']);
     this.init();
   }
 
@@ -122,15 +154,15 @@ class Router {
     });
 
     // Interceptar navegação do browser
-    window.addEventListener('popstate', () => {
+    window.addEventListener('popstate', async () => {
       console.log('Router: Popstate detectado');
-      this.handleRoute();
+      await this.handleRoute();
     });
     
     // Interceptar mudanças no hash
-    window.addEventListener('hashchange', () => {
+    window.addEventListener('hashchange', async () => {
       console.log('Router: Hashchange detectado');
-      this.handleRoute();
+      await this.handleRoute();
     });
   }
 
@@ -158,7 +190,12 @@ class Router {
       }
       
       // Executar handleRoute imediatamente
-      this.handleRoute();
+      this.handleRoute().catch(err => {
+        console.error('Erro ao navegar:', err);
+        if (err.message && err.message.includes('autenticação')) {
+          Utils.redirectToLogin();
+        }
+      });
       
       // Resetar flag após um pequeno delay
       setTimeout(() => {
@@ -170,8 +207,32 @@ class Router {
     }
   }
 
-  handleRoute() {
-    const hash = window.location.hash.slice(1) || 'dashboard';
+  async handleRoute() {
+    // BLOQUEAR TUDO SE NÃO HOUVER TOKEN
+    const token = localStorage.getItem('admin_token');
+    if (!token || typeof token !== 'string' || token.trim() === '' || token === 'null' || token === 'undefined') {
+      console.error('Router BLOCK: Token não encontrado');
+      auth.logout();
+      return;
+    }
+    
+    // Validação completa com API
+    const isValid = await auth.validateToken();
+    if (!isValid) {
+      console.error('Router BLOCK: Token inválido');
+      auth.logout();
+      return;
+    }
+    
+    // Só processar rotas se estiver autenticado E token válido
+    const hash = window.location.hash.slice(1);
+    if (!hash) {
+      // Se não houver hash, navegar para dashboard (mas só se autenticado)
+      console.log('Router: Sem hash, navegando para dashboard');
+      this.navigate('dashboard', true);
+      return;
+    }
+    
     const [path, ...params] = hash.split('/');
     
     // Evitar processamento duplicado
@@ -184,6 +245,23 @@ class Router {
     if (this.currentRoute === path && !this.isNavigating) {
       console.log('Router: Já estamos na rota, ignorando', path);
       return;
+    }
+    
+    // Verificar autenticação para rotas privadas (verificação dupla por segurança)
+    const isPublicRoute = this.publicRoutes.has(path);
+    if (!isPublicRoute) {
+      // Verificação dupla: já verificamos acima, mas garantir novamente
+      if (!auth.isAuthenticated()) {
+        console.log('Router: Rota privada sem token, redirecionando para login');
+        auth.redirectToLogin();
+        return;
+      }
+      const isValid = await auth.validateToken();
+      if (!isValid) {
+        console.log('Router: Rota privada com token inválido, redirecionando para login');
+        auth.redirectToLogin();
+        return;
+      }
     }
     
     console.log('Router: handleRoute - path:', path, 'rotas disponíveis:', Array.from(this.routes.keys()));
@@ -582,6 +660,18 @@ class ToastManager {
 // Exportar Utils IMEDIATAMENTE para uso global
 window.Utils = Utils;
 
+// Exportar função de logout globalmente para acesso direto
+window.logout = function() {
+  if (window.auth && window.auth.logout) {
+    window.auth.logout();
+  } else {
+    // Fallback se auth não estiver disponível
+    localStorage.clear();
+    sessionStorage.clear();
+    window.location.replace('/index.html');
+  }
+};
+
 let router = null;
 let pageManager = null;
 let notificationManager = null;
@@ -589,12 +679,23 @@ let toastManager = null;
 
 async function initApp() {
   try {
-    // Verificar autenticação
-    const token = Utils.getAuthToken();
-    if (!token) {
-      window.location.href = '/index.html';
+    // BLOQUEAR TUDO SE NÃO HOUVER TOKEN
+    const token = localStorage.getItem('admin_token');
+    if (!token || typeof token !== 'string' || token.trim() === '' || token === 'null' || token === 'undefined') {
+      console.error('initApp BLOCK: Token não encontrado ou inválido');
+      auth.logout();
       return;
     }
+
+    // Validação completa com API
+    const isValid = await auth.validateToken();
+    if (!isValid) {
+      console.error('initApp BLOCK: Token inválido na API');
+      auth.logout();
+      return;
+    }
+
+    console.log('initApp: Token válido, inicializando aplicação');
 
   // Inicializar managers
   router = new Router();
@@ -604,6 +705,41 @@ async function initApp() {
   notificationManager = new NotificationManager();
   toastManager = new ToastManager();
 
+  // CRIAR BOTÃO "SAIR" NA TOPBAR (único lugar)
+  const createLogoutButton = () => {
+    const handleLogout = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (confirm('Deseja realmente sair do sistema?')) {
+        auth.logout();
+      }
+    };
+
+    // Botão na topbar (único)
+    let btnLogoutTopbar = document.getElementById('btn-logout-topbar');
+    if (!btnLogoutTopbar) {
+      const topbarRight = document.querySelector('.topbar-right');
+      if (topbarRight) {
+        btnLogoutTopbar = document.createElement('button');
+        btnLogoutTopbar.id = 'btn-logout-topbar';
+        btnLogoutTopbar.className = 'btn-icon btn-logout-topbar';
+        btnLogoutTopbar.title = 'Sair';
+        btnLogoutTopbar.textContent = '🚪';
+        // Inserir no início (antes do sino)
+        topbarRight.insertBefore(btnLogoutTopbar, topbarRight.firstChild);
+      }
+    }
+    if (btnLogoutTopbar) {
+      btnLogoutTopbar.onclick = handleLogout;
+      btnLogoutTopbar.style.display = 'flex';
+      btnLogoutTopbar.style.visibility = 'visible';
+      btnLogoutTopbar.style.opacity = '1';
+    }
+  };
+
+  // Criar botão IMEDIATAMENTE
+  createLogoutButton();
+
   // Configurar sidebar
   setupSidebar();
 
@@ -612,6 +748,9 @@ async function initApp() {
 
   // Configurar menu de navegação
   await setupNavigation();
+  
+  // Garantir botão novamente após setupNavigation
+  setTimeout(createLogoutButton, 100);
 
   // Carregar notificações
   await notificationManager.loadNotifications();
@@ -646,51 +785,25 @@ async function initApp() {
 }
 
 function setupSidebar() {
-  const sidebar = document.querySelector('.sidebar');
-  const sidebarToggle = document.getElementById('sidebar-toggle');
+  // Sidebar sempre fixa - sem toggle
+  // Apenas configurar menu mobile se necessário
   const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+  const sidebar = document.querySelector('.sidebar');
 
-  // Carregar estado salvo
-  const sidebarCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
-  if (sidebarCollapsed) {
-    sidebar.classList.add('collapsed');
-    if (sidebarToggle) {
-      sidebarToggle.textContent = '▶';
-      sidebarToggle.title = 'Expandir menu';
-    }
-  }
-
-  sidebarToggle?.addEventListener('click', (e) => {
-    e.stopPropagation();
-    const isCollapsed = sidebar.classList.contains('collapsed');
-    
-    if (isCollapsed) {
-      // Expandir
-      sidebar.classList.remove('collapsed');
-      sidebarToggle.textContent = '◀';
-      sidebarToggle.title = 'Recolher menu';
-      localStorage.setItem('sidebarCollapsed', 'false');
-    } else {
-      // Recolher
-      sidebar.classList.add('collapsed');
-      sidebarToggle.textContent = '▶';
-      sidebarToggle.title = 'Expandir menu';
-      localStorage.setItem('sidebarCollapsed', 'true');
-    }
-  });
-
-  mobileMenuToggle?.addEventListener('click', () => {
-    sidebar.classList.toggle('show');
-  });
-
-  // Fechar sidebar ao clicar em link no mobile
-  document.querySelectorAll('.nav-item').forEach(item => {
-    item.addEventListener('click', () => {
-      if (window.innerWidth <= 768) {
-        sidebar.classList.remove('show');
-      }
+  if (mobileMenuToggle && sidebar) {
+    mobileMenuToggle.addEventListener('click', () => {
+      sidebar.classList.toggle('show');
     });
-  });
+
+    // Fechar sidebar ao clicar em link no mobile
+    document.querySelectorAll('.nav-item').forEach(item => {
+      item.addEventListener('click', () => {
+        if (window.innerWidth <= 768) {
+          sidebar.classList.remove('show');
+        }
+      });
+    });
+  }
 }
 
 function setupTheme() {
@@ -728,15 +841,22 @@ async function setupNavigation() {
   document.getElementById('user-role').textContent = isAdmin ? 'Administrador' : 'Operador';
   document.getElementById('user-initial').textContent = userName.charAt(0).toUpperCase();
 
-  // Configurar logout
-  document.getElementById('btn-logout').addEventListener('click', () => {
-    if (confirm('Deseja realmente sair?')) {
-      localStorage.removeItem('admin_token');
-      localStorage.removeItem('admin_name');
-      localStorage.removeItem('admin_role');
-      window.location.href = '/index.html';
+  // Configurar logout na topbar (único lugar)
+  const handleLogout = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (confirm('Deseja realmente sair do sistema?')) {
+      auth.logout();
     }
-  });
+  };
+
+  const btnLogoutTopbar = document.getElementById('btn-logout-topbar');
+  if (btnLogoutTopbar) {
+    btnLogoutTopbar.onclick = handleLogout;
+    btnLogoutTopbar.style.display = 'flex';
+    btnLogoutTopbar.style.visibility = 'visible';
+    btnLogoutTopbar.style.opacity = '1';
+  }
 
   // Carregar menu
   try {
@@ -921,23 +1041,51 @@ async function loadPageComponents() {
     }
   }
 
-  // Navegar para a rota atual (ou dashboard se não houver hash)
-  const currentHash = window.location.hash.slice(1) || 'dashboard';
-  console.log('loadPageComponents: Hash atual:', currentHash);
+  // BLOQUEAR TUDO SE NÃO HOUVER TOKEN
+  const token = localStorage.getItem('admin_token');
+  if (!token || typeof token !== 'string' || token.trim() === '' || token === 'null' || token === 'undefined') {
+    console.error('loadPageComponents BLOCK: Token não encontrado');
+    auth.logout();
+    return;
+  }
+  
+  // Validação completa com API
+  const isValid = await auth.validateToken();
+  if (!isValid) {
+    console.error('loadPageComponents BLOCK: Token inválido');
+    auth.logout();
+    return;
+  }
+  
+  // Só navegar se estiver autenticado
+  const currentHash = window.location.hash.slice(1);
+  console.log('loadPageComponents: Hash atual:', currentHash || '(vazio)');
   console.log('loadPageComponents: Rotas registradas:', Array.from(router.routes.keys()));
   
   // Navegar para a rota após carregar componentes
-  setTimeout(() => {
+  // O Router.handleRoute() vai verificar autenticação novamente antes de carregar
+  setTimeout(async () => {
     router.isNavigating = false; // Reset flag
     
-    if (router.routes.has(currentHash)) {
-      console.log('loadPageComponents: Navegando para rota existente:', currentHash);
-      router.handleRoute();
-    } else {
-      // Se a rota não existe, tentar navegar (vai mostrar erro se não existir)
-      console.log('loadPageComponents: Rota não encontrada, tentando navegar:', currentHash);
-      router.handleRoute();
+    // Verificação dupla: garantir autenticação antes de navegar
+    const tokenCheck = localStorage.getItem('admin_token');
+    if (!tokenCheck || typeof tokenCheck !== 'string' || tokenCheck.trim() === '' || tokenCheck === 'null' || tokenCheck === 'undefined') {
+      console.error('loadPageComponents BLOCK: Token perdido');
+      auth.logout();
+      return;
     }
+    
+    const stillValid = await auth.validateToken();
+    if (!stillValid) {
+      console.error('loadPageComponents BLOCK: Token inválido na verificação dupla');
+      auth.logout();
+      return;
+    }
+    
+    // Router.handleRoute() já verifica autenticação internamente
+    // Não precisa forçar dashboard aqui - o Router decide
+    console.log('loadPageComponents: Navegando para rota (usuário autenticado)');
+    await router.handleRoute();
   }, 200);
 }
 

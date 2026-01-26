@@ -193,7 +193,7 @@ export default {
       if (!res.ok) {
         if (res.status === 403) {
           if (window.toastManager) window.toastManager.error('Acesso negado. Apenas administradores.');
-          setTimeout(() => window.location.href = '/app.html', 2000);
+          setTimeout(() => window.location.href = '/dashboard.html', 2000);
           return;
         }
         throw new Error('Erro ao carregar');

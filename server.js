@@ -164,10 +164,18 @@ app.get('/api/admin/pages', (req, res) => {
 // ============================================
 app.get("/api/clientes", async (req, res) => {
   try {
+    // Verificar se MongoDB está conectado
+    const mongoose = require('mongoose');
+    if (mongoose.connection.readyState !== 1) {
+      console.error('MongoDB não está conectado em /api/clientes');
+      return res.json([]);
+    }
+    
     const clientes = await Cliente.find().sort({ dataCriacao: -1 });
     res.json(clientes);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Erro em /api/clientes:', error.message || error);
+    res.status(500).json({ error: error.message || 'Erro ao buscar clientes' });
   }
 });
 
@@ -216,10 +224,18 @@ app.delete("/api/clientes/:id", async (req, res) => {
 // ============================================
 app.get("/api/produtos", async (req, res) => {
   try {
+    // Verificar se MongoDB está conectado
+    const mongoose = require('mongoose');
+    if (mongoose.connection.readyState !== 1) {
+      console.error('MongoDB não está conectado em /api/produtos');
+      return res.json([]);
+    }
+    
     const produtos = await Produto.find().populate('categoriaId fornecedorId').sort({ dataCriacao: -1 });
     res.json(produtos);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Erro em /api/produtos:', error.message || error);
+    res.status(500).json({ error: error.message || 'Erro ao buscar produtos' });
   }
 });
 
@@ -285,6 +301,13 @@ app.delete("/api/produtos/:id", async (req, res) => {
 // ============================================
 app.get("/api/pedidos", async (req, res) => {
   try {
+    // Verificar se MongoDB está conectado
+    const mongoose = require('mongoose');
+    if (mongoose.connection.readyState !== 1) {
+      console.error('MongoDB não está conectado em /api/pedidos');
+      return res.json([]);
+    }
+    
     const query = {};
     if (req.query.clienteId) query.clienteId = req.query.clienteId;
     
@@ -294,7 +317,8 @@ app.get("/api/pedidos", async (req, res) => {
       .sort({ dataCriacao: -1 });
     res.json(pedidos);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Erro em /api/pedidos:', error.message || error);
+    res.status(500).json({ error: error.message || 'Erro ao buscar pedidos' });
   }
 });
 
@@ -769,6 +793,13 @@ app.delete("/api/categorias/:id", async (req, res) => {
 // ============================================
 app.get("/api/solicitacoes", async (req, res) => {
   try {
+    // Verificar se MongoDB está conectado
+    const mongoose = require('mongoose');
+    if (mongoose.connection.readyState !== 1) {
+      console.error('MongoDB não está conectado em /api/solicitacoes');
+      return res.json([]);
+    }
+    
     const solicitacoes = await Solicitacao.find()
       .populate('clienteId')
       .populate('items.produtoId')
@@ -776,7 +807,8 @@ app.get("/api/solicitacoes", async (req, res) => {
       .sort({ dataCriacao: -1 });
     res.json(solicitacoes);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Erro em /api/solicitacoes:', error.message || error);
+    res.status(500).json({ error: error.message || 'Erro ao buscar solicitações' });
   }
 });
 

@@ -1,0 +1,1 @@
+mongodb+srv://megacleandistribuidoraa_db_user:mega123@cluster0.en8yzsz.mongodb.net/megaclean?appName=Cluster0

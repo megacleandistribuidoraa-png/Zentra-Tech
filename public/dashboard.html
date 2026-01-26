@@ -1,276 +1,79 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Dashboard - MegaClean</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<style>
-:root{
-  --bg:#f4f7fb;--card:#fff;--primary:#0aa04e;--primary-light:#e6f9ee;
-  --muted:#6b7280;--danger:#dc2626;--danger-light:#fef2f2;
-  --warning:#f59e0b;--warning-light:#fffbeb;--info:#3b82f6;--info-light:#eff6ff;
-  --purple:#8b5cf6;--purple-light:#f5f3ff;--radius:12px;
-  --shadow:0 8px 24px rgba(12,20,30,0.06);
-}
-[data-theme="dark"]{
-  --bg:#1a1a2e;--card:#16213e;--primary:#00d9a5;--primary-light:#0f3d3e;
-  --muted:#94a3b8;--danger:#f87171;--danger-light:#450a0a;
-  --warning:#fbbf24;--warning-light:#422006;--info:#60a5fa;--info-light:#1e3a5f;
-  --purple:#a78bfa;--purple-light:#2e1065;color:#e2e8f0;
-}
-*{box-sizing:border-box}
-body{margin:0;font-family:'Segoe UI',Roboto,Arial,sans-serif;background:var(--bg);color:#0f172a;min-height:100vh}
-[data-theme="dark"] body{color:#e2e8f0}
-.container{max-width:1400px;margin:0 auto;padding:20px}
-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:16px}
-header h1{margin:0;color:var(--primary);font-size:28px;display:flex;align-items:center;gap:10px}
-.back-link{color:var(--primary);text-decoration:none;font-weight:600}
-.theme-toggle{background:var(--card);border:2px solid #e5e7eb;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:14px}
-[data-theme="dark"] .theme-toggle{border-color:#374151}
-
-.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
-.stat-card{background:var(--card);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);display:flex;align-items:center;gap:16px}
-.stat-card .icon{width:56px;height:56px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px}
-.stat-card .icon.green{background:var(--primary-light);color:var(--primary)}
-.stat-card .icon.blue{background:var(--info-light);color:var(--info)}
-.stat-card .icon.yellow{background:var(--warning-light);color:var(--warning)}
-.stat-card .icon.red{background:var(--danger-light);color:var(--danger)}
-.stat-card .icon.purple{background:var(--purple-light);color:var(--purple)}
-.stat-card .info h3{margin:0;font-size:26px;font-weight:800}
-.stat-card .info p{margin:4px 0 0;color:var(--muted);font-size:13px}
-
-.grid-2{display:grid;grid-template-columns:2fr 1fr;gap:20px;margin-bottom:20px}
-.card{background:var(--card);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow)}
-.card-title{font-size:18px;font-weight:700;margin:0 0 16px;display:flex;align-items:center;gap:8px}
-
-.cliente-item{display:flex;align-items:center;justify-content:space-between;padding:12px;border-bottom:1px solid #f0f3f7;transition:background .15s}
-[data-theme="dark"] .cliente-item{border-color:#374151}
-.cliente-item:last-child{border-bottom:none}
-.cliente-item:hover{background:var(--primary-light)}
-.cliente-nome{font-weight:600}
-.cliente-valor{font-weight:700;color:var(--primary)}
-
-.alert-item{display:flex;align-items:center;gap:12px;padding:12px;background:var(--warning-light);border-radius:8px;margin-bottom:8px}
-.alert-item.danger{background:var(--danger-light)}
-.alert-icon{font-size:20px}
-.alert-text{flex:1}
-.alert-text h5{margin:0;font-size:14px}
-.alert-text p{margin:2px 0 0;font-size:12px;color:var(--muted)}
-
-.quick-actions{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:20px}
-.action-btn{background:var(--primary);color:#fff;border:none;padding:16px;border-radius:10px;cursor:pointer;font-size:14px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:8px;transition:transform .2s}
-.action-btn:hover{transform:translateY(-2px)}
-.action-btn span{font-size:24px}
-
-@media(max-width:1000px){.stats-grid{grid-template-columns:repeat(2,1fr)}.grid-2{grid-template-columns:1fr}}
-@media(max-width:600px){.stats-grid{grid-template-columns:1fr}.quick-actions{grid-template-columns:repeat(2,1fr)}}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0d9488">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>MegaClean - Sistema de Gestão</title>
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" type="image/svg+xml" href="/icon.svg">
+  
+  <!-- CSS Principal -->
+  <link rel="stylesheet" href="/css/app.css">
+  
+  <!-- Chart.js para gráficos -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
-<div class="container">
-  <header>
-    <div>
-      <a href="/admin.html" class="back-link">← Voltar ao painel</a>
-      <h1>📊 Dashboard</h1>
-    </div>
-    <button class="theme-toggle" onclick="toggleTheme()">🌙 Modo Escuro</button>
-  </header>
-
-  <div class="stats-grid">
-    <div class="stat-card">
-      <div class="icon green">💰</div>
-      <div class="info">
-        <h3 id="vendas-hoje">R$ 0</h3>
-        <p>Vendas Hoje</p>
-      </div>
-    </div>
-    <div class="stat-card">
-      <div class="icon blue">📦</div>
-      <div class="info">
-        <h3 id="pedidos-hoje">0</h3>
-        <p>Pedidos Hoje</p>
-      </div>
-    </div>
-    <div class="stat-card">
-      <div class="icon yellow">💳</div>
-      <div class="info">
-        <h3 id="contas-receber">R$ 0</h3>
-        <p>Contas a Receber</p>
-      </div>
-    </div>
-    <div class="stat-card">
-      <div class="icon red">⚠️</div>
-      <div class="info">
-        <h3 id="estoque-baixo">0</h3>
-        <p>Estoque Baixo</p>
-      </div>
-    </div>
-  </div>
-
-  <div class="stats-grid">
-    <div class="stat-card">
-      <div class="icon purple">📈</div>
-      <div class="info">
-        <h3 id="vendas-mes">R$ 0</h3>
-        <p>Vendas no Mês</p>
-      </div>
-    </div>
-    <div class="stat-card">
-      <div class="icon blue">🛒</div>
-      <div class="info">
-        <h3 id="pedidos-mes">0</h3>
-        <p>Pedidos no Mês</p>
-      </div>
-    </div>
-    <div class="stat-card">
-      <div class="icon green">👥</div>
-      <div class="info">
-        <h3 id="total-clientes">0</h3>
-        <p>Total Clientes</p>
-      </div>
-    </div>
-    <div class="stat-card">
-      <div class="icon yellow">📦</div>
-      <div class="info">
-        <h3 id="total-produtos">0</h3>
-        <p>Total Produtos</p>
-      </div>
-    </div>
-  </div>
-
-  <div class="grid-2">
-    <div class="card">
-      <h3 class="card-title">📈 Vendas - Últimos 7 dias</h3>
-      <canvas id="grafico-vendas" height="200"></canvas>
-    </div>
-    <div class="card">
-      <h3 class="card-title">🏆 Top 5 Clientes do Mês</h3>
-      <div id="top-clientes"></div>
-    </div>
-  </div>
-
-  <div class="card">
-    <h3 class="card-title">⚡ Ações Rápidas</h3>
-    <div class="quick-actions">
-      <button class="action-btn" onclick="location.href='/pedidos.html'">
-        <span>🛒</span> Novo Pedido
-      </button>
-      <button class="action-btn" onclick="location.href='/orcamentos.html'">
-        <span>📋</span> Novo Orçamento
-      </button>
-      <button class="action-btn" onclick="location.href='/clientes.html'">
-        <span>👥</span> Novo Cliente
-      </button>
-      <button class="action-btn" onclick="location.href='/contas.html'">
-        <span>💰</span> Contas a Receber
-      </button>
-    </div>
-  </div>
-</div>
-
-<script>
-let graficoVendas = null;
-
-function formatMoney(v) {
-  return 'R$ ' + Number(v || 0).toFixed(2).replace('.', ',');
-}
-
-function toggleTheme() {
-  const html = document.documentElement;
-  const isDark = html.getAttribute('data-theme') === 'dark';
-  html.setAttribute('data-theme', isDark ? '' : 'dark');
-  localStorage.setItem('theme', isDark ? '' : 'dark');
-  document.querySelector('.theme-toggle').textContent = isDark ? '🌙 Modo Escuro' : '☀️ Modo Claro';
-}
-
-// Carregar tema salvo
-if (localStorage.getItem('theme') === 'dark') {
-  document.documentElement.setAttribute('data-theme', 'dark');
-  document.querySelector('.theme-toggle').textContent = '☀️ Modo Claro';
-}
-
-async function carregarDashboard() {
-  try {
-    const res = await fetch('/api/dashboard');
-    const data = await res.json();
-    
-    // Atualizar cards
-    document.getElementById('vendas-hoje').textContent = formatMoney(data.resumo.vendasHoje);
-    document.getElementById('pedidos-hoje').textContent = data.resumo.pedidosHoje;
-    document.getElementById('contas-receber').textContent = formatMoney(data.resumo.contasReceber);
-    document.getElementById('estoque-baixo').textContent = data.resumo.produtosBaixoEstoque;
-    document.getElementById('vendas-mes').textContent = formatMoney(data.resumo.vendasMes);
-    document.getElementById('pedidos-mes').textContent = data.resumo.pedidosMes;
-    document.getElementById('total-clientes').textContent = data.resumo.totalClientes;
-    document.getElementById('total-produtos').textContent = data.resumo.totalProdutos;
-    
-    // Gráfico de vendas
-    const ctx = document.getElementById('grafico-vendas').getContext('2d');
-    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-    
-    if (graficoVendas) graficoVendas.destroy();
-    
-    graficoVendas = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: data.graficoVendas.map(d => d.dia),
-        datasets: [{
-          label: 'Vendas (R$)',
-          data: data.graficoVendas.map(d => d.vendas),
-          backgroundColor: '#0aa04e',
-          borderRadius: 8
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: { display: false }
-        },
-        scales: {
-          y: {
-            beginAtZero: true,
-            grid: { color: isDark ? '#374151' : '#f0f0f0' }
-          },
-          x: {
-            grid: { display: false }
-          }
-        }
-      }
-    });
-    
-    // Top clientes
-    const topContainer = document.getElementById('top-clientes');
-    if (data.topClientes.length === 0) {
-      topContainer.innerHTML = '<p style="text-align:center;color:var(--muted);padding:20px">Nenhuma venda este mês</p>';
-    } else {
-      topContainer.innerHTML = data.topClientes.map((c, i) => `
-        <div class="cliente-item">
-          <span class="cliente-nome">${i + 1}. ${c.nome}</span>
-          <span class="cliente-valor">${formatMoney(c.total)}</span>
-        </div>
-      `).join('');
+  <!-- BLOQUEIO CRÍTICO: ANTES DE QUALQUER COISA -->
+  <script>
+    if (!localStorage.getItem('admin_token') && !localStorage.getItem('token')) {
+      window.location.replace('/index.html');
     }
-  } catch (e) {
-    console.error(e);
-  }
-}
+  </script>
 
-carregarDashboard();
-setInterval(carregarDashboard, 60000); // Atualizar a cada 1 minuto
-</script>
+  <!-- Loading Screen -->
+  <div id="loading-screen" class="loading-screen">
+    <div class="loading-spinner">
+      <div class="spinner"></div>
+      <p>Carregando MegaClean...</p>
+    </div>
+  </div>
+
+  <!-- App Container -->
+  <div id="app" class="app-container" style="display: none;">
+    <!-- Main Content (SEM SIDEBAR - 100% largura) -->
+    <main class="main-content-full" style="width: 100%; margin-left: 0;">
+      <!-- Top Bar -->
+      <header class="topbar">
+        <div class="topbar-left">
+          <h2 id="page-title" class="page-title">Dashboard</h2>
+        </div>
+        <div class="topbar-right">
+          <button id="btn-logout-topbar" class="btn-icon btn-logout-topbar" title="Sair">🚪</button>
+          <button id="btn-notifications" class="btn-icon" title="Notificações">
+            🔔
+            <span id="notif-badge" class="badge-notif" style="display: none;">0</span>
+          </button>
+          <button id="btn-theme" class="btn-icon" title="Alternar tema">🌙</button>
+        </div>
+      </header>
+
+      <!-- Page Content -->
+      <div id="page-content" class="page-content">
+        <!-- Conteúdo será carregado dinamicamente -->
+      </div>
+    </main>
+  </div>
+
+  <!-- Notifications Panel -->
+  <div id="notifications-panel" class="notifications-panel">
+    <div class="notifications-header">
+      <h3>🔔 Notificações</h3>
+      <button id="close-notifications" class="btn-close">✕</button>
+    </div>
+    <div id="notifications-list" class="notifications-list"></div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Scripts -->
+  <script src="/js/config.js"></script>
+  <script src="/js/api-helper.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/dom-helper.js"></script>
+  <script type="module" src="/js/dashboard.js"></script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
