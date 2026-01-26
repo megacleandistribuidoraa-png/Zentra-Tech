@@ -194,12 +194,35 @@ export default {
       }
 
       const data = await res.json();
-      this.clientes = Array.isArray(data) ? data : [];
+      const clientesNovos = Array.isArray(data) ? data : [];
       
       // Log detalhado dos clientes recebidos
       console.log(`📥 Dados recebidos da API:`, data);
-      console.log(`📊 Array de clientes:`, this.clientes);
-      console.log(`📝 Nomes dos clientes:`, this.clientes.map(c => c.nome || 'Sem nome'));
+      console.log(`📊 Array de clientes recebidos:`, clientesNovos);
+      console.log(`📝 Nomes dos clientes recebidos:`, clientesNovos.map(c => c.nome || 'Sem nome'));
+      
+      // Preservar clientes temporários que não foram substituídos
+      const clientesTemp = this.clientes.filter(c => c.temp === true);
+      console.log(`📋 Clientes temporários na lista atual:`, clientesTemp.length);
+      
+      // Substituir lista, mas manter temporários que não têm correspondente real
+      this.clientes = clientesNovos;
+      
+      // Adicionar temporários que não foram substituídos
+      clientesTemp.forEach(temp => {
+        const temCorrespondente = clientesNovos.some(c => {
+          const nomeMatch = c.nome === temp.nome;
+          const cpfMatch = (c.cpfCnpj === temp.cpfCnpj) || 
+                          (c.cpf === temp.cpfCnpj) || 
+                          (c.cpfCnpj === temp.cpf) ||
+                          (c.cpf === temp.cpf);
+          return nomeMatch && (cpfMatch || (!temp.cpfCnpj && !c.cpfCnpj && !c.cpf));
+        });
+        if (!temCorrespondente) {
+          console.log(`➕ Mantendo cliente temporário: ${temp.nome}`);
+          this.clientes.unshift(temp);
+        }
+      });
       
       // Garantir que a lista está ordenada (mais recentes primeiro)
       this.clientes.sort((a, b) => {
@@ -208,7 +231,7 @@ export default {
         return dateB - dateA;
       });
       
-      console.log(`✅ Clientes carregados: ${this.clientes.length} total`);
+      console.log(`✅ Clientes carregados: ${this.clientes.length} total (${clientesNovos.length} do servidor + ${this.clientes.filter(c => c.temp).length} temporários)`);
       
       this.updateStats();
       this.renderTable();
@@ -253,7 +276,7 @@ export default {
       // Busca
       if (searchTerm) {
         const nome = (c.nome || '').toLowerCase();
-        const cpf = (c.cpfCnpj || '').toLowerCase();
+        const cpf = ((c.cpfCnpj || c.cpf || '')).toLowerCase();
         return nome.includes(searchTerm) || cpf.includes(searchTerm);
       }
 
@@ -279,7 +302,7 @@ export default {
           <div class="cliente-nome">${(window.Utils || Utils).escapeHtml(c.nome || '—')}</div>
           ${c.email ? `<div class="cliente-hint">${(window.Utils || Utils).escapeHtml(c.email)}</div>` : ''}
         </td>
-        <td>${(window.Utils || Utils).escapeHtml(c.cpfCnpj || '—')}</td>
+        <td>${(window.Utils || Utils).escapeHtml(c.cpfCnpj || c.cpf || '—')}</td>
         <td>
           <span class="badge ${c.status === 'ativo' ? 'badge-ativo' : 'badge-inativo'}">
             ${c.status === 'ativo' ? '✓ Ativo' : '✕ Inativo'}
@@ -506,10 +529,14 @@ export default {
       
       // Se o cliente temporário não foi substituído por um cliente real do servidor, mantê-lo na lista
       if (clienteTemp && !this.editandoId) {
-        const clienteRealEncontrado = this.clientes.find(c => 
-          c.nome === clienteTemp.nome && 
-          (c.cpfCnpj === clienteTemp.cpfCnpj || c.cpf === clienteTemp.cpfCnpj)
-        );
+        const clienteRealEncontrado = this.clientes.find(c => {
+          const nomeMatch = c.nome === clienteTemp.nome;
+          const cpfMatch = (c.cpfCnpj === clienteTemp.cpfCnpj) || 
+                          (c.cpf === clienteTemp.cpfCnpj) || 
+                          (c.cpfCnpj === clienteTemp.cpf) ||
+                          (c.cpf === clienteTemp.cpf);
+          return nomeMatch && (cpfMatch || (!clienteTemp.cpfCnpj && !c.cpfCnpj && !c.cpf));
+        });
         
         if (!clienteRealEncontrado) {
           console.log('⚠️ Cliente temporário não foi encontrado no servidor, mantendo na lista');
