@@ -461,16 +461,20 @@ export default {
       
       // Se já adicionamos o cliente à lista, atualizar a tabela imediatamente
       if (clienteSalvo && !this.editandoId) {
+        console.log('🔄 Atualizando tabela imediatamente com cliente local...');
         this.updateStats();
         this.renderTable();
-        console.log('✅ Tabela atualizada imediatamente com novo cliente');
+        console.log('✅ Tabela atualizada. Clientes na lista:', this.clientes.length);
+        console.log('📋 Clientes na lista:', this.clientes.map(c => `${c.nome} (${c._id})`));
       }
       
       // Recarregar lista de clientes do servidor (aguardar um pouco para garantir que o banco salvou)
+      console.log('🔄 Aguardando 1 segundo antes de recarregar do servidor...');
+      await new Promise(resolve => setTimeout(resolve, 1000));
       console.log('🔄 Recarregando lista de clientes do servidor...');
-      await new Promise(resolve => setTimeout(resolve, 500));
       await this.loadClientes();
       console.log('✅ Lista recarregada. Total de clientes:', this.clientes.length);
+      console.log('📋 Clientes finais:', this.clientes.map(c => `${c.nome} (${c._id})`));
     } catch (error) {
       (window.toastManager || toastManager).error('❌ Erro ao salvar cliente');
       console.error(error);
