@@ -172,6 +172,7 @@ app.get("/api/clientes", async (req, res) => {
     }
     
     const clientes = await Cliente.find().sort({ dataCriacao: -1 });
+    console.log(`📋 GET /api/clientes: Retornando ${clientes.length} clientes`);
     res.json(clientes);
   } catch (error) {
     console.error('Erro em /api/clientes:', error.message || error);
@@ -200,6 +201,7 @@ app.post("/api/clientes", async (req, res) => {
     
     const novo = new Cliente(req.body);
     const clienteSalvo = await novo.save();
+    console.log(`✅ Cliente salvo: ${clienteSalvo.nome} (ID: ${clienteSalvo._id})`);
     res.status(201).json(clienteSalvo);
   } catch (error) {
     console.error('Erro ao salvar cliente:', error);

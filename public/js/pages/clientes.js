@@ -441,8 +441,10 @@ export default {
       if (searchInput) searchInput.value = '';
       
       // Recarregar lista de clientes (aguardar um pouco para garantir que o banco salvou)
-      await new Promise(resolve => setTimeout(resolve, 300));
+      console.log('🔄 Recarregando lista de clientes...');
+      await new Promise(resolve => setTimeout(resolve, 500));
       await this.loadClientes();
+      console.log('✅ Lista recarregada. Total de clientes:', this.clientes.length);
     } catch (error) {
       (window.toastManager || toastManager).error('❌ Erro ao salvar cliente');
       console.error(error);
