@@ -393,23 +393,36 @@ export default {
         throw new Error(errorMessage);
       }
 
-      // Verificar se a resposta tem conteúdo antes de fazer parse
+      // Tentar obter o cliente salvo da resposta
+      let clienteSalvo = null;
       const contentType = res.headers.get('content-type');
-      if (!contentType || !contentType.includes('application/json')) {
+      if (contentType && contentType.includes('application/json')) {
+        try {
+          clienteSalvo = await res.json();
+          console.log('✅ Cliente salvo:', clienteSalvo);
+          
+          // Se for um novo cliente (não edição), adicionar à lista imediatamente
+          if (!this.editandoId && clienteSalvo) {
+            // Adicionar no início da lista
+            this.clientes.unshift(clienteSalvo);
+            console.log('➕ Cliente adicionado à lista localmente');
+          } else if (this.editandoId && clienteSalvo) {
+            // Se for edição, atualizar o cliente na lista
+            const index = this.clientes.findIndex(c => c._id === this.editandoId);
+            if (index !== -1) {
+              this.clientes[index] = clienteSalvo;
+              console.log('✏️ Cliente atualizado na lista localmente');
+            }
+          }
+        } catch (jsonError) {
+          console.warn('Erro ao fazer parse do JSON da resposta:', jsonError);
+          // Continuar mesmo assim - o cliente provavelmente foi salvo
+        }
+      } else {
         // Se não for JSON, tentar ler como texto
         const text = await res.text();
         if (text.trim()) {
           console.warn('Resposta não é JSON:', text);
-        }
-        // Continuar mesmo sem JSON - o cliente foi salvo
-      } else {
-        // Tentar fazer parse do JSON
-        try {
-          const clienteSalvo = await res.json();
-          console.log('✅ Cliente salvo:', clienteSalvo);
-        } catch (jsonError) {
-          console.warn('Erro ao fazer parse do JSON da resposta:', jsonError);
-          // Continuar mesmo assim - o cliente provavelmente foi salvo
         }
       }
       
@@ -440,8 +453,15 @@ export default {
       const searchInput = document.getElementById('search');
       if (searchInput) searchInput.value = '';
       
-      // Recarregar lista de clientes (aguardar um pouco para garantir que o banco salvou)
-      console.log('🔄 Recarregando lista de clientes...');
+      // Se já adicionamos o cliente à lista, atualizar a tabela imediatamente
+      if (clienteSalvo && !this.editandoId) {
+        this.updateStats();
+        this.renderTable();
+        console.log('✅ Tabela atualizada imediatamente com novo cliente');
+      }
+      
+      // Recarregar lista de clientes do servidor (aguardar um pouco para garantir que o banco salvou)
+      console.log('🔄 Recarregando lista de clientes do servidor...');
       await new Promise(resolve => setTimeout(resolve, 500));
       await this.loadClientes();
       console.log('✅ Lista recarregada. Total de clientes:', this.clientes.length);
